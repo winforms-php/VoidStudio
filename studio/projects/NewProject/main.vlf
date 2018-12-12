@@ -1,0 +1,14 @@
+Form MainForm ():
+    caption: 'Form Caption'
+    
+Button Button (MainForm):
+    bounds: [8, 8, 128, 48]
+    caption: 'Click Me!'
+    
+    ClickEvent:^ function ($self) use (MainForm $form)
+        {
+            pre ('Ooohh! I was clicked from "'. $form->caption .'" form!');
+        }
+        
+Form MainForm ():
+    ->show ()
