@@ -79,9 +79,9 @@ abstract class FileDialog extends CommonDialog
         return $this->getProperty ('CheckPathExists', 'bool');
     }
 	
-    public function set_checkPathExists (bool $checkpath)
+    public function set_checkPathExists (bool $checkPath)
     {
-        $this->setProperty ('CheckPathExists', $checkpath, 'bool');
+        $this->setProperty ('CheckPathExists', $checkPath, 'bool');
     }
 }
 

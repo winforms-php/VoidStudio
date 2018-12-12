@@ -105,7 +105,7 @@ TreeView List (MainForm):
                     $editor->helpStorage = $fullPath;
                     $editor->text        = file_get_contents (VoidStudioAPI::$projectPath .'/'. $path);
 
-                    $caption->caption = 'VoidEngine - '. $fullPath;
+                    $caption->caption = 'VoidStudio - '. $fullPath;
                 }
             }
         }
@@ -183,7 +183,7 @@ Label Menu__open (MainForm):
 
                 copy ($dlg->filename, VoidStudioAPI::$projectPath .'/'. basename ($dlg->filename));
 
-                $caption->caption = 'VoidEngine - '. $node->path;
+                $caption->caption = 'VoidStudio - '. $node->path;
             }
         }
 

@@ -12,7 +12,7 @@ class Events
 
     static function setObjectEvent (Component $object, string $eventName, $function)
     {
-        if (!$object instanceof Component)
+        if (!($object instanceof Component))
             return false;
 
         $selector = $object->selector;

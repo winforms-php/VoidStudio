@@ -18,7 +18,7 @@ $GLOBALS['__debug'] = [
     'error_count' => 0
 ];
 
-$GLOBALS['__message_handler'] = function ($error) {}; // \VoidEngine\pre
+$GLOBALS['__message_handler'] = function ($error) {throw new Exception ($error);}; // \VoidEngine\pre
 
 $files = scandir ("$basePath/debug");
 
@@ -42,6 +42,7 @@ require "$basePath/events/KeyPressEventArgs.php";
 
 require "$basePath/components/Component.php";
 require "$basePath/components/Control.php";
+require "$basePath/components/Process.php";
 require "$basePath/components/Timer.php";
 require "$basePath/components/ScrollBar.php";
 require "$basePath/components/Panel.php";
@@ -52,6 +53,7 @@ require "$basePath/components/Label.php";
 require "$basePath/components/TextBox.php";
 require "$basePath/components/ListView.php";
 require "$basePath/components/TreeView.php";
+require "$basePath/components/ComboBox.php";
 require "$basePath/components/PropertyGrid.php";
 require "$basePath/components/VideoBox.php";
 require "$basePath/components/CheckBox.php";
@@ -88,7 +90,7 @@ class Components
     }
 }
 
-class EdgedArray
+/*class EdgedArray
 {
 	private $array = [];
 	private $arrayCount;
@@ -115,7 +117,7 @@ class EdgedArray
 	{
 		return $this->array;
 	}
-}
+}*/
 
 class Clipboard
 {

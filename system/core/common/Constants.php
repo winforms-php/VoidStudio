@@ -109,6 +109,12 @@ $constants = array
 	'vwList' 	  => 3,
 	'vwTile' 	  => 4,
 
+	# Константы dropDownStyle компонента ComboBox
+
+	'ddSimple'		 => 0,
+	'ddDropDown' 	 => 1,
+	'ddDropDownList' => 2,
+
 	# Константы причины закрытия формы
 	
 	'fcrNone'                => 0,

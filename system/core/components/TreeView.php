@@ -8,7 +8,7 @@ class TreeView extends Control
 
     public function __construct (Control $parent = null)
     {
-        parent::__construct ($parent, __CLASS__);
+        parent::__construct ($parent, self::class);
 
         $this->nodes = new TreeViewNodes ($this->getProperty ('Nodes', 'object'));
     }
@@ -45,7 +45,7 @@ class TreeNode extends Control
 
     public function __construct ()
     {
-        parent::__construct (null, __CLASS__);
+        parent::__construct (null, self::class);
 
         $this->nodes = new TreeViewNodes ($this->getProperty ('Nodes', 'object'));
     }

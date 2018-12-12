@@ -1,13 +1,19 @@
 Form MainForm ():
     caption: 'Form Caption'
+        
+ComboBox Box (MainForm):
+    location: [8, 8]
+    
+    ->items->add ('Hello')
+    ->items->add ('World')
     
 Button Button (MainForm):
-    bounds: [8, 8, 128, 48]
+    bounds: [8, 32, 128, 48]
     caption: 'Click Me!'
     
-    ClickEvent:^ function ($self) use (MainForm $form)
+    ClickEvent:^ function ($self) use (MainForm $form, Box $box)
         {
-            pre ('Ooohh! I was clicked from "'. $form->caption .'" form!');
+            pre ('Ooohh! I was clicked from "'. $form->caption .'" form & you\'re selected '. ($box->selectedItem ? '"'. $box->selectedItem .'"' : 'nothing') .'!');
         }
         
 Form MainForm ():

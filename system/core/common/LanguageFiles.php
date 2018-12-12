@@ -215,12 +215,12 @@ class VLFReader
         });
     }
 
-    static function isReadable ($line)
+    static function isReadable (string $line)
     {
         return (bool)(trim ($line)); 
     }
 
-    static function getLineHard ($line)
+    static function getLineHard (string $line)
     {
         $line = str_replace ("\t", ' ', $line);
         $size = strlen ($line);

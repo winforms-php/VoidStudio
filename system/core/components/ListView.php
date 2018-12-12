@@ -9,7 +9,7 @@ class ListView extends Control
 
     public function __construct (Control $parent = null)
     {
-        parent::__construct ($parent, __CLASS__);
+        parent::__construct ($parent, self::class);
 
         $this->items   = new ListViewItems ($this->getProperty ('Items', 'object'));
         $this->columns = new ListViewColumns ($this->getProperty ('Columns', 'object'));
@@ -82,7 +82,7 @@ class ListViewItem extends Control
 
     public function __construct ()
     {
-        parent::__construct (null, __CLASS__);
+        parent::__construct (null, self::class);
 
         $this->subItems = new ListViewItemSubitems ($this->getProperty ('SubItems', 'object'));
     }

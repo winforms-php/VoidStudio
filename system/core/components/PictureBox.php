@@ -8,7 +8,7 @@ class PictureBox extends Control
 	
 	public function __construct (Control $parent = null)
 	{
-        parent::__construct ($parent, __CLASS__);
+        parent::__construct ($parent, self::class);
         
 		$this->image = new PictureBoxImage ($this->componentSelector);
 	}

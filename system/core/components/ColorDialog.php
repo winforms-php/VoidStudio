@@ -6,7 +6,7 @@ class ColorDialog extends CommonDialog
 {
     public function __construct ()
     {
-        parent::__construct (__CLASS__);
+        parent::__construct (self::class);
     }
 	
     public function get_color ()

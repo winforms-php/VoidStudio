@@ -6,7 +6,7 @@ class Form extends Control
 {
 	public function __construct (Control $parent = null)
 	{
-        parent::__construct (null, __CLASS__);
+        parent::__construct (null, self::class);
         
 		if ($parent instanceof Control)
 		{
@@ -35,9 +35,9 @@ class Form extends Control
 		return $this->getProperty ('Opacity', 'double');
 	}
 	
-	public function set_opacity (float $opacity)
+	public function set_opacity ($opacity) // float
 	{
-		$this->setProperty ('Opacity', $opacity, 'double');
+		$this->setProperty ('Opacity', (float) $opacity, 'double');
 	}
 
 	public function get_borderStyle ()

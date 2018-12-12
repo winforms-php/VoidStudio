@@ -52,10 +52,6 @@ class VoidEngine
         if ($type == 'auto')
             throw new \Exception ('callMethod function can\'t read "auto" type');
 
-        /*return (is_array ($args) && sizeof ($args) > 0) ? 
-            winforms_callmethod ($selector, $methodName, $type, $args) :
-            winforms_callmethod ($selector, $methodName, $type);*/
-
         return winforms_callmethod ($selector, $methodName, $type, ...$args);
     }
 

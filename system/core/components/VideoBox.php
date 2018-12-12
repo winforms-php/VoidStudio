@@ -53,9 +53,9 @@ class VideoBox extends Control
         return $this->getProperty ('CurrentPosition', 'double');
     }
 	
-    public function set_position (float $position)
+    public function set_position ($position) // float
     {
-        $this->setProperty ('CurrentPosition', $position, 'double');
+        $this->setProperty ('CurrentPosition', (float) $position, 'double');
     }
 }
 

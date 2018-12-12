@@ -6,9 +6,7 @@ VoidEngine::loadModule ('ScintillaNET.dll');
 
 class Scintilla extends Control
 {
-    protected $lexer;
-
-	public function __construct (Control $parent = null)
+    public function __construct (Control $parent = null)
 	{
         $this->componentSelector = VoidEngine::createObject (new WFObject ('ScintillaNET.Scintilla', 'ScintillaNET', true));
         Components::addComponent ($this->componentSelector, $this);

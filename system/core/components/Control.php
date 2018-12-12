@@ -96,10 +96,10 @@ abstract class Control extends Component
         return Components::getComponent ($this->getProperty ('Parent', 'object'));
     }
 	
-    public function set_parent (?Control $parent)
+    public function set_parent (Control $parent)
     {
         $this->setProperty ('Parent', 
-            $parent ? $parent->selector : 0,
+            ($parent instanceof Control) ? $parent->selector : 0,
         'object');
     }
 	
