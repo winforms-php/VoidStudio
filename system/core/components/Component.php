@@ -51,7 +51,10 @@ abstract class Component
 	
 	final function __call ($method, $args)
 	{
-		throw new \Exception ("The \"$method\" method is missing from the \"$this->componentClass\" component");
+        if (strtoupper ($method[0]) == $method[0])
+            $this->callMethod ($method, ...$args);
+
+        else throw new \Exception ("The \"$method\" method is missing from the \"$this->componentClass\" component");
 	}
 	
     final protected function getProperty (string $name, string $type)

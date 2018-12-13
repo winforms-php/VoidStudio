@@ -42,6 +42,7 @@ require "$basePath/events/KeyPressEventArgs.php";
 
 require "$basePath/components/Component.php";
 require "$basePath/components/Control.php";
+require "$basePath/components/MessageBox.php";
 require "$basePath/components/Process.php";
 require "$basePath/components/Timer.php";
 require "$basePath/components/ScrollBar.php";
