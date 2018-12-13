@@ -8,8 +8,6 @@ class MessageBox extends Component
     {
         $this->componentSelector = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.MessageBox'));
         $this->componentClass    = 'MessageBox';
-        
-        Components::addComponent ($this->componentSelector, $this);
 
         if ($text !== null)
             $this->show ($text);
