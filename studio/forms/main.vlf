@@ -1,6 +1,6 @@
 *^ $AppInfo = [
-        'Width'   => $SCREEN->width / 1.3,
-        'Height'  => $SCREEN->height / 1.3,
+        'Width'   => $SCREEN->width / 1.15,
+        'Height'  => $SCREEN->height / 1.15,
         'Caption' => 'VoidStudio'
     ];
 

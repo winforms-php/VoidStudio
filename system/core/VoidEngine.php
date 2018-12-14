@@ -171,7 +171,7 @@ class Clipboard
     }
 }
 
-$studioStart = dirname (dirname ($basePath)) ."/studio/start.php";
+$studioStart = dirname (dirname ($basePath)) .'/studio/start.php';
 
 if (file_exists ($studioStart))
     require $studioStart;
