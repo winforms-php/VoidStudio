@@ -1,248 +1,70 @@
-*^ $AppInfo = [
-        'Width'   => $SCREEN->width / 1.15,
-        'Height'  => $SCREEN->height / 1.15,
-        'Caption' => 'VoidStudio'
-    ];
-
 Form MainForm ():
-    size: [$AppInfo['Width'], $AppInfo['Height']]
+    size: [$SCREEN->width / 1.2, $SCREEN->height / 1.2]
+    windowState: fwsMaximized
     startPosition: fspCenterScreen
-    borderStyle: fbsNone
     backgroundColor: clWhite
-    caption: $AppInfo['Caption']
-    doubleBuffer: true
+    doubleBoffer: true
+
+    caption: 'VoidStudio'
 
     ->icon->loadFromFile (WORKSPACE. '/Icon.ico')
 
-Label Caption (MainForm):
-    bounds: [0, 0, $AppInfo['Width'], 24]
-    textAlign: alMiddleCenter
-    backgroundColor: clWhiteSmoke
-    caption: $AppInfo['Caption']
-    font: ['Segoe UI Bold', 10]
+ObjectsCount Counter ():
 
-    MouseDownEvent:^ function ($self, $args)
+Panel EditableArea (MainForm):
+    dock: dsFill
+
+PropertyGrid PropertiesList (MainForm):
+    dock: dsLeft
+    width: 280
+
+Form BuildForm (EditableArea):
+    size: [300, 260]
+    caption: 'Form Caption'
+
+    ClickEvent:^ function ($self) use (PropertiesList $propertyGrid)
         {
-            $mouse = new MouseEventArgs ($args);
-
-            $self->helpStorage = [$mouse->x, $mouse->y];
+            $propertyGrid->selectedObject = $self->selector;
         }
 
-    MouseUpEvent:^ function ($self)
+    FormClosingEvent:^ function ($self, $args)
         {
-            $self->helpStorage = '';
+            $args = new FormClosingEventArgs ($args);
+
+            if ($args->closeReason == fcrUserClosing)
+                $args->Cancel = true;
         }
 
-    MouseMoveEvent:^ function ($self, $args) use (MainForm $form)
+    #^ LocationChangedEvent:^ function ($self) /* Временно неработает, причина - неизвестна */
         {
-            if (is_array ($self->helpStorage))
+            $self->location = [0, 0];
+        }
+
+ListView ComponentsList (MainForm):
+    dock: dsRight
+    width: 280
+
+    ClickEvent:^ function ($self) use (BuildForm $form, PropertiesList $props, Counter $count)
+        {
+            $component = substr ($self->selectedItems->offsetGet (0), 15, -1);
+            $name      = "VoidEngine\\$component";
+
+            $obj = new $name ($form);
+            $obj->enabled = false;
+            $obj->caption = $component;
+
+            $obj->ClickEvent = function ($self) use ($props, $count)
             {
-                $mouse = new MouseEventArgs ($args);
+                $props->selectedObject = $self->selector;
+                $count->count ($self);
+            };
 
-                $form->x += $mouse->x - $self->helpStorage[0];
-                $form->y += $mouse->y - $self->helpStorage[1];
-            }
+            $props->selectedObject = $obj->selector;
+            $count->count ($obj);
         }
 
-PictureBox AppIcon (MainForm):
-    bounds: [6, 2, 20, 20]
-    sizeMode: smStretchImage
-    backgroundColor: clWhiteSmoke
-
-    ->toFront ()
-    ->image->loadFromFile (WORKSPACE. '/Icon.ico')
-
-Label Close (MainForm):
-    bounds: [$AppInfo['Width'] - 24, 0, 24, 24]
-    textAlign: alMiddleCenter
-    backgroundColor: clWhiteSmoke
-    caption: 'X'
-
-    ClickEvent:^ function ($self)
+Form MainForm ():
+    LoadEvent:^ function ($self) use (BuildForm $form)
         {
-            $APPLICATION->close ();
-        }
-
-    ->toFront ()
-
-FastColoredTextBox Editor (MainForm):
-    bounds: [220, 24, $AppInfo['Width'] - 220, $AppInfo['Height'] - 24]
-    language: langPHP
-    wordWrap: true
-    doubleBuffer: true
-
-    TextChangedEvent:^ function ($self)
-        {
-            if ($self->helpStorage)
-            {
-                $path = substr ($self->helpStorage, strpos ($self->helpStorage, '\\'));
-                
-                file_put_contents (VoidStudioAPI::$projectPath .'/'. $path, $self->text);
-            }
-        }
-
-TreeNode Project ():
-    caption: text ('Проект')
-
-TreeView List (MainForm):
-    bounds: [0, 24, 220, $AppInfo['Height'] - 24]
-    BorderStyle: bsNone
-    doubleBuffer: true
-    HotTracking: true
-    ShowRootLines: true
-
-    ClickEvent:^ function ($self) use (Caption $caption, Editor $editor)
-        {
-            $fullPath = $self->path;
-            $path     = '';
-
-            if ($fullPath && ($pos = strpos ($fullPath, '\\')) !== false)
-            {
-                $path = substr ($fullPath, $pos + 1);
-
-                if (is_file (VoidStudioAPI::$projectPath .'/'. $path))
-                {
-                    $editor->helpStorage = $fullPath;
-                    $editor->text        = file_get_contents (VoidStudioAPI::$projectPath .'/'. $path);
-
-                    $caption->caption = 'VoidStudio - '. $fullPath;
-                }
-            }
-        }
-
-    ->nodes->add (Project)
-
-#^ Panel SubMenu (MainForm):
-    bounds: [0, $AppInfo['Height'] - 24, List->w, 24]
-    backgroundColor: clWhiteSmoke
-
-#^ Label SubMenu__createFile (SubMenu):
-    bounds: [0, 0, 110, 24]
-    caption: text ('Добавить файл')
-    font: ['Segoe UI', 8]
-    textAlign: alMiddleCenter
-
-    MouseEnterEvent:^ function ($self)
-        {
-            $self->backgroundColor = clLightBlue;
-        }
-
-    MouseLeaveEvent:^ function ($self)
-        {
-            $self->backgroundColor = clWhiteSmoke;
-        }
-
-#^ Label SubMenu__createDir (SubMenu):
-    bounds: [110, 0, 110, 24]
-    caption: text ('Добавить ветку')
-    font: ['Segoe UI', 8]
-    textAlign: alMiddleCenter
-
-    MouseEnterEvent:^ function ($self)
-        {
-            $self->backgroundColor = clLightBlue;
-        }
-
-    MouseLeaveEvent:^ function ($self)
-        {
-            $self->backgroundColor = clWhiteSmoke;
-        }
-
-Label Menu__open (MainForm):
-    bounds: [32, 0, 72, 24]
-    textAlign: alMiddleCenter
-    backgroundColor: clWhiteSmoke
-    caption: text ('Открыть')
-    font: ['Consolas', 8]
-
-    ->toFront ()
-
-    MouseEnterEvent:^ function ($self)
-        {
-            $self->backgroundColor = clLightBlue;
-        }
-
-    MouseLeaveEvent:^ function ($self)
-        {
-            $self->backgroundColor = clWhiteSmoke;
-        }
-
-    ClickEvent:^ function ($self) use (Editor $editor, Caption $caption, Project $tree)
-        {
-            $dlg = new OpenFileDialog;
-            $dlg->showDialog ();
-
-            if (file_exists ($dlg->filename))
-            {
-                $node = new TreeNode;
-                $node->caption = basename ($dlg->filename);
-                $tree->nodes->add ($node);
-
-                $editor->helpStorage = $node->path;
-                $editor->text        = file_get_contents ($dlg->filename);
-
-                copy ($dlg->filename, VoidStudioAPI::$projectPath .'/'. basename ($dlg->filename));
-
-                $caption->caption = 'VoidStudio - '. $node->path;
-            }
-        }
-
-Label Menu__run (MainForm):
-    bounds: [104, 0, 72, 24]
-    textAlign: alMiddleCenter
-    backgroundColor: clWhiteSmoke
-    caption: text ('Запустить')
-    font: ['Consolas', 8]
-
-    ->toFront ()
-
-    MouseEnterEvent:^ function ($self)
-        {
-            $self->backgroundColor = clLightBlue;
-        }
-
-    MouseLeaveEvent:^ function ($self)
-        {
-            $self->backgroundColor = clWhiteSmoke;
-        }
-
-    ClickEvent:^ function ($self) use (Editor $editor)
-        {
-            $code = (file_exists (VoidStudioAPI::$projectPath .'/main.php')) ?
-                file_get_contents (VoidStudioAPI::$projectPath .'/main.php') :
-                $editor->text;
-
-            eval ($code);
-        }
-
-Label Menu__export (MainForm):
-    bounds: [176, 0, 72, 24]
-    textAlign: alMiddleCenter
-    backgroundColor: clWhiteSmoke
-    caption: \VoidEngine\text ('Собрать')
-    font: ['Consolas', 8]
-
-    ->toFront ()
-
-    MouseEnterEvent:^ function ($self)
-        {
-            $self->backgroundColor = clLightBlue;
-        }
-
-    MouseLeaveEvent:^ function ($self)
-        {
-            $self->backgroundColor = clWhiteSmoke;
-        }
-
-    ClickEvent:^ function ($self)
-        {
-            $save = new FolderBrowserDialog;
-            $save->showDialog ();
-
-            if (is_dir ($path = $save->path))
-            {
-                dir_copy (VoidStudioAPI::$projectPath, $path);
-                mkdir ("$path/engine");
-                dir_copy (dirname (WORKSPACE) .'/system', "$path/engine");
-            }
+            $form->show ();
         }

@@ -50,7 +50,10 @@ abstract class EventArgs
 	final public function __get ($name)
 	{
 		if (method_exists ($this, $method = "get_$name"))
-			return $this->$method ();
+            return $this->$method ();
+            
+        elseif (strtoupper ($name[0]) == $name[0])
+            return $this->getProperty ($name, '');
 		
 		else throw new \Exception ("The \"$name\" property is missing");
 	}
@@ -58,10 +61,18 @@ abstract class EventArgs
     final public function __set ($name, $value)
 	{
 		if (method_exists ($this, $method = "set_$name"))
-			return $this->$method ($value);
+            return $this->$method ($value);
+            
+        elseif (strtoupper ($name[0]) == $name[0])
+            $this->setProperty ($name, $value, 'auto');
 		
         else throw new \Exception ("The \"$name\" property is missing");
-	}
+    }
+    
+    public function get_selector ()
+    {
+        return $this->selector;
+    }
 	
 	final protected function getProperty (string $name, string $type)
     {

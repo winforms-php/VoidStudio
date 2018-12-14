@@ -7,6 +7,8 @@
 
 namespace VoidEngine;
 
+const ENGINE_DIR = __DIR__;
+
 $basePath = __DIR__;
 chdir ($basePath);
 
@@ -67,6 +69,7 @@ require "$basePath/components/OpenFileDialog.php";
 require "$basePath/components/SaveFileDialog.php";
 require "$basePath/components/ColorDialog.php";
 require "$basePath/components/FolderBrowserDialog.php";
+require "$basePath/components/ObjectsCount.php";
 
 class Components
 {

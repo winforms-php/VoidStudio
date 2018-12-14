@@ -20,6 +20,11 @@ class ListView extends Control
         return $this->items;
     }
 
+    public function get_selectedItems ()
+    {
+        return new Items ($this->getProperty ('SelectedItems', 'object'));
+    }
+
     public function get_columns ()
     {
         return $this->columns;
@@ -84,7 +89,7 @@ class ListViewItem extends Control
     {
         parent::__construct (null, self::class);
 
-        $this->subItems = new ListViewItemSubitems ($this->getProperty ('SubItems', 'object'));
+        $this->subItems = new Items ($this->getProperty ('SubItems', 'object'));
     }
 
     public function get_subItems ()
@@ -147,7 +152,5 @@ class ListViewColumns extends Items
             VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', (string) $value, 'string');
 	}
 }
-
-class ListViewItemSubitems extends Items {}
 
 ?>
