@@ -129,4 +129,69 @@ class WFObject
     }
 }
 
+class WFClass
+{
+    protected $class;
+
+    public function __construct ($class, string $classGroup = 'System.Windows.Forms', bool $onlyClassInfo = false)
+    {
+        if ($class instanceof WFObject)
+            $this->class = VoidEngine::buildObject ($class);
+
+        elseif (is_string ($class))
+            $this->class = VoidEngine::buildObject (new WFObject ($class, $classGroup, $onlyClassInfo));
+
+        else throw new \Exception ("\"$class\" parameter must be instance of \"VoidEngine\\WFObject\" or be string");
+    }
+
+    public function __get ($name)
+    {
+        if (is_int ($this->class))
+        {
+            if (strtoupper ($name[0]) == $name[0])
+                return VoidEngine::getProperty ($this->class, $name, '');
+
+            else throw new \Exception ("The \"$name\" property isn't C# class property name");
+        }
+
+        else throw new \Exception ("Class isn't initialized");
+    }
+
+    public function __set ($name, $value)
+    {
+        if (is_int ($this->class))
+        {
+            if (strtoupper ($name[0]) == $name[0])
+                VoidEngine::setProperty ($this->class, $name, $value);
+
+            else throw new \Exception ("The \"$name\" property isn't C# class property name");
+        }
+
+        else throw new \Exception ("Class isn't initialized");
+    }
+
+    public function __call ($method, $args)
+	{
+        if (is_int ($this->class))
+        {
+            if (strtoupper ($method[0]) == $method[0])
+            {
+                $setArgs = array ();
+                
+                foreach ($args as $id => $arg)
+                {
+                    $setArgs[] = $arg;
+                    $setArgs[] = getLogicalVarType ($arg);
+                }
+
+                VoidEngine::callMethod ($this->class, $method, '', ...$setArgs);
+            }
+
+            else throw new \Exception ("The \"$method\" method isn't C# class method name");
+        }
+
+        else throw new \Exception ("Class isn't initialized");
+	}
+}
+
 ?>

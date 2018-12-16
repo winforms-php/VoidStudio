@@ -122,17 +122,17 @@ class ListViewItems extends Items
 	
 	public function add ($value)
 	{
-		$this->offsetSet (null, $value instanceof ListViewItem ? $value->selector : $value);
+		return $this->offsetSet (null, $value instanceof ListViewItem ? $value->selector : $value);
 	}
 	
 	public function append ($value)
 	{
-		$this->offsetSet (null, $value instanceof ListViewItem ? $value->selector : $value);
+		return $this->offsetSet (null, $value instanceof ListViewItem ? $value->selector : $value);
 	}
 	
 	public function offsetSet ($index, $value)
 	{
-        $index === null ?
+        return $index === null ?
             VoidEngine::callMethod ($this->selector, 'Add', '', $value, 'object') :
             VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', $value, 'object');
 	}
@@ -147,7 +147,7 @@ class ListViewColumns extends Items
 {
     public function offsetSet ($index, $value)
 	{
-        $index === null ?
+        return $index === null ?
             VoidEngine::callMethod ($this->selector, 'Add', '', (string) $value, 'string') :
             VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', (string) $value, 'string');
 	}

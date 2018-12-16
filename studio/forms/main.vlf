@@ -4,12 +4,11 @@ Form MainForm ():
     startPosition: fspCenterScreen
     backgroundColor: clWhite
     doubleBoffer: true
+    formBorderStyle: bsFixedSingle
 
     caption: 'VoidStudio'
 
     ->icon->loadFromFile (WORKSPACE. '/Icon.ico')
-
-ObjectsCount Counter ():
 
 Panel EditableArea (MainForm):
     dock: dsFill
@@ -17,6 +16,7 @@ Panel EditableArea (MainForm):
 PropertyGrid PropertiesList (MainForm):
     dock: dsLeft
     width: 280
+    CommandsVisibleIfAvailable: true
 
 Form BuildForm (EditableArea):
     size: [300, 260]
@@ -43,24 +43,28 @@ Form BuildForm (EditableArea):
 ListView ComponentsList (MainForm):
     dock: dsRight
     width: 280
+    fullRowSelect: true
+    view: vwDetails
+    
+    ->columns->add (text ('Название компонента'));
 
-    ClickEvent:^ function ($self) use (BuildForm $form, PropertiesList $props, Counter $count)
+    DoubleClickEvent:^ function ($self) use (BuildForm $form, PropertiesList $props)
         {
             $component = substr ($self->selectedItems->offsetGet (0), 15, -1);
             $name      = "VoidEngine\\$component";
 
             $obj = new $name ($form);
-            $obj->enabled = false;
+            //$obj->enabled = false;
             $obj->caption = $component;
 
             $obj->ClickEvent = function ($self) use ($props, $count)
             {
                 $props->selectedObject = $self->selector;
-                $count->count ($self);
+                //$count->count ($self);
             };
 
             $props->selectedObject = $obj->selector;
-            $count->count ($obj);
+            //$count->count ($obj);
         }
 
 Form MainForm ():

@@ -28,7 +28,12 @@ class ObjectsCount
         $parent = $object->parent;
 
         if (!isset ($this->shape) || $this->shape->parent != $parent)
+        {
+            /*if (isset ($this->shape))
+                $this->shape->dispose ();*/
+
             $shape = new Panel ($parent);
+        }
 
         $shape->bounds = [
             $object->x - 2,
@@ -38,7 +43,6 @@ class ObjectsCount
         ];
 
         $shape->backgroundColor = clBlack;
-        $shape->toBack ();
 
         $object->MouseDownEvent = function ($self, $args)
         {

@@ -2,20 +2,16 @@
 
 namespace VoidEngine;
 
-class MessageBox extends Component
+class MessageBox extends WFClass
 {
-    public function __construct ($text = null)
+    public function __construct ()
     {
-        $this->componentSelector = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.MessageBox'));
-        $this->componentClass    = 'MessageBox';
-
-        if ($text !== null)
-            $this->show ($text);
+        parent::__construct ('System.Windows.Forms.MessageBox');
     }
 
-    public function show ($text)
+    public function show (string $text)
     {
-        $this->callMethod ('Show', '', $text, 'string');
+        $this->__call ('Show', [$text]);
     }
 }
 

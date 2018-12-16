@@ -101,7 +101,7 @@ $constants = array
 	'smCenterImage'  => 3,
 	'smZoom' 		 => 4,
 
-	# Константы View-параметра
+	# Константы View-параметра ListView'а
 	
 	'vwLargeIcon' => 0,
 	'vwDetails'	  => 1,

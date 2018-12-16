@@ -101,7 +101,7 @@ class TreeViewNodes extends Items
 	
 	public function offsetSet ($index, $value)
 	{
-        $index === null ?
+        return $index === null ?
             VoidEngine::callMethod ($this->selector, 'Add', '', $value, 'object') :
             VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', $value, 'object');
 	}

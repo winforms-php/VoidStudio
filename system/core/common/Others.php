@@ -217,17 +217,17 @@ class Items extends \ArrayObject
 	
 	public function add ($value)
 	{
-		$this->offsetSet (null, $value);
+		return $this->offsetSet (null, $value);
 	}
 	
 	public function append ($value)
 	{
-		$this->offsetSet (null, $value);
+		return $this->offsetSet (null, $value);
 	}
 	
 	public function offsetSet ($index, $value)
 	{
-        $index === null ?
+        return $index === null ?
             VoidEngine::callMethod ($this->selector, 'Add', '', $value, 'string') :
             VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', $value, 'string');
 	}
@@ -264,7 +264,7 @@ class Items extends \ArrayObject
 	
 	public function insert ($index, $value)
 	{
-		$this->offsetSet ($index, $value);
+		return $this->offsetSet ($index, $value);
 	}
 	
 	public function contains (string $value)
@@ -305,7 +305,7 @@ set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '',
         'Error at string: '. $errstr,
         'Error in file: '. $errfile,
         'Error at line: '. $errline,
-        'Error context: '. join (', ', $errcontext),
+        'Error context: '. json_encode ($errcontext),
         'Created components: '. print_r (Components::$components, true)
     ]));
 

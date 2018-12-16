@@ -20,7 +20,7 @@ $GLOBALS['__debug'] = [
     'error_count' => 0
 ];
 
-$GLOBALS['__message_handler'] = function ($error) {throw new Exception ($error);}; // \VoidEngine\pre
+$GLOBALS['__message_handler'] = function ($error) {throw new \Exception ($error);}; // \VoidEngine\pre
 
 $files = scandir ("$basePath/debug");
 
