@@ -57,7 +57,7 @@ ListView ComponentsList (MainForm):
             //$obj->enabled = false;
             $obj->caption = $component;
 
-            $obj->ClickEvent = function ($self) use ($props, $count)
+            $obj->ClickEvent = function ($self) use ($props/*, $count*/)
             {
                 $props->selectedObject = $self->selector;
                 //$count->count ($self);

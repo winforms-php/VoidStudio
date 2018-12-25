@@ -1,7 +1,7 @@
 <?php
 
 /*
-    Класс для чтения VLF (Void Language File)-файлов
+    Класс для чтения VLF (Void Language File)
     VLF-файлы - файлы синтаксиса, созданные для упрощённой разработки на VoidEngine
 */
 
