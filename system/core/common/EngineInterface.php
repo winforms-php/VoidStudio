@@ -76,6 +76,11 @@ class VoidEngine
         winforms_setevent ($selector, $eventName, $code);
     }
 
+    static function eventExists (int $selector, string $eventName)
+    {
+        return winforms_existsevent ($selector, $eventName);
+    }
+
     static function removeEvent (int $selector, string $eventName)
     {
         winforms_delevent ($selector, $eventName);
@@ -192,6 +197,16 @@ class WFClass
 
         else throw new \Exception ("Class isn't initialized");
 	}
+}
+
+class WFCompiler
+{
+    static function compile (string $file, string $icon, string $code)
+    {
+        $compiler = new WFClass ('WFCompiler.Compiler', 'WFCompiler');
+
+        $compiler->Compile ($file, $icon, $code);
+    }
 }
 
 ?>
