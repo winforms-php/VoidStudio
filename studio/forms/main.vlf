@@ -13,6 +13,39 @@ Form MainForm ():
 Panel EditableArea (MainForm):
     dock: dsFill
 
+TabPage Log_Page ():
+    Text: 'Log'
+
+TabPage EvalTool_Page ():
+    Text: 'Eval'
+
+TabControl BottomPanel (MainForm):
+    dock: dsBottom
+    height: 160
+
+    ->tabPages->add (Log_Page)
+    ->tabPages->add (EvalTool_Page)
+
+ListBox Log_List (Log_Page):
+    dock: dsFill
+
+    ->items->add ('VoidStudio is loaded!')
+
+FastColoredTextBox EvalTool_Editor (EvalTool_Page):
+    dock: dsFill
+
+    language: langPHP
+    wordWrap: true
+
+Button EvalTool_Eval (EvalTool_Page):
+    dock: dsBottom
+    caption: 'Eval'
+
+    ClickEvent:^ function ($self) use (EvalTool_Editor $editor)
+        {
+            eval ($editor->text);
+        }
+
 PropertyGrid PropertiesList (MainForm):
     dock: dsLeft
     width: 280

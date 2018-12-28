@@ -63,6 +63,8 @@ require "$basePath/components/CheckBox.php";
 require "$basePath/components/WebBrowser.php";
 require "$basePath/components/FastColoredTextBox.php";
 require "$basePath/components/Scintilla.php";
+require "$basePath/components/TabControl.php";
+require "$basePath/components/ListBox.php";
 require "$basePath/components/CommonDialog.php";
 require "$basePath/components/FileDialog.php";
 require "$basePath/components/OpenFileDialog.php";

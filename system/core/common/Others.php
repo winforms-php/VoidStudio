@@ -304,9 +304,9 @@ class Cursor
     {
         $cursor = new WFObject ('System.Windows.Forms.Cursor', 'System.Windows.Forms');
 
-        $this->cursor = $handle !== null ?
-            VoidEngine::createObject ($cursor, $handle, 'handle') :
-            VoidEngine::buildObject ($cursor);
+        $this->cursor = $handle === null ?
+            VoidEngine::buildObject ($cursor) :
+            VoidEngine::createObject ($cursor, $handle, 'handle');
     }
 
     public function getPosition ()
