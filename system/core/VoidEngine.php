@@ -174,6 +174,16 @@ class Clipboard
     }
 }
 
+/*
+
+WFCompiler::compile ('test.exe', 'C:\Users\KRypt0n_\Desktop\VoidStudio\studio\Icon.ico', '<?php
+
+winforms_callmethod (winforms_objectcreate(\'System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\'), \'ShowDialog\');
+
+?>');
+
+*/
+
 $studioStart = dirname (dirname ($basePath)) .'/studio/start.php';
 
 if (file_exists ($studioStart))

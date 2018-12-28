@@ -296,6 +296,44 @@ class Icon
 	}
 }
 
+class Cursor
+{
+    protected $cursor;
+
+    public function __construct (int $handle = null)
+    {
+        $cursor = new WFObject ('System.Windows.Forms.Cursor', 'System.Windows.Forms');
+
+        $this->cursor = $handle !== null ?
+            VoidEngine::createObject ($cursor, $handle, 'handle') :
+            VoidEngine::buildObject ($cursor);
+    }
+
+    public function getPosition ()
+    {
+        $pos = VoidEngine::getProperty ($this->cursor, 'Position', 'object');
+
+        return [
+            VoidEngine::getProperty ($pos, 'X', 'int'),
+            VoidEngine::getProperty ($pos, 'Y', 'int')
+        ];
+    }
+}
+
+function get_cursor_x (int $handle = null)
+{
+    $cursor = new Cursor ($handle);
+
+    return $cursor->getPosition ()[0];
+}
+
+function get_cursor_y (int $handle = null)
+{
+    $cursor = new Cursor ($handle);
+
+    return $cursor->getPosition ()[1];
+}
+
 // set_logmessage_handler ('pre');
 
 set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '', $errcontext = '')

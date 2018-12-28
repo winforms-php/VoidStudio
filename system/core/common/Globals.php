@@ -71,6 +71,9 @@ $SCREEN = new class
             break;
 
             default:
+                if (strtoupper ($name[0]) == $name[0])
+                    return VoidEngine::getProperty ($this->selector, $name, '');
+
                 throw new \Exception ('Wrong $SCREEN property name');
             break;
         }

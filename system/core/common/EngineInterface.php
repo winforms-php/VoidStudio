@@ -199,6 +199,8 @@ class WFClass
 	}
 }
 
+// VoidEngine::loadModule ('WFCompiler.dll');
+
 class WFCompiler
 {
     static function compile (string $file, string $icon, string $code)
