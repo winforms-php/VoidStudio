@@ -143,13 +143,31 @@ class ListViewItems extends Items
 	}
 }
 
-class ListViewColumns extends Items
+class ColumnHeader extends Control
 {
-    public function offsetSet ($index, $value)
+    public function __construct ()
+    {
+        parent::__construct (null, self::class);
+    }
+}
+
+class ListViewColumns extends ListViewItems
+{
+    public function add ($value)
+	{
+		return $this->offsetSet (null, $value instanceof ColumnHeader ? $value->selector : $value);
+	}
+	
+	public function append ($value)
+	{
+		return $this->offsetSet (null, $value instanceof ColumnHeader ? $value->selector : $value);
+	}
+	
+	public function offsetSet ($index, $value)
 	{
         return $index === null ?
-            VoidEngine::callMethod ($this->selector, 'Add', '', (string) $value, 'string') :
-            VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', (string) $value, 'string');
+            VoidEngine::callMethod ($this->selector, 'Add', '', $value, 'object') :
+            VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', $value, 'object');
 	}
 }
 

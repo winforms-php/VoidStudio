@@ -33,7 +33,7 @@ class VLFReader
 
             if ($base[0] == '#')
             {
-                if ($base[1] == '^')
+                if (isset ($base[1]) && $base[1] == '^')
                 {
                     $step = self::getLineHard ($file[$id]);
 
@@ -52,7 +52,7 @@ class VLFReader
             {
                 $data = substr (trim ($file[$id]), 1);
 
-                if ($base[1] == '^')
+                if (isset ($base[1]) && $base[1] == '^')
                 {
                     $data = substr ($data, 1);
                     $step = self::getLineHard ($file[$id]);

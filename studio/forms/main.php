@@ -7,11 +7,12 @@ VoidStudioAPI::addObjects (basenameNoExt (__FILE__), VLFReader::read (__DIR__. '
 $componentsList = VoidStudioAPI::getObjects ('main')['ComponentsList'];
 
 foreach (array_slice (scandir (ENGINE_DIR .'/components'), 2) as $id => $name)
-{
-    $item = new ListViewItem ();
-    $item->caption = basenameNoExt ($name);
+    if (class_exists ($class = 'VoidEngine\\'. ($name = basenameNoExt ($name))) && array_key_exists ('VoidEngine\Control', class_parents ($class)))
+    {
+        $item = new ListViewItem ();
+        $item->caption = $name;
 
-    $componentsList->items->add ($item);
-}
+        $componentsList->items->add ($item);
+    }
 
 ?>

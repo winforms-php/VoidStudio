@@ -72,6 +72,7 @@ require "$basePath/components/SaveFileDialog.php";
 require "$basePath/components/ColorDialog.php";
 require "$basePath/components/FolderBrowserDialog.php";
 require "$basePath/components/ObjectsCount.php";
+require "$basePath/components/MainMenu.php";
 
 class Components
 {

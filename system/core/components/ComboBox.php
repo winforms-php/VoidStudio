@@ -10,7 +10,7 @@ class ComboBox extends Control
     {
         parent::__construct ($parent, self::class);
 
-        $this->items = new ComboBoxItems ($this->getProperty ('Items', 'object'));
+        $this->items = new Items ($this->getProperty ('Items', 'object'));
     }
 	
     public function get_items ()
@@ -55,7 +55,5 @@ class ComboBox extends Control
         unset ($this->items);
 	}
 }
-
-class ComboBoxItems extends Items {}
 
 ?>

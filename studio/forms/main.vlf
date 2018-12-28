@@ -46,9 +46,12 @@ Button EvalTool_Eval (EvalTool_Page):
             eval ($editor->text);
         }
 
-PropertyGrid PropertiesList (MainForm):
+Panel LeftMenu (MainForm):
     dock: dsLeft
     width: 280
+
+PropertyGrid PropertiesList (LeftMenu):
+    dock: dsFill
     CommandsVisibleIfAvailable: true
 
 Form BuildForm (EditableArea):
@@ -73,15 +76,34 @@ Form BuildForm (EditableArea):
             $self->location = [0, 0];
         }
 
+ComboBox Objects (LeftMenu):
+    dock: dsTop
+    dropDownStyle: ddDropDownList
+
+    ->items->add ('['. BuildForm->selector .'] Form')
+
+    SelectedIndexChangedEvent:^ function ($self) use (PropertiesList $propertyGrid)
+        {
+            $item = $self->selectedItem;
+
+            $propertyGrid->selectedObject = substr ($item, 1, strpos ($item, ']') - 1);
+        }
+
+% PropertiesList->selectedObject = BuildForm->selector;
+
+ColumnHeader ComponentsColumn ():
+    Text: text ('Название компонента')
+    width: 276
+
 ListView ComponentsList (MainForm):
     dock: dsRight
     width: 280
     fullRowSelect: true
     view: vwDetails
     
-    ->columns->add (text ('Название компонента'));
+    ->columns->add (ComponentsColumn);
 
-    DoubleClickEvent:^ function ($self) use (BuildForm $form, PropertiesList $props)
+    DoubleClickEvent:^ function ($self) use (BuildForm $form, PropertiesList $props, Objects $objs)
         {
             $component = substr ($self->selectedItems->offsetGet (0), 15, -1);
             $name      = "VoidEngine\\$component";
@@ -98,7 +120,12 @@ ListView ComponentsList (MainForm):
 
             $props->selectedObject = $obj->selector;
             //$count->count ($obj);
+
+            $objs->items->add ('['. $obj->selector .'] '. $component);
         }
+
+#^ MainMenu menu (MainForm):
+    ->menuItems->add (VoidEngine::createObject (new WFObject ('MenuItem'), 'TESTO', 'string'))
 
 Form MainForm ():
     LoadEvent:^ function ($self) use (BuildForm $form)
