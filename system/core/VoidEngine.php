@@ -20,7 +20,10 @@ $GLOBALS['__debug'] = [
     'error_count' => 0
 ];
 
-$GLOBALS['__message_handler'] = function ($error) {throw new \Exception ($error);}; // \VoidEngine\pre
+$GLOBALS['__message_handler'] = function ($error)
+{
+    throw new \Exception ($error);
+};
 
 $files = scandir ("$basePath/debug");
 
@@ -96,35 +99,6 @@ class Components
         unset (self::$components[$selector]);
     }
 }
-
-/*class EdgedArray
-{
-	private $array = [];
-	private $arrayCount;
-	
-	public function __construct (int $count = 3)
-	{
-		$this->arrayCount = $count;
-	}
-	
-	public function set ($value)
-	{
-		if (sizeof ($this->array) >= $this->arrayCount)
-            array_shift ($this->array);
-            
-		$this->array[] = $value;
-	}
-	
-	public function get (int $index = 0)
-	{
-		return $this->array[$index];
-	}
-	
-	public function splay ()
-	{
-		return $this->array;
-	}
-}*/
 
 class Clipboard
 {

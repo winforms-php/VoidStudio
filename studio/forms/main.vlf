@@ -54,7 +54,7 @@ PropertyGrid PropertiesList (LeftMenu):
     dock: dsFill
     CommandsVisibleIfAvailable: true
 
-Form BuildForm (EditableArea):
+PseudoForm BuildForm (EditableArea):
     size: [300, 260]
     caption: 'Form Caption'
 
