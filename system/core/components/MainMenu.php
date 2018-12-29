@@ -2,18 +2,35 @@
 
 namespace VoidEngine;
 
-class MainMenu extends Control
+class MainMenu extends Component
 {
     protected $items;
 
     public function __construct (Control $parent = null)
     {
-        parent::__construct ($parent, self::class);
+        parent::__construct (self::class);
 
         $this->items = new MenuItems ($this->getProperty ('MenuItems', 'object'));
     }
 
-    public function get_menuItems ()
+    public function get_items ()
+    {
+        return $this->items;
+    }
+}
+
+class ContextMenu extends Component
+{
+    protected $items;
+
+    public function __construct (Control $parent = null)
+    {
+        parent::__construct (self::class);
+
+        $this->items = new MenuItems ($this->getProperty ('MenuItems', 'object'));
+    }
+
+    public function get_items ()
     {
         return $this->items;
     }
@@ -21,9 +38,19 @@ class MainMenu extends Control
 
 class MenuItem extends Control
 {
-    public function __construct ()
+    protected $items;
+
+    public function __construct (string $text = '')
     {
         parent::__construct (null, self::class);
+
+        $this->text  = $text;
+        $this->items = new MenuItems ($this->getProperty ('MenuItems', 'object'));
+    }
+
+    public function get_index ()
+    {
+        return $this->getProperty ('Index', 'int');
     }
 }
 

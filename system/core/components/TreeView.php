@@ -43,10 +43,11 @@ class TreeNode extends Control
 {
     protected $nodes;
 
-    public function __construct ()
+    public function __construct (string $text = '')
     {
         parent::__construct (null, self::class);
 
+        $this->text  = $text;
         $this->nodes = new TreeViewNodes ($this->getProperty ('Nodes', 'object'));
     }
 

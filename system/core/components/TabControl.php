@@ -21,9 +21,11 @@ class TabControl extends Control
 
 class TabPage extends Control
 {
-    public function __construct ()
+    public function __construct (string $text = '')
     {
         parent::__construct (null, self::class);
+
+        $this->text = $text;
     }
 }
 
@@ -51,12 +53,12 @@ class TabPages extends Items
 	
 	public function add ($value)
 	{
-        $this->offsetSet (null, $value instanceof TabPage ? $value->selector : $value);
+        return $this->offsetSet (null, $value instanceof TabPage ? $value->selector : $value);
 	}
 	
 	public function append ($value)
 	{
-        $this->offsetSet (null, $value instanceof TabPage ? $value->selector : $value);
+        return $this->offsetSet (null, $value instanceof TabPage ? $value->selector : $value);
 	}
 	
 	public function offsetSet ($index, $value)

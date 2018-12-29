@@ -25,6 +25,16 @@ class Form extends Control
 		$this->setProperty ('Owner', $form->selector, 'object');
 	}
 
+	public function get_menu ()
+	{
+		return $this->getProperty ('Menu', 'object');
+	}
+
+	public function set_menu (MainMenu $menu)
+	{
+		$this->setProperty ('Menu', $menu->selector, 'object');
+	}
+
 	public function get_icon ()
 	{
 		return new FormIcon ($this->componentSelector);

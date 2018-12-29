@@ -14,22 +14,19 @@ Panel EditableArea (MainForm):
     dock: dsFill
 
 TabPage Log_Page ():
-    Text: 'Log'
+    text: text ('Лог')
 
 TabPage EvalTool_Page ():
-    Text: 'Eval'
+    text: text ('Выполнение кода')
 
 TabControl BottomPanel (MainForm):
     dock: dsBottom
     height: 160
 
-    ->tabPages->add (Log_Page)
-    ->tabPages->add (EvalTool_Page)
+    ->tabPages->addRange ([Log_Page, EvalTool_Page])
 
 ListBox Log_List (Log_Page):
     dock: dsFill
-
-    ->items->add ('VoidStudio is loaded!')
 
 FastColoredTextBox EvalTool_Editor (EvalTool_Page):
     dock: dsFill
@@ -92,7 +89,7 @@ ComboBox Objects (LeftMenu):
 % PropertiesList->selectedObject = BuildForm->selector;
 
 ColumnHeader ComponentsColumn ():
-    Text: text ('Название компонента')
+    text: text ('Название компонента')
     width: 276
 
 ListView ComponentsList (MainForm):
@@ -124,11 +121,31 @@ ListView ComponentsList (MainForm):
             $objs->items->add ('['. $obj->selector .'] '. $component);
         }
 
-#^ MainMenu menu (MainForm):
-    ->menuItems->add (VoidEngine::createObject (new WFObject ('MenuItem'), 'TESTO', 'string'))
+MenuItem menu__project_build ():
+    text: text ('Собрать')
+
+    ClickEvent:^ function ($self)
+        {
+            $msg = new MessageBox ();
+            $msg->show (text ('Рано ещё!'));
+        }
+
+MenuItem menu__project ():
+    text: text ('Проект')
+
+    ->items->add (menu__project_build)
+
+MainMenu menu ():
+    ->items->add (menu__project)
 
 Form MainForm ():
-    LoadEvent:^ function ($self) use (BuildForm $form)
+    menu: menu
+
+    ShownEvent:^ function ($self) use (BuildForm $form, Log_List $log)
         {
             $form->show ();
+
+            $time = round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 4);
+
+            $log->items->add (text ('VoidStudio запущен за '. ($time > 0 ? $time : '[мало]') .' секунд'));
         }

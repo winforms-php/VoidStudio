@@ -349,7 +349,7 @@ set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '',
 
     $log = 'New error catched as "error_'. $GLOBALS['__debug']['error_count'] .'.log"';
 
-    VoidStudioAPI::getObjects ('main')['Log_List']->items->add ('[!]'. $log);
+    VoidStudioAPI::getObjects ('main')['Log_List']->items->add ('[!] '. $log);
     pre ($log);
 });
 
@@ -363,7 +363,7 @@ set_exception_handler (function ($exception)
 
     $log = 'New exception catched as "exception_'. $GLOBALS['__debug']['error_count'] .'.log"';
 
-    VoidStudioAPI::getObjects ('main')['Log_List']->items->add ('[!]'. $log);
+    VoidStudioAPI::getObjects ('main')['Log_List']->items->add ('[!] '. $log);
     pre ($log);
 });
 

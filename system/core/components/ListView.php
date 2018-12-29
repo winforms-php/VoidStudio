@@ -85,10 +85,11 @@ class ListViewItem extends Control
 {
     protected $subItems;
 
-    public function __construct ()
+    public function __construct (string $text = '')
     {
         parent::__construct (null, self::class);
 
+        $this->text     = $text;
         $this->subItems = new Items ($this->getProperty ('SubItems', 'object'));
     }
 
@@ -145,9 +146,11 @@ class ListViewItems extends Items
 
 class ColumnHeader extends Control
 {
-    public function __construct ()
+    public function __construct (string $text = '')
     {
         parent::__construct (null, self::class);
+
+        $this->text = $text;
     }
 }
 
