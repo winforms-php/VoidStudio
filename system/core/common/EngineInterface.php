@@ -73,7 +73,18 @@ class VoidEngine
 
     static function setObjectEvent (int $selector, string $eventName, string $code = '')
     {
-        winforms_setevent ($selector, $eventName, $code);
+        if (self::eventExists ($selector, $eventName))
+            throw new \Exception ('Event "'. $eventName .'" already exists for "'. $selector .'"-component');
+
+        else try
+        {
+            winforms_setevent ($selector, $eventName, $code);
+        }
+
+        catch (\Exception $e)
+        {
+            throw $e;
+        }
     }
 
     static function eventExists (int $selector, string $eventName)
@@ -84,6 +95,11 @@ class VoidEngine
     static function removeEvent (int $selector, string $eventName)
     {
         winforms_delevent ($selector, $eventName);
+    }
+
+    static function compile (string $savePath, string $iconPath, string $phpCode)
+    {
+        winforms_compile ($savePath, $iconPath, $phpCode);
     }
 }
 
@@ -197,18 +213,6 @@ class WFClass
 
         else throw new \Exception ("Class isn't initialized");
 	}
-}
-
-// VoidEngine::loadModule ('WFCompiler.dll');
-
-class WFCompiler
-{
-    static function compile (string $file, string $icon, string $code)
-    {
-        $compiler = new WFClass ('WFCompiler.Compiler', 'WFCompiler');
-
-        $compiler->Compile ($file, $icon, $code);
-    }
 }
 
 ?>

@@ -12,9 +12,6 @@ const ENGINE_DIR = __DIR__;
 $basePath = __DIR__;
 chdir ($basePath);
 
-require "$basePath/common/WFLinks.php";
-require "$basePath/common/Others.php";
-
 $GLOBALS['__debug'] = [
     'start_time'  => microtime (true),
     'error_count' => 0
@@ -32,6 +29,8 @@ if (is_array ($files))
         if (is_file ("$basePath/debug/$file"))
             unlink ("$basePath/debug/$file");
 
+require "$basePath/common/WFLinks.php";
+require "$basePath/common/Others.php";
 require "$basePath/common/EngineInterface.php";
 require "$basePath/common/Constants.php";
 require "$basePath/common/Globals.php";

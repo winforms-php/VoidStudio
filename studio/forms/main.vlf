@@ -13,7 +13,7 @@ Form MainForm ():
 Panel EditableArea (MainForm):
     dock: dsFill
 
-TabPage Log_Page ():
+TabPage Log__Page ():
     text: text ('Лог')
 
 TabPage EvalTool_Page ():
@@ -23,9 +23,9 @@ TabControl BottomPanel (MainForm):
     dock: dsBottom
     height: 160
 
-    ->tabPages->addRange ([Log_Page, EvalTool_Page])
+    ->tabPages->addRange ([Log__Page, EvalTool_Page])
 
-ListBox Log_List (Log_Page):
+ListBox Log__List (Log__Page):
     dock: dsFill
 
 FastColoredTextBox EvalTool_Editor (EvalTool_Page):
@@ -36,7 +36,7 @@ FastColoredTextBox EvalTool_Editor (EvalTool_Page):
 
 Button EvalTool_Eval (EvalTool_Page):
     dock: dsBottom
-    caption: 'Eval'
+    caption: text ('Выполнить')
 
     ClickEvent:^ function ($self) use (EvalTool_Editor $editor)
         {
@@ -60,19 +60,6 @@ PseudoForm BuildForm (EditableArea):
             $propertyGrid->selectedObject = $self->selector;
         }
 
-    FormClosingEvent:^ function ($self, $args)
-        {
-            $args = new FormClosingEventArgs ($args);
-
-            if ($args->closeReason == fcrUserClosing)
-                $args->Cancel = true;
-        }
-
-    #^ LocationChangedEvent:^ function ($self) /* Временно неработает, причина - неизвестна */
-        {
-            $self->location = [0, 0];
-        }
-
 ComboBox Objects (LeftMenu):
     dock: dsTop
     dropDownStyle: ddDropDownList
@@ -90,15 +77,15 @@ ComboBox Objects (LeftMenu):
 
 ColumnHeader ComponentsColumn ():
     text: text ('Название компонента')
-    width: 276
+    width: 216
 
 ListView ComponentsList (MainForm):
     dock: dsRight
-    width: 280
+    width: 220
     fullRowSelect: true
     view: vwDetails
     
-    ->columns->add (ComponentsColumn);
+    ->columns->add (ComponentsColumn)
 
     DoubleClickEvent:^ function ($self) use (BuildForm $form, PropertiesList $props, Objects $objs)
         {
@@ -121,7 +108,7 @@ ListView ComponentsList (MainForm):
             $objs->items->add ('['. $obj->selector .'] '. $component);
         }
 
-MenuItem menu__project_build ():
+MenuItem Menu__project_build ():
     text: text ('Собрать')
 
     ClickEvent:^ function ($self)
@@ -130,18 +117,18 @@ MenuItem menu__project_build ():
             $msg->show (text ('Рано ещё!'));
         }
 
-MenuItem menu__project ():
+MenuItem Menu__project ():
     text: text ('Проект')
 
-    ->items->add (menu__project_build)
+    ->items->add (Menu__project_build)
 
-MainMenu menu ():
-    ->items->add (menu__project)
+MainMenu Menu ():
+    ->items->add (Menu__project)
 
 Form MainForm ():
-    menu: menu
+    menu: Menu
 
-    ShownEvent:^ function ($self) use (BuildForm $form, Log_List $log)
+    ShownEvent:^ function ($self) use (BuildForm $form, Log__List $log)
         {
             $form->show ();
 

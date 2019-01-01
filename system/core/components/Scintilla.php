@@ -14,6 +14,21 @@ class Scintilla extends Control
 		if ($parent instanceof Control)
 			$this->set_parent ($parent);
     }
+
+    public function get_lexer ()
+    {
+        return $this->getProperty ('Lexer', 'int');
+    }
+
+    public function set_lexer (int $lexer)
+    {
+        $this->setProperty ('Lexer', $lexer, 'int');
+    }
+
+    public function get_styles ()
+    {
+        return new Items ($this->getProperty ('Styles', 'object'));
+    }
 }
 
 ?>
