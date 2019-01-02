@@ -10,9 +10,6 @@ Form MainForm ():
 
     ->icon->loadFromFile (WORKSPACE. '/Icon.ico')
 
-Panel EditableArea (MainForm):
-    dock: dsFill
-
 TabPage Log__Page ():
     text: text ('Лог')
 
@@ -27,6 +24,8 @@ TabControl BottomPanel (MainForm):
 
 ListBox Log__List (Log__Page):
     dock: dsFill
+
+    font: ['Microsoft Sans Serif', 9]
 
 FastColoredTextBox EvalTool_Editor (EvalTool_Page):
     dock: dsFill
@@ -43,28 +42,39 @@ Button EvalTool_Eval (EvalTool_Page):
             eval ($editor->text);
         }
 
-Panel LeftMenu (MainForm):
+Panel LeftMenu__Panel (MainForm):
     dock: dsLeft
     width: 280
 
-PropertyGrid PropertiesList (LeftMenu):
+TabPage LeftMenu__Properties ():
+    text: text ('Свойства')
+
+TabPage LeftMenu__Events ():
+    text: text ('События')
+
+TabControl LeftMenu (LeftMenu__Panel):
     dock: dsFill
-    CommandsVisibleIfAvailable: true
 
-PseudoForm BuildForm (EditableArea):
-    size: [300, 260]
-    caption: 'Form Caption'
+    ->tabPages->addRange ([LeftMenu__Properties, LeftMenu__Events])
 
-    ClickEvent:^ function ($self) use (PropertiesList $propertyGrid)
+PropertyGrid PropertiesList (LeftMenu__Properties):
+    dock: dsFill
+
+VoidDesigner Designer (MainForm, PropertiesList):
+
+ListBox LeftMenu__EventsList (LeftMenu__Events):
+    dock: dsFill
+
+    font: ['Microsoft Sans Serif', 9]
+
+    DoubleClickEvent:^ function ($self) use (PropertiesList $propertyGrid)
         {
-            $propertyGrid->selectedObject = $self->selector;
+            VoidStudioAPI::openEventEditor (Components::getComponent ($propertyGrid->selectedObject), $self->selected);
         }
 
-ComboBox Objects (LeftMenu):
+ComboBox Objects (LeftMenu__Panel):
     dock: dsTop
     dropDownStyle: ddDropDownList
-
-    ->items->add ('['. BuildForm->selector .'] Form')
 
     SelectedIndexChangedEvent:^ function ($self) use (PropertiesList $propertyGrid)
         {
@@ -73,7 +83,8 @@ ComboBox Objects (LeftMenu):
             $propertyGrid->selectedObject = substr ($item, 1, strpos ($item, ']') - 1);
         }
 
-% PropertiesList->selectedObject = BuildForm->selector;
+%^  PropertiesList->selectedObject = Designer->form;
+    Objects->items->add ('['. Designer->form .'] Form');
 
 ColumnHeader ComponentsColumn ():
     text: text ('Название компонента')
@@ -87,25 +98,22 @@ ListView ComponentsList (MainForm):
     
     ->columns->add (ComponentsColumn)
 
-    DoubleClickEvent:^ function ($self) use (BuildForm $form, PropertiesList $props, Objects $objs)
+    DoubleClickEvent:^ function ($self) use (PropertiesList $props, LeftMenu__EventsList $list, Objects $objs, Designer $designer)
         {
             $component = substr ($self->selectedItems->offsetGet (0), 15, -1);
             $name      = "VoidEngine\\$component";
+            $cname     = $component. abs (crc32 (microtime (true) . time ()));
 
-            $obj = new $name ($form);
-            //$obj->enabled = false;
+            $obj = new $name ();
+            VoidEngine::setProperty ($obj->selector, 'Parent', $designer->form, 'object');
+
             $obj->caption = $component;
-
-            $obj->ClickEvent = function ($self) use ($props/*, $count*/)
-            {
-                $props->selectedObject = $self->selector;
-                //$count->count ($self);
-            };
-
             $props->selectedObject = $obj->selector;
-            //$count->count ($obj);
+
+            VoidStudioAPI::loadObjectEvents ($obj, $list);
 
             $objs->items->add ('['. $obj->selector .'] '. $component);
+            $designer->addComponent ($obj, $cname);
         }
 
 MenuItem Menu__project_build ():
@@ -128,9 +136,12 @@ MainMenu Menu ():
 Form MainForm ():
     menu: Menu
 
-    ShownEvent:^ function ($self) use (BuildForm $form, Log__List $log)
+    ShownEvent:^ function ($self) use (Log__List $log, Designer $designer)
         {
-            $form->show ();
+            VoidEngine::setProperty ($designer->form, 'Left', 280, 'int');
+            VoidEngine::setProperty ($designer->form, 'Top', 0, 'int');
+
+            // VoidEngine::setObjectEvent ($designer->form, 'Click', '');
 
             $time = round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 4);
 

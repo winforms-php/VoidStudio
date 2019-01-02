@@ -147,16 +147,6 @@ function setTimeout (int $interval, $function)
 	return $timer;
 }
 
-function closure_add (string $args, string $code)
-{
-	return eval ("return function ($args) {$code};");
-}
-
-function function_add (string $functionName, string $args, string $code)
-{
-	eval ("function $functionName ($args) {$code}");
-}
-
 function includeComponent (string $componentName)
 {
     if (!class_exists ($componentName) && file_exists (dirname (__DIR__) ."/components/$componentName.php"))

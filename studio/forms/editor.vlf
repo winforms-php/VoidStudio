@@ -1,0 +1,35 @@
+Form MainForm ():
+    size: [$SCREEN->width / 1.4, $SCREEN->height / 1.4]
+    startPosition: fspCenterScreen
+    backgroundColor: clWhite
+    doubleBoffer: true
+    formBorderStyle: bsFixedSingle
+
+    caption: text ('Редактор событий')
+
+    ->icon->loadFromFile (WORKSPACE. '/Icon.ico')
+
+    FormClosingEvent:^ function ($self, $arg)
+        {
+            $arg = new FormClosingEventArgs ($arg);
+            $arg->Cancel = true;
+
+            $self->hide ();
+        }
+
+FastColoredTextBox Editor (MainForm):
+    dock: dsFill
+
+    language: langPHP
+    wordWrap: true
+
+Button SaveButton (MainForm):
+    dock: dsBottom
+    caption: text ('Сохранить')
+
+    ClickEvent:^ function ($self) use (Editor $editor, MainForm $form)
+        {
+            VoidEngine::setObjectEvent ($editor->helpStorage[0], $editor->helpStorage[1], $editor->text);
+
+            $form->hide ();
+        }

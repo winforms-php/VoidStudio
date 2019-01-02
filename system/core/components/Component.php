@@ -6,6 +6,7 @@ abstract class Component
 {
     protected $componentSelector;
     protected $componentClass;
+    public $helpStorage = '';
 	
 	public function __construct (string $className)
 	{

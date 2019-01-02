@@ -2,7 +2,8 @@
 
 namespace VoidEngine;
 
-VoidStudioAPI::addObjects (basenameNoExt (__FILE__), VLFReader::read (__DIR__. '/main.vlf'));
+$name = basenameNoExt (__FILE__);
+VoidStudioAPI::addObjects ($name, VLFReader::read (__DIR__. '/'. $name .'.vlf'));
 
 $componentsList = VoidStudioAPI::getObjects ('main')['ComponentsList'];
 

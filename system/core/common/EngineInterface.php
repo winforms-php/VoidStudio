@@ -79,6 +79,8 @@ class VoidEngine
         else try
         {
             winforms_setevent ($selector, $eventName, $code);
+
+            Components::setComponentEvent ($selector, $eventName, $code);
         }
 
         catch (\Exception $e)
@@ -95,6 +97,8 @@ class VoidEngine
     static function removeEvent (int $selector, string $eventName)
     {
         winforms_delevent ($selector, $eventName);
+
+        Components::removeComponentEvent ($selector, $eventName);
     }
 
     static function compile (string $savePath, string $iconPath, string $phpCode)

@@ -73,29 +73,45 @@ require "$basePath/components/OpenFileDialog.php";
 require "$basePath/components/SaveFileDialog.php";
 require "$basePath/components/ColorDialog.php";
 require "$basePath/components/FolderBrowserDialog.php";
-require "$basePath/components/ObjectsCount.php";
+require "$basePath/components/Designer.php";
 require "$basePath/components/MainMenu.php";
 
 class Components
 {
     static $components = [];
+    static $events = [];
 
-    static function addComponent (string $selector, object $object)
+    static function addComponent (int $selector, object $object)
     {
         self::$components[$selector] = $object;
+        self::$events[$selector] = [];
     }
 
-    static function getComponent (string $selector)
+    static function getComponent (int $selector)
     {
-        return (
-            isset (self::$components[$selector]) ?
-            self::$components[$selector] : false
-        );
+        return isset (self::$components[$selector]) ?
+            self::$components[$selector] : false;
     }
 
-    static function removeComponent (string $selector)
+    static function setComponentEvent (int $selector, string $eventName, string $code)
     {
-        unset (self::$components[$selector]);
+        self::$events[$selector][$eventName] = $code;
+    }
+
+    static function getComponentEvent (int $selector, string $eventName)
+    {
+        return isset (self::$events[$selector][$eventName]) ?
+            self::$events[$selector][$eventName] : false;
+    }
+
+    static function removeComponentEvent (int $selector, string $eventName)
+    {
+        unset (self::$events[$selector][$eventName]);
+    }
+
+    static function removeComponent (int $selector)
+    {
+        unset (self::$components[$selector], self::$events[$selector]);
     }
 }
 
