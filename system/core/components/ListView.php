@@ -79,6 +79,15 @@ class ListView extends Control
     {
         $this->setProperty ('CheckBoxes', $checkBoxes, 'bool');
     }
+
+    public function dispose ()
+	{
+        VoidEngine::removeObject ($this->getProperty ('Items', 'object'));
+        VoidEngine::removeObject ($this->getProperty ('Columns', 'object'));
+        unset ($this->items, $this->columns);
+        
+        parent::dispose ();
+	}
 }
 
 class ListViewItem extends Control

@@ -74,9 +74,9 @@ class VoidEngine
     static function setObjectEvent (int $selector, string $eventName, string $code = '')
     {
         if (self::eventExists ($selector, $eventName))
-            throw new \Exception ('Event "'. $eventName .'" already exists for "'. $selector .'"-component');
+            self::removeEvent ($selector, $eventName); //throw new \Exception ('Event "'. $eventName .'" already exists for "'. $selector .'"-component');
 
-        else try
+        try
         {
             winforms_setevent ($selector, $eventName, $code);
 

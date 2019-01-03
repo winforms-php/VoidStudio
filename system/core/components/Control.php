@@ -386,4 +386,6 @@ abstract class Control extends Component
 	}
 }
 
+abstract class NoVisual extends Control {}
+
 ?>

@@ -8,7 +8,7 @@ Form MainForm ():
 
     caption: 'VoidStudio'
 
-    ->icon->loadFromFile (WORKSPACE. '/Icon.ico')
+    ->icon->loadFromFile (STUDIO_DIR. '/Icon.ico')
 
 TabPage Log__Page ():
     text: text ('Лог')
@@ -69,7 +69,8 @@ ListBox LeftMenu__EventsList (LeftMenu__Events):
 
     DoubleClickEvent:^ function ($self) use (PropertiesList $propertyGrid)
         {
-            VoidStudioAPI::openEventEditor (Components::getComponent ($propertyGrid->selectedObject), $self->selected);
+            if ($event = $self->selected)
+                VoidStudioAPI::openEventEditor (Components::getComponent ($propertyGrid->selectedObject), $event);
         }
 
 ComboBox Objects (LeftMenu__Panel):
@@ -81,6 +82,13 @@ ComboBox Objects (LeftMenu__Panel):
             $item = $self->selectedItem;
 
             $propertyGrid->selectedObject = substr ($item, 1, strpos ($item, ']') - 1);
+        }
+
+    SelectionChangeCommittedEvent:^ function ($self) use (Designer $designer)
+        {
+            $item = $self->selectedItem;
+
+            VoidEngine::callMethod ($designer->selector, 'SetSelectedComponents', substr ($item, 1, strpos ($item, ']') - 1), 'object');
         }
 
 %^  PropertiesList->selectedObject = Designer->form;
@@ -116,6 +124,23 @@ ListView ComponentsList (MainForm):
             $designer->addComponent ($obj, $cname);
         }
 
+MenuItem Menu__studio_restart ():
+    text: text ('Перезапустить')
+
+    ClickEvent:^ function ($self)
+        {
+            $APPLICATION->restart ();
+        }
+
+MenuItem Menu__studio_about ():
+    text: text ('О программе')
+
+    ClickEvent:^ function ($self)
+        {
+            $msg = new MessageBox ();
+            $msg->show (text ("Авторы сие произведения:\n\nАндрей Курляндов (vk.com/postmessage) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms"), text ('О программе'));
+        }
+
 MenuItem Menu__project_build ():
     text: text ('Собрать')
 
@@ -125,13 +150,18 @@ MenuItem Menu__project_build ():
             $msg->show (text ('Рано ещё!'));
         }
 
+MenuItem Menu__studio ():
+    text: text ('Среда')
+
+    ->items->addRange ([Menu__studio_restart, Menu__studio_about])
+
 MenuItem Menu__project ():
     text: text ('Проект')
 
     ->items->add (Menu__project_build)
 
 MainMenu Menu ():
-    ->items->add (Menu__project)
+    ->items->addRange ([Menu__studio, Menu__project])
 
 Form MainForm ():
     menu: Menu
@@ -141,7 +171,7 @@ Form MainForm ():
             VoidEngine::setProperty ($designer->form, 'Left', 280, 'int');
             VoidEngine::setProperty ($designer->form, 'Top', 0, 'int');
 
-            // VoidEngine::setObjectEvent ($designer->form, 'Click', '');
+            $designer->updateHost ();
 
             $time = round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 4);
 

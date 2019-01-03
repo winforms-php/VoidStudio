@@ -25,16 +25,17 @@ class ComboBox extends Control
 
     public function set_dropDownStyle (int $style)
     {
-        return $this->setProperty ('DropDownStyle', $style, 'int');
+        $this->setProperty ('DropDownStyle', $style, 'int');
     }
 	
     public function get_selectedItem ()
     {
-        $index = $this->get_selectedItemIndex ();
+        return $this->getProperty ('SelectedItem', 'string');
+    }
 
-        return ($index >= 0 && $index < $this->items->count) ?
-            $this->items->offsetGet ($this->get_selectedItemIndex ()) :
-            false;
+    public function set_selectedItem (string $item)
+    {
+        $this->setProperty ('SelectedItem', $item, 'string');
     }
 	
     public function get_selectedItemIndex ()
@@ -49,10 +50,10 @@ class ComboBox extends Control
 	
 	public function dispose ()
 	{
-        parent::dispose ();
-        
         VoidEngine::removeObject ($this->getProperty ('Items', 'object'));
         unset ($this->items);
+        
+        parent::dispose ();
 	}
 }
 

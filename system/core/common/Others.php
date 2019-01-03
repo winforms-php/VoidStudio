@@ -324,8 +324,6 @@ function get_cursor_y (int $handle = null)
     return $cursor->getPosition ()[1];
 }
 
-// set_logmessage_handler ('pre');
-
 set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '', $errcontext = '')
 {
     file_put_contents (dirname (__DIR__) .'/debug/error_'. (++$GLOBALS['__debug']['error_count']) .'.log', implode ("\n", [

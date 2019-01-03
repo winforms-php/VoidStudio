@@ -37,6 +37,14 @@ class TreeView extends Control
         
         return VoidEngine::getProperty ($node, 'FullPath', 'string');
     }
+
+    public function dispose ()
+	{
+        VoidEngine::removeObject ($this->getProperty ('Nodes', 'object'));
+        unset ($this->nodes);
+        
+        parent::dispose ();
+	}
 }
 
 class TreeNode extends Control

@@ -4,7 +4,7 @@ namespace VoidEngine;
 
 VoidEngine::loadModule ('FastColoredTextBox.dll');
 
-class FastColoredTextBox extends Control
+class FastColoredTextBox extends NoVisual
 {
 	public function __construct (Control $parent = null)
 	{

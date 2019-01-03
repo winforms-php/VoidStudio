@@ -127,10 +127,10 @@ $constants = array
 	
 	# Информация о программе
 	
-	/*'EXE_NAME'     => $APPLICATION->executablePath,
-	'DOC_ROOT'     => iconv ('UTF-8', 'CP1251', dirname ($APPLICATION->executablePath)),
+	'EXE_NAME'     => $APPLICATION->executablePath,
+	'DOC_ROOT'     => dirname ($APPLICATION->executablePath),
 	'IS_ADMIN'     => is_writable (getenv ('SystemRoot')),
-	'START_PARAMS' => $params,*/
+	'START_PARAMS' => $params,
 	
 	# Константы дока
 	
@@ -165,6 +165,12 @@ $constants = array
 	'runNo'     => 0,
 	'runYes'    => 1,
 	'runThread' => 2,
+
+	# Константы стиля ProgressBar'а
+
+	'pbBlocks'	   => 0,
+	'pbContinuous' => 1,
+	'pbMarquee'    => 2,
 	
 	# Цветовые константы
 	

@@ -14,7 +14,7 @@ $APPLICATION = new class
     public function __construct ()
     {
         $this->selector       = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Application'));
-        $this->ExecutablePath = winforms_getprop ($this->selector, 'ExecutablePath', 'string');
+        $this->executablePath = VoidEngine::getProperty ($this->selector, 'ExecutablePath', 'string');
     }
     
     public function run (Form $form = null)

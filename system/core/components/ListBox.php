@@ -22,7 +22,8 @@ class ListBox extends Control
     {
         $index = $this->getProperty ('SelectedIndex', 'int');
 
-        return $this->items[$index];
+        return ($index >= 0 && $index < $this->items->count) ? 
+            $this->items[$index] : false;
     }
 
     public function get_items ()

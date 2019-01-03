@@ -9,72 +9,67 @@ namespace VoidEngine;
 
 const ENGINE_DIR = __DIR__;
 
-$basePath = __DIR__;
-chdir ($basePath);
+chdir (ENGINE_DIR);
 
 $GLOBALS['__debug'] = [
     'start_time'  => microtime (true),
     'error_count' => 0
 ];
 
-$GLOBALS['__message_handler'] = function ($error)
-{
-    throw new \Exception ($error);
-};
-
-$files = scandir ("$basePath/debug");
+$files = scandir ('debug');
 
 if (is_array ($files))
     foreach ($files as $id => $file)
-        if (is_file ("$basePath/debug/$file"))
-            unlink ("$basePath/debug/$file");
+        if (is_file ('debug/'. $file))
+            unlink ('debug/'. $file);
 
-require "$basePath/common/WFLinks.php";
-require "$basePath/common/Others.php";
-require "$basePath/common/EngineInterface.php";
-require "$basePath/common/Constants.php";
-require "$basePath/common/Globals.php";
-require "$basePath/common/LanguageFiles.php";
+require 'common/WFLinks.php';
+require 'common/Others.php';
+require 'common/EngineInterface.php';
+require 'common/Globals.php';
+require 'common/Constants.php';
+require 'common/LanguageFiles.php';
 
-require "$basePath/events/Events.php";
-require "$basePath/events/MouseEventArgs.php";
-require "$basePath/events/CancelEventArgs.php";
-require "$basePath/events/FormClosedEventArgs.php";
-require "$basePath/events/FormClosingEventArgs.php";
-require "$basePath/events/KeyEventArgs.php";
-require "$basePath/events/KeyPressEventArgs.php";
+require 'events/Events.php';
+require 'events/MouseEventArgs.php';
+require 'events/CancelEventArgs.php';
+require 'events/FormClosedEventArgs.php';
+require 'events/FormClosingEventArgs.php';
+require 'events/KeyEventArgs.php';
+require 'events/KeyPressEventArgs.php';
 
-require "$basePath/components/Component.php";
-require "$basePath/components/Control.php";
-require "$basePath/components/MessageBox.php";
-require "$basePath/components/Process.php";
-require "$basePath/components/Timer.php";
-require "$basePath/components/ScrollBar.php";
-require "$basePath/components/Panel.php";
-require "$basePath/components/PictureBox.php";
-require "$basePath/components/Form.php";
-require "$basePath/components/Button.php";
-require "$basePath/components/Label.php";
-require "$basePath/components/TextBox.php";
-require "$basePath/components/ListView.php";
-require "$basePath/components/TreeView.php";
-require "$basePath/components/ComboBox.php";
-require "$basePath/components/PropertyGrid.php";
-require "$basePath/components/VideoBox.php";
-require "$basePath/components/CheckBox.php";
-require "$basePath/components/WebBrowser.php";
-require "$basePath/components/FastColoredTextBox.php";
-require "$basePath/components/Scintilla.php";
-require "$basePath/components/TabControl.php";
-require "$basePath/components/ListBox.php";
-require "$basePath/components/CommonDialog.php";
-require "$basePath/components/FileDialog.php";
-require "$basePath/components/OpenFileDialog.php";
-require "$basePath/components/SaveFileDialog.php";
-require "$basePath/components/ColorDialog.php";
-require "$basePath/components/FolderBrowserDialog.php";
-require "$basePath/components/Designer.php";
-require "$basePath/components/MainMenu.php";
+require 'components/Component.php';
+require 'components/Control.php';
+require 'components/MessageBox.php';
+require 'components/Process.php';
+require 'components/Timer.php';
+require 'components/ScrollBar.php';
+require 'components/Panel.php';
+require 'components/PictureBox.php';
+require 'components/Form.php';
+require 'components/Button.php';
+require 'components/Label.php';
+require 'components/TextBox.php';
+require 'components/ProgressBar.php';
+require 'components/ListView.php';
+require 'components/TreeView.php';
+require 'components/ComboBox.php';
+require 'components/PropertyGrid.php';
+require 'components/VideoBox.php';
+require 'components/CheckBox.php';
+require 'components/WebBrowser.php';
+require 'components/FastColoredTextBox.php';
+require 'components/Scintilla.php';
+require 'components/TabControl.php';
+require 'components/ListBox.php';
+require 'components/CommonDialog.php';
+require 'components/FileDialog.php';
+require 'components/OpenFileDialog.php';
+require 'components/SaveFileDialog.php';
+require 'components/ColorDialog.php';
+require 'components/FolderBrowserDialog.php';
+require 'components/Designer.php';
+require 'components/MainMenu.php';
 
 class Components
 {
@@ -176,7 +171,7 @@ winforms_callmethod (winforms_objectcreate(\'System.Windows.Forms.Form, System.W
 
 */
 
-$studioStart = dirname (dirname ($basePath)) .'/studio/start.php';
+$studioStart = dirname (dirname (ENGINE_DIR)) .'/studio/start.php';
 
 if (file_exists ($studioStart))
     require $studioStart;

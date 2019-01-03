@@ -4,7 +4,7 @@ namespace VoidEngine;
 
 VoidEngine::loadModule ('ScintillaNET.dll');
 
-class Scintilla extends Control
+class Scintilla extends NoVisual
 {
     public function __construct (Control $parent = null)
 	{

@@ -7,7 +7,7 @@ Form MainForm ():
 
     caption: text ('Редактор событий')
 
-    ->icon->loadFromFile (WORKSPACE. '/Icon.ico')
+    ->icon->loadFromFile (STUDIO_DIR. '/Icon.ico')
 
     FormClosingEvent:^ function ($self, $arg)
         {
