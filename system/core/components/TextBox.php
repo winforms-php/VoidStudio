@@ -4,13 +4,9 @@ namespace VoidEngine;
 
 class TextBox extends Control
 {
-    protected $scrollBar;
-
-	public function __construct (Control $parent = null)
+    public function __construct (Control $parent = null)
 	{
         parent::__construct ($parent, self::class);
-
-        //$this->scrollBar = new VScrollBar ($this);
 	}
 	
     public function get_passwordChar ()
@@ -51,14 +47,6 @@ class TextBox extends Control
     public function set_wordWrap (bool $wordWrap)
     {
         return $this->setProperty ('WordWrap', $wordWrap, 'bool');
-    }
-
-    public function dispose ()
-    {
-        VoidEngine::removeObject ($this->scrollBox->selector);
-        unset ($this->scrollBox);
-
-		parent::dispose ();
     }
 }
 

@@ -20,6 +20,6 @@ class WinFormsException extends Exception
 	}
 }
 
-class LogMessageException extends WinFormsException {}
+class LogMessageException extends Exception {}
 
 ?>

@@ -2,7 +2,7 @@
 
 namespace VoidEngine;
 
-class VideoBox extends Control
+class VideoBox extends NoVisual
 {
 	public function __construct (Control $parent = null)
 	{

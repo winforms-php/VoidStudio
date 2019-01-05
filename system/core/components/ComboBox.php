@@ -38,12 +38,12 @@ class ComboBox extends Control
         $this->setProperty ('SelectedItem', $item, 'string');
     }
 	
-    public function get_selectedItemIndex ()
+    public function get_selectedIndex ()
     {
         return $this->getProperty ('SelectedIndex', 'int');
     }
 	
-    public function set_selectedItemIndex (int $index)
+    public function set_selectedIndex (int $index)
     {
         $this->setProperty ('SelectedIndex', $index, 'int');
     }

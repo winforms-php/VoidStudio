@@ -17,6 +17,21 @@ class TabControl extends Control
     {
         return $this->tabs;
     }
+
+    public function get_selectedTab ()
+    {
+        return $this->getProperty ('SelectedTab', 'object');
+    }
+
+    public function get_selectedIndex ()
+    {
+        return $this->getProperty ('SelectedIndex', 'int');
+    }
+
+    public function set_selectedIndex (int $index)
+    {
+        $this->setProperty ('SelectedIndex', $index, 'int');
+    }
 }
 
 class TabPage extends Control

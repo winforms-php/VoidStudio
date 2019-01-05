@@ -375,7 +375,7 @@ abstract class Control extends Component
 	
     public function focus ()
     {
-        return $this->callMethod ('Focus','bool');
+        return $this->callMethod ('Focus', 'bool');
     }
 	
 	public function dispose ()

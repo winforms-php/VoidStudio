@@ -42,6 +42,17 @@ Button EvalTool_Eval (EvalTool_Page):
             eval ($editor->text);
         }
 
+Panel TopMenu__Panel (MainForm):
+    dock: dsFill
+
+TabPage TopMenu__Form1 ():
+    text: 'Form1'
+
+TabControl TopMenu (TopMenu__Panel):
+    dock: dsFill
+
+    ->tabPages->add (TopMenu__Form1)
+
 Panel LeftMenu__Panel (MainForm):
     dock: dsLeft
     width: 280
@@ -60,7 +71,7 @@ TabControl LeftMenu (LeftMenu__Panel):
 PropertyGrid PropertiesList (LeftMenu__Properties):
     dock: dsFill
 
-VoidDesigner Designer (MainForm, PropertiesList):
+VoidDesigner Form1Designer (TopMenu__Form1, PropertiesList):
 
 ListBox LeftMenu__EventsList (LeftMenu__Events):
     dock: dsFill
@@ -84,15 +95,29 @@ ComboBox Objects (LeftMenu__Panel):
             $propertyGrid->selectedObject = substr ($item, 1, strpos ($item, ']') - 1);
         }
 
-    SelectionChangeCommittedEvent:^ function ($self) use (Designer $designer)
+    SelectionChangeCommittedEvent:^ function ($self) use (Form1Designer $designer)
         {
             $item = $self->selectedItem;
 
             VoidEngine::callMethod ($designer->selector, 'SetSelectedComponents', substr ($item, 1, strpos ($item, ']') - 1), 'object');
         }
 
-%^  PropertiesList->selectedObject = Designer->form;
-    Objects->items->add ('['. Designer->form .'] Form');
+TabControl TopMenu (TopMenu__Panel):
+    SelectedEvent:^ function ($self) use (Objects $objs, TopMenu $menu)
+        {
+            $form = VoidEngine::getProperty ($menu->selectedTab, 'Text');
+
+            $objs->items->clear ();
+            $objs->items->addRange ($GLOBALS['forms'][$form]);
+            $objs->selectedIndex = 0;
+            
+            VoidStudioAPI::$objects['main'][$form .'Designer']->focus ();
+        }
+
+%^  PropertiesList->selectedObject = Form1Designer->form->selector;
+    Objects->items->add ('['. Form1Designer->form->selector .'] Form');
+
+    $GLOBALS['forms']['Form1'][] = '['. Form1Designer->form->selector .'] Form';
 
 ColumnHeader ComponentsColumn ():
     text: text ('Название компонента')
@@ -106,22 +131,48 @@ ListView ComponentsList (MainForm):
     
     ->columns->add (ComponentsColumn)
 
-    DoubleClickEvent:^ function ($self) use (PropertiesList $props, LeftMenu__EventsList $list, Objects $objs, Designer $designer)
+    DoubleClickEvent:^ function ($self) use (PropertiesList $props, LeftMenu__EventsList $list, Objects $objs, Form1Designer $designer, TopMenu $menu)
         {
+            if (!isset ($GLOBALS['lastFormNum']))
+                $GLOBALS['lastFormNum'] = 1;
+
             $component = substr ($self->selectedItems->offsetGet (0), 15, -1);
             $name      = "VoidEngine\\$component";
             $cname     = $component. abs (crc32 (microtime (true) . time ()));
 
-            $obj = new $name ();
-            VoidEngine::setProperty ($obj->selector, 'Parent', $designer->form, 'object');
+            if ($component == 'Form')
+            {
+                $page     = new TabPage ('Form'. (++$GLOBALS['lastFormNum']));
+                $designer = new VoidDesigner ($page, $props);
 
-            $obj->caption = $component;
-            $props->selectedObject = $obj->selector;
+                $designer->form->location = [0, 0];
+                $designer->updateHost ();
 
-            VoidStudioAPI::loadObjectEvents ($obj, $list);
+                VoidStudioAPI::$objects['main']['Form'. $GLOBALS['lastFormNum'] .'Designer'] = $designer;
+                $menu->tabPages->add ($page);
 
-            $objs->items->add ('['. $obj->selector .'] '. $component);
-            $designer->addComponent ($obj, $cname);
+                $GLOBALS['forms']['Form'. $GLOBALS['lastFormNum']] = ['['. $designer->form->selector .'] Form'];
+            }
+
+            else
+            {
+                $form = VoidEngine::getProperty ($menu->selectedTab, 'Text');
+
+                $obj = new $name ();
+                VoidEngine::setProperty ($obj->selector, 'Parent', VoidStudioAPI::$objects['main'][$form .'Designer']->form->selector, 'object');
+
+                $obj->caption = $component;
+                $props->selectedObject = $obj->selector;
+
+                VoidStudioAPI::loadObjectEvents ($obj, $list);
+
+                $GLOBALS['forms'][$form][] = '['. $obj->selector .'] '. $component;
+
+                $objs->items->clear ();
+                $objs->items->addRange ($GLOBALS['forms'][$form]);
+
+                $designer->addComponent ($obj, $cname);
+            }
         }
 
 MenuItem Menu__studio_restart ():
@@ -166,11 +217,9 @@ MainMenu Menu ():
 Form MainForm ():
     menu: Menu
 
-    ShownEvent:^ function ($self) use (Log__List $log, Designer $designer)
+    ShownEvent:^ function ($self) use (Log__List $log, Form1Designer $designer)
         {
-            VoidEngine::setProperty ($designer->form, 'Left', 280, 'int');
-            VoidEngine::setProperty ($designer->form, 'Top', 0, 'int');
-
+            $designer->form->location = [0, 0];
             $designer->updateHost ();
 
             $time = round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 4);
