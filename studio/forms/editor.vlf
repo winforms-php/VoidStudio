@@ -1,8 +1,7 @@
-Form MainForm ():
+Form MainForm
     size: [$SCREEN->width / 1.4, $SCREEN->height / 1.4]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
-    doubleBoffer: true
     formBorderStyle: bsFixedSingle
 
     caption: text ('Редактор событий')
@@ -17,19 +16,18 @@ Form MainForm ():
             $self->hide ();
         }
 
-FastColoredTextBox Editor (MainForm):
-    dock: dsFill
+    Scintilla Editor
+        dock: dsFill
 
-    language: langPHP
-    wordWrap: true
+        syntax: 'syntax.json'
 
-Button SaveButton (MainForm):
-    dock: dsBottom
-    caption: text ('Сохранить')
+    Button SaveButton
+        dock: dsBottom
+        caption: text ('Сохранить')
 
-    ClickEvent:^ function ($self) use (Editor $editor, MainForm $form)
-        {
-            VoidEngine::setObjectEvent ($editor->helpStorage[0], $editor->helpStorage[1], $editor->text);
+        ClickEvent:^ function ($self) use (Editor $editor, MainForm $form)
+            {
+                VoidEngine::setObjectEvent ($editor->helpStorage[0], $editor->helpStorage[1], $editor->text);
 
-            $form->hide ();
-        }
+                $form->hide ();
+            }

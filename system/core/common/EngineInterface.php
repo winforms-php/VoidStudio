@@ -26,9 +26,11 @@ class VoidEngine
 
     static function loadModule (string $path)
     {
-        $assembly = self::buildObject (new WFObject ('System.Reflection.Assembly', 'mscorlib'));
-        
-        return self::callMethod ($assembly, 'LoadFrom', 'object', $path, 'string'); 
+        // $assembly = self::buildObject (new WFObject ('System.Reflection.Assembly', 'mscorlib'));
+        // return self::callMethod ($assembly, 'LoadFrom', 'object', $path, 'string');
+
+        $assembly = new WFClass ('System.Reflection.Assembly', 'mscorlib');
+        $assembly->LoadFrom ($path);
     }
 
     static function getProperty (int $selector, string $propertyName, string $type = 'string')

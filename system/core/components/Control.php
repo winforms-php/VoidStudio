@@ -91,14 +91,18 @@ abstract class Control extends Component
 	
     public function get_parent ()
     {
-        return Components::getComponent ($this->getProperty ('Parent', 'object'));
+        return $this->getProperty ('Parent', 'object');
     }
 	
-    public function set_parent (Control $parent)
+    public function set_parent ($parent)
     {
-        $this->setProperty ('Parent', 
-            ($parent instanceof Control) ? $parent->selector : 0,
-        'object');
+        if ($parent instanceof Control)
+            $this->setProperty ('Parent', $parent->selector, 'object');
+
+        elseif (is_numeric ($parent))
+            $this->setProperty ('Parent', $parent, 'object');
+
+        else throw new \Exception ('$parent must be instance of "Control" or his selector');
     }
 	
     public function get_width ()

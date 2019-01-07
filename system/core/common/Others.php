@@ -149,8 +149,8 @@ function setTimeout (int $interval, $function)
 
 function includeComponent (string $componentName)
 {
-    if (!class_exists ($componentName) && file_exists (dirname (__DIR__) ."/components/$componentName.php"))
-        require_once dirname (__DIR__) ."/components/$componentName.php";
+    if (!class_exists ($componentName) && file_exists (ENGINE_DIR ."/components/$componentName.php"))
+        require_once ENGINE_DIR ."/components/$componentName.php";
 }
 
 function getLogicalVarType ($data)

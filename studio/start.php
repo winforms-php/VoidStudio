@@ -3,6 +3,7 @@
 namespace VoidEngine;
 
 const STUDIO_DIR = __DIR__;
+chdir (STUDIO_DIR);
 
 require __DIR__ .'/VoidStudio API.php';
 require __DIR__ .'/forms/main.php'; // Главная форма среды

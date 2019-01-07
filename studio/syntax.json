@@ -1,0 +1,33 @@
+{
+    "lexer": 69,
+
+    "references":
+    {
+        "Default":         118,
+        "Comment":         124,
+        "CommentLine":     125,
+        "ComplexVariable": 104,
+        "HString":         119,
+        "HStringVariable": 126,
+        "Number":          122,
+        "Operator":        127,
+        "SimpleString":    120,
+        "Variable":        123,
+        "Word":            121
+    },
+
+    "syntax":
+    {
+        "Default":         "clBlack",
+        "Comment":         "clGreen",
+        "CommentLine":     "clGreen",
+        "ComplexVariable": "clPurple",
+        "HString":         "clBrown",
+        "HStringVariable": "clPurple",
+        "Number":          "clBlue",
+        "Operator":        "clBlack",
+        "SimpleString":    "clBrown",
+        "Variable":        "clPurple",
+        "Word":            "clGray"
+    }
+}

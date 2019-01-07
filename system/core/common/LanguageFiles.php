@@ -1,14 +1,22 @@
 <?php
 
-/*
-    Класс для чтения VLF (Void Language File)
-    VLF-файлы - файлы синтаксиса, созданные для упрощённой разработки на VoidEngine
-*/
+/**
+ * @package VLF (Void Language File)
+ * Формат файлов для разметки приложений на VoidEngine
+ * 
+ * Документация:
+ * @see <https://vk.com/@winforms-vlf-dlya-chainikov>
+ */
 
 namespace VoidEngine;
 
 class VLFReader
 {
+    static $objects    = [];
+    static $obj        = '';
+    static $skipAt     = -1;
+    static $globalCode = '';
+
     static function read (string $file)
     {
         if (file_exists ($file))
@@ -16,10 +24,15 @@ class VLFReader
 
         $file = explode ("\n", $file);
 
-        $objects    = [];
-        $obj        = '';
-        $skipAt     = -1;
-        $globalCode = '';
+        $objects    = self::$objects;
+        $obj        = self::$obj;
+        $skipAt     = self::$skipAt;
+        $globalCode = self::$globalCode;
+
+        self::$objects    = [];
+        self::$obj        = '';
+        self::$skipAt     = -1;
+        self::$globalCode = '';
 
         foreach ($file as $id => $line)
         {
@@ -84,16 +97,19 @@ class VLFReader
                     substr ($other, 0, $pos) : $other
                 );
 
-                $obj = $name;
+                $obj     = $name;
+                $content = false;
 
                 if (isset ($objects[$name]))
                     continue;
 
-                $content = substr ($other, ($pos = strpos ($other, '(') + 1), strrpos ($other, ')') - $pos);
-                $content = self::formatLine ($content, $objects);
+                $obj_name = "base64_decode ('". base64_encode ($name) ."')";
+                
+                if (($begin = strpos ($other, '(')) !== false && ($end = strrpos ($other, ')')) !== false)
+                    $content = '('. self::formatLine (substr ($other, $begin + 1, $end - $begin - 1), $objects) .')';
 
                 includeComponent ($base);
-                $objects[$name] = eval ("namespace VoidEngine; $globalCode return new $base ($content);");
+                $objects[$name] = eval ("namespace VoidEngine; $globalCode \$_obj = new $base $content; if (property_exists (\$_obj, 'name')) \$_obj->name = $obj_name; elseif (method_exists (\$_obj, 'set_name')) \$_obj->name = $obj_name; return \$_obj;");
             }
 
             elseif (substr ($base, 0, 2) == '->')
@@ -107,53 +123,136 @@ class VLFReader
 
             else
             {
-                $method = substr ($base, 0, -1);
-                $preset = '';
+                $end = substr ($base, strlen ($base) - 1);
 
-                if (substr ($base, strlen ($base) - 1) == '^')
+                if ($end != ':' && $end != '^')
                 {
-                    $data = $other;
+                    $data = trim ($file[$id]);
+
+                    if (($begin = strpos ($data, '(')) !== false && ($end = strrpos ($data, ')')) !== false)
+                    {
+                        ++$begin;
+                        $end -= $begin;
+
+                        $haveArguments = strlen (trim (substr ($data, $begin, $end))) > 0;
+
+                        /**
+                         * Пока что сделал так, что если аргументов нету или они пустые, то достроится аргумент - ссылка на объект-родитель
+                         * 
+                         * К примеру:
+                         * 
+                         * Form MainForm
+                         *      Button MainButton
+                         *          caption: 'test'
+                         * 
+                         * достроит MainButton до MainButton (MainForm)
+                         * 
+                         * а вот
+                         * 
+                         * Form SecondForm
+                         * Form MainForm
+                         *      Button MainButton (SecondForm):
+                         *          caption: 'test'
+                         * 
+                         * оставит как есть
+                         */
+                        
+                        if (!$haveArguments)
+                        {
+                            $post = $haveArguments ?
+                                "$obj, " : $obj;
+
+                            /*if ($haveArguments)
+                            {
+                                $edge = strpos ($data, ',');
+
+                                $edge = $edge === false ?
+                                    $end : $edge - $begin;
+                                
+                                $firstArgument = substr ($data, $begin, $edge);
+
+                                if ($firstArgument == $obj)
+                                    $post = '';
+                            }*/
+
+                            $data = substr ($data, 0, $begin) . $post . substr ($data, $begin);
+                        }
+                    }
+
+                    else $data .= " ($obj)";
+
                     $step = self::getLineHard ($file[$id]);
+                    $data .= "\n";
 
                     for ($i = $id + 1; isset ($file[$i]); ++$i)
                         if (self::isReadable ($file[$i]))
                         {
                             if (self::getLineHard ($file[$i]) > $step)
-                                $data .= substr ($file[$i], $step);
+                                $data .= substr ($file[$i], $step) ."\n";
 
                             else break;
                         }
 
-                    $method = substr ($method, 0, -1);
-                    $other  = trim ($data);
+                    $data   = trim ($data);
                     $skipAt = $i;
+
+                    self::$objects    = $objects;
+                    self::$obj        = $obj;
+                    self::$globalCode = $globalCode;
+
+                    $objects = array_merge ($objects, self::read ($data));
                 }
 
-                if (preg_match ('/function \((.*)\) use \((.*)\)/', $other))
+                else
                 {
-                    $use = substr ($other, strpos ($other, 'use'));
-                    $use = $ouse = substr ($use, ($pos = strpos ($use, '(') + 1), strpos ($use, ')') - $pos);
-                    $use = explode (' ', $use);
+                    $method = substr ($base, 0, -1);
+                    $preset = '';
 
-                    foreach ($use as $id => $useParam)  
-                        if (isset ($objects[$useParam]) && $use[$id + 1][0] == '$')
-                        {
-                            $fname = $use[$id + 1];
+                    if (substr ($base, strlen ($base) - 1) == '^')
+                    {
+                        $data = $other;
+                        $step = self::getLineHard ($file[$id]);
 
-                            if (substr ($fname, strlen ($fname) - 1) == ',')
-                                $fname = substr ($fname, 0, -1);
+                        for ($i = $id + 1; isset ($file[$i]); ++$i)
+                            if (self::isReadable ($file[$i]))
+                            {
+                                if (self::getLineHard ($file[$i]) > $step)
+                                    $data .= substr ($file[$i], $step);
 
-                            $preset .= "$fname = $useParam; ";
+                                else break;
+                            }
 
-                            unset ($use[$id]);
-                        }
+                        $method = substr ($method, 0, -1);
+                        $other  = trim ($data);
+                        $skipAt = $i;
+                    }
 
-                    $preset = self::formatLine ($preset, $objects);
-                    $other  = str_replace ($ouse, join (' ', $use), $other);
+                    if (preg_match ('/function \((.*)\) use \((.*)\)/', $other))
+                    {
+                        $use = substr ($other, strpos ($other, 'use'));
+                        $use = $ouse = substr ($use, ($pos = strpos ($use, '(') + 1), strpos ($use, ')') - $pos);
+                        $use = explode (' ', $use);
+
+                        foreach ($use as $id => $useParam)  
+                            if (isset ($objects[$useParam]) && $use[$id + 1][0] == '$')
+                            {
+                                $fname = $use[$id + 1];
+
+                                if (substr ($fname, strlen ($fname) - 1) == ',')
+                                    $fname = substr ($fname, 0, -1);
+
+                                $preset .= "$fname = $useParam; ";
+
+                                unset ($use[$id]);
+                            }
+
+                        $preset = self::formatLine ($preset, $objects);
+                        $other  = str_replace ($ouse, join (' ', $use), $other);
+                    }
+
+                    $other = self::formatLine ($other, $objects);
+                    $objects[$obj]->$method = eval ("namespace VoidEngine; $globalCode $preset return $other;");
                 }
-
-                $other = self::formatLine ($other, $objects);
-                $objects[$obj]->$method = eval ("namespace VoidEngine; $globalCode $preset return $other;");
             }
         }
 
@@ -169,11 +268,9 @@ class VLFReader
 
             $replacement = array_map (function ($object)
             {
-                return (
-                    $object instanceof Control ? 
-                        '\VoidEngine\Components::getComponent (\''. $object->selector .'\')' :
-                        'unserialize (\''. serialize ($object) .'\')'
-                );
+                return $object instanceof Control ? 
+                    '\VoidEngine\Components::getComponent (\''. $object->selector .'\')' :
+                    'unserialize (\''. serialize ($object) .'\')';
             }, $objects);
 
             $replacement = array_flip ($replacement);
