@@ -9,22 +9,27 @@ namespace VoidEngine;
 
 class VoidEngine
 {
-    static function createObject (WFObject $object, ...$args)
+    static function createObject (WFObject $object, ...$args): int
     {
         return winforms_objectcreate ($object->getResourceLine (), ...$args);
     }
 
-    static function removeObject (int ...$selectors)
+    static function removeObject (int ...$selectors): void
     {
         winforms_objectdelete (...$selectors);
     }
 
-    static function buildObject (WFObject $object)
+    static function buildObject (WFObject $object): int
     {
         return winforms_objectget ($object->getResourceLine ());
     }
 
-    static function loadModule (string $path)
+    static function objectExists (int $selector): bool
+    {
+        return winforms_objectexists ($selector);
+    }
+
+    static function loadModule (string $path): void
     {
         // $assembly = self::buildObject (new WFObject ('System.Reflection.Assembly', 'mscorlib'));
         // return self::callMethod ($assembly, 'LoadFrom', 'object', $path, 'string');
@@ -65,7 +70,7 @@ class VoidEngine
         return winforms_getindex ($selector, $index, $type);
     }
 
-    static function setArrayValue (int $selector, int $index, $value, string $type = 'auto')
+    static function setArrayValue (int $selector, int $index, $value, string $type = 'auto'): void
     {
         if ($type == 'auto')
             $type = getLogicalVarType ($value);
@@ -73,7 +78,7 @@ class VoidEngine
         winforms_setindex ($selector, $index, $value, $type);
     }
 
-    static function setObjectEvent (int $selector, string $eventName, string $code = '')
+    static function setObjectEvent (int $selector, string $eventName, string $code = ''): void
     {
         if (self::eventExists ($selector, $eventName))
             self::removeEvent ($selector, $eventName); //throw new \Exception ('Event "'. $eventName .'" already exists for "'. $selector .'"-component');
@@ -91,19 +96,19 @@ class VoidEngine
         }
     }
 
-    static function eventExists (int $selector, string $eventName)
+    static function eventExists (int $selector, string $eventName): bool
     {
         return winforms_existsevent ($selector, $eventName);
     }
 
-    static function removeEvent (int $selector, string $eventName)
+    static function removeEvent (int $selector, string $eventName): void
     {
         winforms_delevent ($selector, $eventName);
 
         Components::removeComponentEvent ($selector, $eventName);
     }
 
-    static function compile (string $savePath, string $iconPath, string $phpCode)
+    static function compile (string $savePath, string $iconPath, string $phpCode): void
     {
         winforms_compile ($savePath, $iconPath, $phpCode);
     }
@@ -128,7 +133,7 @@ class WFObject
         $this->onlyClassInfo = $onlyClassInfo;
     }
 
-    public function getResourceLine ()
+    public function getResourceLine (): string
     {
         if ($this->onlyClassInfo)
             return ($this->classGroup) ?
@@ -146,10 +151,11 @@ class WFObject
 
     public function __get ($name)
     {
-        return (isset ($this->$name) ? $this->$name : false);
+        return isset ($this->$name) ?
+            $this->$name : false;
     }
 
-    public function __set ($name, $value)
+    public function __set ($name, $value): void
     {
         if (isset ($this->$name))
             $this->$name = $value;
@@ -175,10 +181,10 @@ class WFClass
     {
         if (is_int ($this->class))
         {
-            if (strtoupper ($name[0]) == $name[0])
+            //if (strtoupper ($name[0]) == $name[0])
                 return VoidEngine::getProperty ($this->class, $name, '');
 
-            else throw new \Exception ("The \"$name\" property isn't C# class property name");
+            //else throw new \Exception ("The \"$name\" property isn't C# class property name");
         }
 
         else throw new \Exception ("Class isn't initialized");
@@ -188,10 +194,10 @@ class WFClass
     {
         if (is_int ($this->class))
         {
-            if (strtoupper ($name[0]) == $name[0])
+            //if (strtoupper ($name[0]) == $name[0])
                 VoidEngine::setProperty ($this->class, $name, $value);
 
-            else throw new \Exception ("The \"$name\" property isn't C# class property name");
+            //else throw new \Exception ("The \"$name\" property isn't C# class property name");
         }
 
         else throw new \Exception ("Class isn't initialized");
@@ -201,8 +207,8 @@ class WFClass
 	{
         if (is_int ($this->class))
         {
-            if (strtoupper ($method[0]) == $method[0])
-            {
+            //if (strtoupper ($method[0]) == $method[0])
+            //{
                 $setArgs = array ();
                 
                 foreach ($args as $id => $arg)
@@ -211,10 +217,10 @@ class WFClass
                     $setArgs[] = getLogicalVarType ($arg);
                 }
 
-                VoidEngine::callMethod ($this->class, $method, '', ...$setArgs);
-            }
+                return VoidEngine::callMethod ($this->class, $method, '', ...$setArgs);
+            //}
 
-            else throw new \Exception ("The \"$method\" method isn't C# class method name");
+            //else throw new \Exception ("The \"$method\" method isn't C# class method name");
         }
 
         else throw new \Exception ("Class isn't initialized");

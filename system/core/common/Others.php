@@ -6,9 +6,9 @@
 
 namespace VoidEngine;
 
-function text (string $text)
+function text (string $text): string
 {
-    return iconv ('UTF-8', 'CP1251', $text);
+    return mb_convert_encoding ($text, 'Windows-1251');
 }
 
 function dir_delete (string $path)
@@ -89,8 +89,7 @@ function array_end (array $array)
 function explode2 (string $separator, string $string, ...$limit)
 { 
     return strlen ($string) ?
-        explode ($separator, $string, ...$limit) :
-        array ();
+        explode ($separator, $string, ...$limit) : [];
 }
 
 function substr_icount (string $haystack, string $needle, ...$params)
@@ -111,7 +110,7 @@ function pre (...$args)
 	message (print_r ($args, true));
 }
 
-function setTimer (int $interval, $function)
+function setTimer (int $interval, $function): Timer
 {
 	$timer           = new Timer;
     $timer->interval = $interval;
@@ -128,7 +127,7 @@ function setTimer (int $interval, $function)
     return $timer;
 }
 
-function setTimeout (int $interval, $function)
+function setTimeout (int $interval, $function): Timer
 {
 	$timer           = new Timer;
     $timer->interval = $interval;
@@ -153,7 +152,7 @@ function includeComponent (string $componentName)
         require_once ENGINE_DIR ."/components/$componentName.php";
 }
 
-function getLogicalVarType ($data)
+function getLogicalVarType ($data): string
 {
     if (is_object ($data))
         return 'object';
@@ -275,12 +274,12 @@ class Icon
 		$this->selector = VoidEngine::createObject ($icon, $file, 'string');
     }
 
-    public function applyToObject (int $selector)
+    public function applyToObject (int $selector): void
 	{
 		VoidEngine::setProperty ($selector, 'Icon', $this->selector, 'object');
 	}
 	
-	public function saveToFile (string $file)
+	public function saveToFile (string $file): void
 	{
 		VoidEngine::callMethod ($this->selector, 'Save', '', $file, 'string');
 	}
@@ -299,7 +298,7 @@ class Cursor
             VoidEngine::createObject ($cursor, $handle, 'handle');
     }
 
-    public function getPosition ()
+    public function getPosition (): array
     {
         $pos = VoidEngine::getProperty ($this->cursor, 'Position', 'object');
 
@@ -310,18 +309,25 @@ class Cursor
     }
 }
 
-function get_cursor_x (int $handle = null)
+function get_cursor_x (int $handle = null): int
 {
     $cursor = new Cursor ($handle);
 
     return $cursor->getPosition ()[0];
 }
 
-function get_cursor_y (int $handle = null)
+function get_cursor_y (int $handle = null): int
 {
     $cursor = new Cursor ($handle);
 
     return $cursor->getPosition ()[1];
+}
+
+function get_cursor_pos (int $handle = null): array
+{
+    $cursor = new Cursor ($handle);
+
+    return $cursor->getPosition ();
 }
 
 set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '', $errcontext = '')

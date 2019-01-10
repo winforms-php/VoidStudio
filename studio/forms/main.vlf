@@ -90,12 +90,9 @@ Panel LeftMenu__Panel (MainForm):
 
         ->tabPages->addRange ([LeftMenu__Properties, LeftMenu__Events])
 
-Form Form1 (TopMenu__Form1):
-    TopLevel: false
-    FormBorderStyle: bsNone
-    size: TopMenu__Panel->size
+VoidDesigner Form1Designer (TopMenu__Form1, PropertiesList):
 
-VoidDesigner Form1Designer (Form1, PropertiesList):
+% VoidEngine\VoidStudioAPI::createProject ('Project'. time (), Form1Designer->form);
 
 ComboBox Objects (LeftMenu__Panel):
     dock: dsTop
@@ -108,9 +105,11 @@ ComboBox Objects (LeftMenu__Panel):
             $propertyGrid->selectedObject = substr ($item, 1, strpos ($item, ']') - 1);
         }
 
-    SelectionChangeCommittedEvent:^ function ($self) use (Form1Designer $designer)
+    SelectionChangeCommittedEvent:^ function ($self) use (TopMenu $menu)
         {
-            $item = $self->selectedItem;
+            $item     = $self->selectedItem;
+            $form     = VoidEngine::getProperty ($menu->selectedTab, 'Text');
+            $designer = VoidStudioAPI::$objects['main'][$form .'Designer'];
 
             VoidEngine::callMethod ($designer->selector, 'SetSelectedComponents', substr ($item, 1, strpos ($item, ']') - 1), 'object');
         }
@@ -134,8 +133,12 @@ TabControl TopMenu (TopMenu__Panel):
 
     VoidEngine\VoidStudioAPI::loadObjectEvents (Form1Designer->form, LeftMenu__EventsList);
 
-ColumnHeader ComponentsColumn
+#^ ColumnHeader ComponentsImagesColumn
+    width: 24
+
+ColumnHeader ComponentsNamesColumn
     text: text ('Название компонента')
+    # width: 216 - ComponentsImagesColumn->width
     width: 216
 
 ListView ComponentsList (MainForm):
@@ -143,8 +146,8 @@ ListView ComponentsList (MainForm):
     width: 220
     fullRowSelect: true
     view: vwDetails
-    
-    ->columns->add (ComponentsColumn)
+
+    ->columns->add (ComponentsNamesColumn)
 
     DoubleClickEvent:^ function ($self) use (Objects $objs, TopMenu $menu)
         {
@@ -158,17 +161,10 @@ ListView ComponentsList (MainForm):
             if ($component == 'Form')
             {
                 $page = new TabPage ('Form'. (++$GLOBALS['lastFormNum']));
-
-                $form = new Form ($page);
-                $form->TopLevel = false;
-                $form->FormBorderStyle = bsNone;
-                $form->size = TopMenu__Panel->size;
                 
-                $designer = new VoidDesigner ($form, PropertiesList);
+                $designer = new VoidDesigner ($page, PropertiesList);
                 $designer->form->location = [0, 0];
                 $designer->updateHost ();
-                
-                $form->show ();
 
                 VoidStudioAPI::$objects['main']['Form'. $GLOBALS['lastFormNum'] .'Designer'] = $designer;
                 $menu->tabPages->add ($page);
@@ -193,8 +189,10 @@ ListView ComponentsList (MainForm):
 
                 $objs->items->clear ();
                 $objs->items->addRange ($GLOBALS['forms'][$form]);
-                $objs->items->selectedIndex = sizeof ($GLOBALS['forms'][$form]) - 1; // почему-то не работает
+                $objs->selectedItem = end ($GLOBALS['forms'][$form]);
             }
+
+            VoidStudioAPI::saveProject ();
         }
 
 MenuItem Menu__studio_restart
@@ -211,7 +209,7 @@ MenuItem Menu__studio_about
     ClickEvent:^ function ($self)
         {
             $msg = new MessageBox ();
-            $msg->show (text ("Авторы сие произведения:\n\nАндрей Курляндов (vk.com/postmessage) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms"), text ('О программе'));
+            $msg->show (text ("Авторы сие произведения:\n\nАндрей Кусов (vk.com/postmessage) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms"), text ('О программе'));
         }
 
 MenuItem Menu__project_build
@@ -243,8 +241,6 @@ Form MainForm
         {
             $designer->form->location = [0, 0];
             $designer->updateHost ();
-
-            Form1->show ();
 
             $time = round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 4);
 

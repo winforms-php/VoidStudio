@@ -5,6 +5,67 @@ namespace VoidEngine;
 class VoidStudioAPI
 {
     static $objects = [];
+    //static $project;
+
+    /**
+     * Временно бесполезно
+     */
+
+    static function createProject (string $name, Form $projectMainForm)
+    {
+        /*if (is_dir ($path = STUDIO_DIR .'/projects/'. $name))
+            return false;
+
+        else
+        {
+            self::$project = $name;
+
+            mkdir ($path);
+
+            file_put_contents ($path .'/project.json', json_encode ([
+                'Form1' =>
+                [
+                    $projectMainForm->selector
+                ]
+            ], JSON_PRETTY_PRINT));
+        }*/
+    }
+
+    static function saveProject ()
+    {
+        /*if (!is_dir ($path = STUDIO_DIR .'/projects/'. self::$project))
+            return false;
+
+        else
+        {
+            $data = [];
+
+            foreach ($GLOBALS['forms'] as $form => $objects)
+                foreach ($objects as $id => $object)
+                    $data[$form][] = substr ($object, 1, strpos ($object, ']') - 1);
+            
+            file_put_contents ($path .'/project.json', json_encode ($data, JSON_PRETTY_PRINT));
+        }*/
+    }
+
+    /**
+     * TODO all
+     */
+    /*static function openProject (string $name)
+    {
+        if (!is_dir ($path = STUDIO_DIR .'/projects/'. $name))
+            return false;
+
+        else
+        {
+            $data = json_decode (file_get_contents ($path .'/project.json'));
+            $GLOBALS['forms'] = [];
+
+            foreach ($data as $form => $objects)
+                foreach ($objects as $id => $object)
+                    $GLOBALS['forms'][] = '['. $object .'] ?';
+        }
+    }*/
 
     static function addObjects (string $group, array $objects)
     {

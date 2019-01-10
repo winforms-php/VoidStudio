@@ -12,9 +12,6 @@ class Events
 
     static function setObjectEvent (Component $object, string $eventName, $function)
     {
-        if (!($object instanceof Component))
-            return false;
-
         $selector = $object->selector;
 
         self::$events[$selector][$eventName] = $function;
@@ -38,7 +35,7 @@ class Events
     }
 }
 
-abstract class EventArgs
+class EventArgs
 {
 	protected $selector;
 	
@@ -52,10 +49,11 @@ abstract class EventArgs
 		if (method_exists ($this, $method = "get_$name"))
             return $this->$method ();
             
-        elseif (strtoupper ($name[0]) == $name[0])
-            return $this->getProperty ($name, '');
+        //elseif (strtoupper ($name[0]) == $name[0])
+        
+        else return $this->getProperty ($name, '');
 		
-		else throw new \Exception ("The \"$name\" property is missing");
+		//else throw new \Exception ("The \"$name\" property is missing");
 	}
 	
     final public function __set ($name, $value)
@@ -63,10 +61,11 @@ abstract class EventArgs
 		if (method_exists ($this, $method = "set_$name"))
             return $this->$method ($value);
             
-        elseif (strtoupper ($name[0]) == $name[0])
-            $this->setProperty ($name, $value, 'auto');
+        //elseif (strtoupper ($name[0]) == $name[0])
+        
+        else $this->setProperty ($name, $value, 'auto');
 		
-        else throw new \Exception ("The \"$name\" property is missing");
+        //else throw new \Exception ("The \"$name\" property is missing");
     }
     
     public function get_selector ()

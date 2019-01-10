@@ -17,19 +17,19 @@ $APPLICATION = new class
         $this->executablePath = VoidEngine::getProperty ($this->selector, 'ExecutablePath', 'string');
     }
     
-    public function run (Form $form = null)
+    public function run (Form $form = null): void
     {
         $form ?
             VoidEngine::callMethod ($this->selector, 'Run', '', $form->selector, 'object') :
             VoidEngine::callMethod ($this->selector, 'Run');
     }
     
-    public function restart ()
+    public function restart (): void
     {
         VoidEngine::callMethod ($this->selector, 'Restart');
     }
     
-    public function close ()
+    public function close (): void
     {
         VoidEngine::callMethod ($this->selector, 'Exit');
     }
@@ -74,12 +74,12 @@ $SCREEN = new class
                 if (strtoupper ($name[0]) == $name[0])
                     return VoidEngine::getProperty ($this->selector, $name, '');
 
-                throw new \Exception ('Wrong $SCREEN property name');
+                else throw new \Exception ('Wrong $SCREEN property name');
             break;
         }
     }
     
-    public function __debugInfo ()
+    public function __debugInfo (): array
     {
         return [$this->w, $this->h];
     }

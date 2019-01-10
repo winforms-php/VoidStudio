@@ -6,13 +6,20 @@ class ListView extends Control
 {
     protected $items;
     protected $columns;
+    protected $smallImagesList;
+    protected $largeImagesList;
 
     public function __construct (Control $parent = null)
     {
         parent::__construct ($parent, self::class);
 
-        $this->items   = new ListViewItems ($this->getProperty ('Items', 'object'));
-        $this->columns = new ListViewColumns ($this->getProperty ('Columns', 'object'));
+        $this->items           = new ListViewItems ($this->getProperty ('Items', 'object'));
+        $this->columns         = new ListViewColumns ($this->getProperty ('Columns', 'object'));
+        $this->smallImagesList = new ImageList;
+        $this->largeImagesList = new ImageList;
+
+        // $this->setProperty ('SmallImageList', $this->smallImagesList->selector, 'object');
+        // $this->setProperty ('LargeImageList', $this->largeImagesList->selector, 'object');
     }
 
     public function get_items ()
@@ -174,12 +181,35 @@ class ListViewColumns extends ListViewItems
 	{
 		return $this->offsetSet (null, $value instanceof ColumnHeader ? $value->selector : $value);
 	}
-	
-	public function offsetSet ($index, $value)
+}
+
+class ImageList extends Component
+{
+    protected $images;
+
+    public function __construct ()
+    {
+        parent::__construct (self::class);
+
+        $this->images = new ImageListImages ($this->getProperty ('Images', 'object'));
+    }
+
+    public function get_images ()
+    {
+        return $this->images;
+    }
+}
+
+class ImageListImages extends ListViewItems
+{
+    public function add ($value)
 	{
-        return $index === null ?
-            VoidEngine::callMethod ($this->selector, 'Add', '', $value, 'object') :
-            VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', $value, 'object');
+		return $this->offsetSet (null, $value);
+	}
+	
+	public function append ($value)
+	{
+		return $this->offsetSet (null, $value);
 	}
 }
 

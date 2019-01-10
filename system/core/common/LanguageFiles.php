@@ -17,7 +17,15 @@ class VLFReader
     static $skipAt     = -1;
     static $globalCode = '';
 
-    static function read (string $file)
+    /**
+     * * Выполнение VLF разметки
+     * 
+     * @var string file - путь до файла с VLF разметкой или сама VLF разметка
+     * 
+     * @return array objects - возвращает массив созданных объектов (название => объект)
+     */
+    
+    static function read (string $file): array
     {
         if (file_exists ($file))
             $file = file_get_contents ($file);
@@ -259,7 +267,7 @@ class VLFReader
         return $objects;
     }
 
-    static function formatLine ($line, array $objects = [])
+    static function formatLine ($line, array $objects = []): string
     {
         if (sizeof ($objects) > 0)
         {
@@ -304,7 +312,7 @@ class VLFReader
         return $line;
     }
 
-    static function filterArray (array $array)
+    static function filterArray (array $array): array
     {
         return array_filter ($array, function ($line)
         {
@@ -312,21 +320,23 @@ class VLFReader
         });
     }
 
-    static function isReadable (string $line)
+    static function isReadable (string $line): bool
     {
         return (bool)(trim ($line)); 
     }
 
-    static function getLineHard (string $line)
+    static function getLineHard (string $line): int
     {
-        $line = str_replace ("\t", ' ', $line);
+        /*$line = str_replace ("\t", ' ', $line);
         $size = strlen ($line);
 
         for ($i = 0; $i < $size; ++$i)
             if ($line[$i] != ' ')
                 break;
 
-        return $i;
+        return $i;*/
+		
+		return strlen ($line) - strlen (ltrim ($line));
     }
 }
 

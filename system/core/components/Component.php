@@ -6,7 +6,7 @@ abstract class Component
 {
     protected $componentSelector;
     protected $componentClass;
-    public $helpStorage = '';
+    protected $helpStorage = '';
 	
 	public function __construct (string $className)
 	{
@@ -29,10 +29,11 @@ abstract class Component
 		elseif (property_exists ($this, $name))
 			return $this->$name;
 		
-        elseif (strtoupper ($name[0]) == $name[0])
-            return $this->getProperty ($name, '');
+        //elseif (strtoupper ($name[0]) == $name[0])
         
-        else throw new \Exception ("The \"$name\" property is missing from the \"$this->componentClass\" component");
+        else return $this->getProperty ($name, '');
+        
+        //else throw new \Exception ("The \"$name\" property is missing from the \"$this->componentClass\" component");
 	}
 	
 	final function __set ($name, $value)
@@ -46,8 +47,9 @@ abstract class Component
 		elseif (method_exists ($this, "get_$name"))
 			throw new \Exception ("The \"$name\" property of the \"$this->componentClass\" component is read-only");
 		
-        elseif (strtoupper ($name[0]) == $name[0])
-            $this->setProperty ($name, $value, 'auto');
+        //elseif (strtoupper ($name[0]) == $name[0])
+        
+        else $this->setProperty ($name, $value, 'auto');
 	}
 	
 	final function __call ($method, $args)
@@ -106,10 +108,11 @@ abstract class Component
 	
 	public function dispose ()
 	{
-		$this->callMethod ('Dispose');
-		
-        Components::removeComponent ($this->componentSelector);
+		Components::removeComponent ($this->componentSelector);
         VoidEngine::removeObject ($this->componentSelector);
+        unset ($this->componentSelector, $this->componentClass, $this->helpStorage);
+
+        $this->callMethod ('Dispose');
     }
 }
 

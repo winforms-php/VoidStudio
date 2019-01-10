@@ -7,11 +7,11 @@
  * (at your option) any later version.
  * 
  * @package     VoidEngine
- * @copyright   2018 - 2019 Podvirnyy Nikita (KRypt0n_) & Andrey Kurlandov
+ * @copyright   2018 - 2019 Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * @license     GNU GPLv3 <https://www.gnu.org/licenses/gpl-3.0.html>
  * @license     Enfesto Studio Group license <https://vk.com/topic-113350174_36400959>
  * @see         license.txt for details
- * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kurlandov
+ * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
  * @version     build-2019/01/07
  * 
@@ -22,7 +22,7 @@
  * VK:    vk.com/technomindlp
  *        vk.com/hphp_convertation
  * 
- * Andrey Kurlandov:
+ * Andrey Kusov:
  * VK: vk.com/postmessage
  * 
  */
@@ -67,10 +67,12 @@ require 'events/KeyPressEventArgs.php';
 require 'components/Component.php';
 require 'components/Control.php';
 require 'components/MessageBox.php';
+require 'components/Image.php';
 require 'components/Process.php';
 require 'components/Timer.php';
 require 'components/ScrollBar.php';
 require 'components/SplitContainer.php';
+require 'components/ContextMenuStrip.php';
 require 'components/Panel.php';
 require 'components/PictureBox.php';
 require 'components/Form.php';
@@ -89,7 +91,6 @@ require 'components/Scintilla.php';
 require 'components/TabControl.php';
 require 'components/ListBox.php';
 require 'components/PropertyGrid.php';
-require 'components/PropertyGridEx.php';
 require 'components/CommonDialog.php';
 require 'components/FileDialog.php';
 require 'components/OpenFileDialog.php';
@@ -116,7 +117,7 @@ class Components
             self::$components[$selector] : false;
     }
 
-    static function setComponentEvent (int $selector, string $eventName, string $code)
+    static function setComponentEvent (int $selector, string $eventName, string $code): void
     {
         self::$events[$selector][$eventName] = $code;
     }
@@ -127,14 +128,32 @@ class Components
             self::$events[$selector][$eventName] : false;
     }
 
-    static function removeComponentEvent (int $selector, string $eventName)
+    static function removeComponentEvent (int $selector, string $eventName): void
     {
         unset (self::$events[$selector][$eventName]);
     }
 
-    static function removeComponent (int $selector)
+    static function removeComponent (int $selector): void
     {
         unset (self::$components[$selector], self::$events[$selector]);
+    }
+
+    static function cleanJunk (): array
+    {
+        $junk = [];
+
+        foreach (self::$components as $selector => $object)
+            if (!VoidEngine::objectExists ($selector))
+            {
+                $junk[$selector] = $object;
+
+                unset (self::$components[$selector]);
+
+                if (isset (self::$events[$selector]))
+                    unset (self::$events[$selector]);
+            }
+
+        return $junk;
     }
 }
 
@@ -142,7 +161,7 @@ class Clipboard
 {
     static $clipboard;
 
-    public static function getText ()
+    public static function getText (): string
     {
         if (!isset (self::$clipboard))
             self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
@@ -150,7 +169,7 @@ class Clipboard
         return VoidEngine::callMethod (self::$clipboard, 'GetText', 'string');
     }
     
-    public static function setText (string $text)
+    public static function setText (string $text): void
     {
         if (!isset (self::$clipboard))
             self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
@@ -158,13 +177,14 @@ class Clipboard
         VoidEngine::callMethod (self::$clipboard, 'SetText', '', $text, 'string');
     }
     
-    public static function getFiles ()
+    public static function getFiles (): array
     {
         if (!isset (self::$clipboard))
             self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
 
         $array = VoidEngine::callMethod (self::$clipboard, 'GetFileDropList', 'object');
         $size  = VoidEngine::getProperty ($arr, 'Count', 'int');
+        $files = [];
 
         for ($i = 0; $i < $size; ++$i)
             $files[] = VoidEngine::getArrayValue ($arr, $i, 'string');
@@ -174,7 +194,7 @@ class Clipboard
         return $files;
     }
     
-    public static function setFiles (array $files)
+    public static function setFiles (array $files): void
     {
         if (!isset (self::$clipboard))
             self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));

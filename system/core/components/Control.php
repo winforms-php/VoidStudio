@@ -62,7 +62,17 @@ abstract class Control extends Component
         $obj = VoidEngine::createObject ($obj, $font[0], 'string', $font[1], 'float');
         
 		$this->setProperty ('Font', $obj, 'object');
-	}
+    }
+    
+    public function get_flatStyle ()
+    {
+        return $this->getProperty ('FlatStyle', 'int');
+    }
+	
+    public function set_flatStyle (int $style)
+    {
+        $this->setProperty ('FlatStyle', $style, 'int');
+    }
 	
     public function get_backgroundColor ()
     {
