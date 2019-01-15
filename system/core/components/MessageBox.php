@@ -11,7 +11,7 @@ class MessageBox extends WFClass
 
     public function show (string $text, string $caption = '')
     {
-        $this->__call ('Show', [$text, $caption]);
+        $this->__call ('ShowEx', [$text, 'string', $caption, 'string']);
     }
 }
 

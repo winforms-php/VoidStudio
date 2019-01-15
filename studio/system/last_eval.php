@@ -1,19 +1,12 @@
-namespace VoidEngine; 
-
-pre (Components::cleanJunk ());
+namespace VoidEngine;
 
 $vlf = <<<'EOD'
 
 Form MainForm
-    Button Button
-        caption: 'Button Yeah!'
-        bounds: [16, 16, 128, 48]
+    CheckedListBox Box
+        dock: dsFill
 
-        clickEvent:^ function ($self)
-            {
-                $msg = new WFClass ('System.Windows.Forms.MessageBox'); // new MessageBox;
-                $msg->show ('test message');
-            }
+        ->items->addRange ([123, 321])
 
     ->show ()
 

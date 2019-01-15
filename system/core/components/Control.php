@@ -213,16 +213,6 @@ abstract class Control extends Component
     public function set_autoSize (bool $autoSize)
     {
         return $this->setProperty ('AutoSize', $autoSize, 'bool');
-    }	
-
-    public function get_doubleBuffered ()
-    {
-        return $this->getProperty ('DoubleBuffered', 'bool');
-    }
-
-    public function set_doubleBuffered (bool $doubleBuffered)
-    {
-        return $this->setProperty ('DoubleBuffered', $doubleBuffered, 'bool');
     }
 
     public function get_dock ()

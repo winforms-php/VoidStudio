@@ -11,7 +11,7 @@ function text (string $text): string
     return mb_convert_encoding ($text, 'Windows-1251');
 }
 
-function dir_delete (string $path)
+function dir_delete (string $path): bool
 {
     if (!is_dir ($path))
         return false;
@@ -24,9 +24,11 @@ function dir_delete (string $path)
                 dir_delete ($file);
 
             else unlink ($file);
+
+    return true;
 }
 
-function dir_copy (string $from, string $to)
+function dir_copy (string $from, string $to): bool
 {
     if (!is_dir ($from) || !is_dir ($to))
         return false;
@@ -44,6 +46,8 @@ function dir_copy (string $from, string $to)
             }
 
             else copy ("$from/$file", "$to/$file");
+
+    return true;
 }
 
 function run (string $file, int $windowStyle, bool $wait = false)
@@ -56,22 +60,22 @@ function run (string $file, int $windowStyle, bool $wait = false)
 	return $COM->run ($file, $windowStyle, (int) $wait);
 }
 
-function replaceSl (string $string)
+function replaceSl (string $string): string
 {
     return str_replace ('\\', '/', $string);
 }
 
-function replaceSr (string $string)
+function replaceSr (string $string): string
 {
     return str_replace ('/', '\\', $string);
 }
 
-function basenameNoExt (string $path)
+function basenameNoExt (string $path): string
 {
     return pathinfo ($path, PATHINFO_FILENAME);
 }
 
-function file_ext (string $path)
+function file_ext (string $path): string
 {
     return strtolower (pathinfo ($path, PATHINFO_EXTENSION));
 }
@@ -86,25 +90,25 @@ function array_end (array $array)
     return array_pop ($array);
 }
 
-function explode2 (string $separator, string $string, ...$limit)
-{ 
+function explode2 (string $separator, string $string, ...$limit): array
+{
     return strlen ($string) ?
         explode ($separator, $string, ...$limit) : [];
 }
 
-function substr_icount (string $haystack, string $needle, ...$params)
-{ 
+function substr_icount (string $haystack, string $needle, ...$params): int
+{
 	return substr_count (strtolower ($haystack), strtolower ($needle), ...$params);
 }
 
-function str_replace_assoc (string $subject, array $replacements)
+function str_replace_assoc (string $subject, array $replacements): string
 {
 	return str_replace (array_keys ($replacements), array_values ($replacements), $subject);
 }
 
-function pre (...$args)
+function pre (...$args): void
 {
-	if (sizeof ($args) < 2 )
+	if (sizeof ($args) < 2)
 		$args = current ($args);
 	
 	message (print_r ($args, true));
@@ -146,7 +150,7 @@ function setTimeout (int $interval, $function): Timer
 	return $timer;
 }
 
-function includeComponent (string $componentName)
+function includeComponent (string $componentName): void
 {
     if (!class_exists ($componentName) && file_exists (ENGINE_DIR ."/components/$componentName.php"))
         require_once ENGINE_DIR ."/components/$componentName.php";
@@ -226,27 +230,27 @@ class Items extends \ArrayObject
 		return VoidEngine::getArrayValue ($this->selector, (int) $index, 'string');
 	}
 	
-	public function addRange (array $items)
+	public function addRange (array $items): void
 	{
 		array_map ([$this, 'append'], $items);
 	}
 	
-	public function offsetUnset ($index)
+	public function offsetUnset ($index): void
 	{
 		VoidEngine::callMethod ($this->selector, 'RemoveAt', '', (int) $index, 'int');
 	}
 	
-	public function remove ($index)
+	public function remove ($index): void
 	{
 		$this->offsetUnset ($index);
 	}
 	
-	public function clear ()
+	public function clear (): void
 	{
 		VoidEngine::callMethod ($this->selector, 'Clear');
 	}
 	
-	public function indexOf (string $value)
+	public function indexOf (string $value): int
 	{
 		return VoidEngine::getProperty ($this->selector, 'IndexOf', 'int', $value, 'string');
 	}
@@ -256,7 +260,7 @@ class Items extends \ArrayObject
 		return $this->offsetSet ($index, $value);
 	}
 	
-	public function contains (string $value)
+	public function contains (string $value): bool
 	{
 		return VoidEngine::getProperty ($this->selector, 'Contains', 'bool', $value, 'string');
 	}
@@ -341,9 +345,9 @@ set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '',
         'Created components: '. print_r (Components::$components, true)
     ]));
 
-    $log = 'New error catched as "error_'. $GLOBALS['__debug']['error_count'] .'.log"';
+    $log = text ('Поймана ошибка и сохранена как "error_'. $GLOBALS['__debug']['error_count'] .'.log"');
 
-    VoidStudioAPI::getObjects ('main')['Log_List']->items->add ('[!] '. $log);
+    VoidStudioAPI::getObjects ('main')['Log__List']->items->add ('[!] '. $log);
     pre ($log);
 });
 
@@ -355,9 +359,9 @@ set_exception_handler (function ($exception)
         'Created components: '. print_r (Components::$components, true)
     ]));
 
-    $log = 'New exception catched as "exception_'. $GLOBALS['__debug']['error_count'] .'.log"';
+    $log = text ('Поймано исключение и сохранено как "exception_'. $GLOBALS['__debug']['error_count'] .'.log"');
 
-    VoidStudioAPI::getObjects ('main')['Log_List']->items->add ('[!] '. $log);
+    VoidStudioAPI::getObjects ('main')['Log__List']->items->add ('[!] '. $log);
     pre ($log);
 });
 

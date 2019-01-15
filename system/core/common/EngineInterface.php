@@ -29,11 +29,19 @@ class VoidEngine
         return winforms_objectexists ($selector);
     }
 
+    static function objectType ($object)
+    {
+        if ($object instanceof WFObject)
+            $object = $object->getResourceLine ();
+
+        elseif (!is_string ($object))
+            return false;
+
+        else return winforms_typeof ($object);
+    }
+
     static function loadModule (string $path): void
     {
-        // $assembly = self::buildObject (new WFObject ('System.Reflection.Assembly', 'mscorlib'));
-        // return self::callMethod ($assembly, 'LoadFrom', 'object', $path, 'string');
-
         $assembly = new WFClass ('System.Reflection.Assembly', 'mscorlib');
         $assembly->LoadFrom ($path);
     }
@@ -46,7 +54,7 @@ class VoidEngine
         return winforms_getprop ($selector, $propertyName, $type);
     }
 
-    static function setProperty (int $selector, string $propertyName, $value, string $type = 'auto')
+    static function setProperty (int $selector, string $propertyName, $value, string $type = 'auto'): void
     {
         if ($type == 'auto')
             $type = getLogicalVarType ($value);
@@ -81,7 +89,7 @@ class VoidEngine
     static function setObjectEvent (int $selector, string $eventName, string $code = ''): void
     {
         if (self::eventExists ($selector, $eventName))
-            self::removeEvent ($selector, $eventName); //throw new \Exception ('Event "'. $eventName .'" already exists for "'. $selector .'"-component');
+            self::removeEvent ($selector, $eventName);
 
         try
         {
@@ -180,12 +188,7 @@ class WFClass
     public function __get ($name)
     {
         if (is_int ($this->class))
-        {
-            //if (strtoupper ($name[0]) == $name[0])
-                return VoidEngine::getProperty ($this->class, $name, '');
-
-            //else throw new \Exception ("The \"$name\" property isn't C# class property name");
-        }
+            return VoidEngine::getProperty ($this->class, $name, '');
 
         else throw new \Exception ("Class isn't initialized");
     }
@@ -193,12 +196,7 @@ class WFClass
     public function __set ($name, $value)
     {
         if (is_int ($this->class))
-        {
-            //if (strtoupper ($name[0]) == $name[0])
-                VoidEngine::setProperty ($this->class, $name, $value);
-
-            //else throw new \Exception ("The \"$name\" property isn't C# class property name");
-        }
+            VoidEngine::setProperty ($this->class, $name, $value);
 
         else throw new \Exception ("Class isn't initialized");
     }
@@ -207,20 +205,25 @@ class WFClass
 	{
         if (is_int ($this->class))
         {
-            //if (strtoupper ($method[0]) == $method[0])
-            //{
-                $setArgs = array ();
-                
-                foreach ($args as $id => $arg)
-                {
-                    $setArgs[] = $arg;
+            $autoDetectVarType = true;
+            $setArgs           = [];
+            
+            if (substr ($method, strlen ($method) - 2) == 'Ex')
+            {
+                $autoDetectVarType = false;
+
+                $method = substr ($method, 0, -2);
+            }
+
+            foreach ($args as $id => $arg)
+            {
+                $setArgs[] = $arg;
+
+                if ($autoDetectVarType)
                     $setArgs[] = getLogicalVarType ($arg);
-                }
+            }
 
-                return VoidEngine::callMethod ($this->class, $method, '', ...$setArgs);
-            //}
-
-            //else throw new \Exception ("The \"$method\" method isn't C# class method name");
+            return VoidEngine::callMethod ($this->class, $method, '', ...$setArgs);
         }
 
         else throw new \Exception ("Class isn't initialized");

@@ -3,7 +3,6 @@ Form MainForm
     windowState: fwsMaximized
     startPosition: fspCenterScreen
     backgroundColor: clWhite
-    formBorderStyle: bsFixedSingle
 
     caption: 'VoidStudio'
 
@@ -93,6 +92,8 @@ Panel LeftMenu__Panel (MainForm):
 VoidDesigner Form1Designer (TopMenu__Form1, PropertiesList):
 
 % VoidEngine\VoidStudioAPI::createProject ('Project'. time (), Form1Designer->form);
+
+TabControl TopMenu (TopMenu__Panel)
 
 ComboBox Objects (LeftMenu__Panel):
     dock: dsTop
@@ -208,7 +209,7 @@ MenuItem Menu__studio_about
 
     ClickEvent:^ function ($self)
         {
-            $msg = new MessageBox ();
+            $msg = new MessageBox;
             $msg->show (text ("Авторы сие произведения:\n\nАндрей Кусов (vk.com/postmessage) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms"), text ('О программе'));
         }
 
@@ -217,7 +218,7 @@ MenuItem Menu__project_build
 
     ClickEvent:^ function ($self)
         {
-            $msg = new MessageBox ();
+            $msg = new MessageBox;
             $msg->show (text ('Рано ещё!'));
         }
 

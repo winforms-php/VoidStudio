@@ -29,6 +29,26 @@ class Scintilla extends NoVisual
         $this->setProperty ('Lexer', $lexer, 'int');
     }
 
+    public function resetSyntax ()
+    {
+        $this->callMethod ('StyleResetDefault');
+    }
+
+    public function clearSyntax ()
+    {
+        $this->callMethod ('StyleClearAll');
+    }
+
+    public function setKeywords (int $index, string $keywords)
+    {
+        $this->callMethod ('SetKeywords', $index, 'int', $keywords, 'string');
+    }
+
+    public function propertyInit (string $propertyName, $propertyValue)
+    {
+        $this->callMethod ('SetProperty', $propertyName, 'string', $propertyValue, 'string');
+    }
+
     public function set_syntax ($syntax)
     {
         if (file_exists ($syntax))
@@ -36,11 +56,17 @@ class Scintilla extends NoVisual
 
         $syntax = json_decode ($syntax, true);
 
-        if (!is_array ($syntax['syntax']) || !is_array ($syntax['references']) || !isset ($syntax['lexer']))
-            return false;
+        if (
+            !is_array ($syntax['syntax']) ||
+            !is_array ($syntax['references']) ||
+            !isset ($syntax['lexer'])
+        ) return false;
 
         else
         {
+            $this->resetSyntax ();
+            $this->clearSyntax ();
+            
             foreach ($syntax['references'] as $name => $value)
                 if (isset ($syntax['syntax'][$name]))
                 {
@@ -54,6 +80,13 @@ class Scintilla extends NoVisual
                 }
 
             $this->lexer = $syntax['lexer'];
+
+            if (is_array ($syntax['keywords']))
+                foreach ($syntax['keywords'] as $id => $keywords)
+                    $this->setKeywords ($id, $keywords);
+
+            $this->propertyInit ('fold', 1);
+            $this->propertyInit ('fold.compact', 1);
 
             return true;
         }

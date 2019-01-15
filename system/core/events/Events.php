@@ -48,27 +48,19 @@ class EventArgs
 	{
 		if (method_exists ($this, $method = "get_$name"))
             return $this->$method ();
-            
-        //elseif (strtoupper ($name[0]) == $name[0])
         
         else return $this->getProperty ($name, '');
-		
-		//else throw new \Exception ("The \"$name\" property is missing");
 	}
 	
     final public function __set ($name, $value)
 	{
 		if (method_exists ($this, $method = "set_$name"))
             return $this->$method ($value);
-            
-        //elseif (strtoupper ($name[0]) == $name[0])
         
         else $this->setProperty ($name, $value, 'auto');
-		
-        //else throw new \Exception ("The \"$name\" property is missing");
     }
     
-    public function get_selector ()
+    final public function get_selector ()
     {
         return $this->selector;
     }

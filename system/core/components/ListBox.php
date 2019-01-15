@@ -32,4 +32,6 @@ class ListBox extends Control
     }
 }
 
+class CheckedListBox extends ListBox {}
+
 ?>

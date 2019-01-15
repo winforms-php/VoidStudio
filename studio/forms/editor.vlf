@@ -2,7 +2,6 @@ Form MainForm
     size: [$SCREEN->width / 1.4, $SCREEN->height / 1.4]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
-    formBorderStyle: bsFixedSingle
 
     caption: text ('Редактор событий')
 

@@ -6,7 +6,7 @@ abstract class Component
 {
     protected $componentSelector;
     protected $componentClass;
-    protected $helpStorage = '';
+    public $helpStorage = '';
 	
 	public function __construct (string $className)
 	{
@@ -25,15 +25,11 @@ abstract class Component
             
         elseif (substr ($name, strlen ($name) - 5) == 'Event')
             return Events::getObjectEvent ($this, substr ($name, 0, -5));
-		
-		elseif (property_exists ($this, $name))
-			return $this->$name;
-		
-        //elseif (strtoupper ($name[0]) == $name[0])
+
+        elseif (property_exists ($this, $name))
+            return $this->$name;
         
         else return $this->getProperty ($name, '');
-        
-        //else throw new \Exception ("The \"$name\" property is missing from the \"$this->componentClass\" component");
 	}
 	
 	final function __set ($name, $value)
@@ -46,8 +42,6 @@ abstract class Component
 		
 		elseif (method_exists ($this, "get_$name"))
 			throw new \Exception ("The \"$name\" property of the \"$this->componentClass\" component is read-only");
-		
-        //elseif (strtoupper ($name[0]) == $name[0])
         
         else $this->setProperty ($name, $value, 'auto');
 	}
@@ -67,13 +61,14 @@ abstract class Component
 	
 	final protected function getArrayProperty (string $name, string $type)
 	{
-        $array = $this->getProperty ($name, 'object');
-        $size  = VoidEngine::getProperty ($array, 'Length', 'int');
+        $array  = $this->getProperty ($name, 'object');
+        $size   = VoidEngine::getProperty ($array, 'Length', 'int');
+        $return = [];
 
 		for ($i = 0; $i < $size; ++$i)
             $return[] = VoidEngine::getArrayValue ($array, $i, $type);
-            
-        VoidEngine::removeObject ($array);
+        
+        VoidEngine::removeObject ($array); // May be это привидёт к тому, что нельзя будет обратиться к массиву $name несколько раз. Ну, посмотрим, так сказать)
         
 		return $return;
 	}
@@ -83,9 +78,9 @@ abstract class Component
         VoidEngine::setProperty ($this->componentSelector, $name, $value, $type);
     }
 	
-    final protected function callMethod (string $method, string $type = '', ...$args)
-    {
-        return VoidEngine::callMethod ($this->componentSelector, $method, $type, ...$args);
+    final protected function callMethod (string $method, ...$args) 
+    { 
+        return VoidEngine::callMethod ($this->componentSelector, $method, ...$args); 
     }
 	
     final public function get_selector ()
@@ -108,11 +103,16 @@ abstract class Component
 	
 	public function dispose ()
 	{
-		Components::removeComponent ($this->componentSelector);
-        VoidEngine::removeObject ($this->componentSelector);
-        unset ($this->componentSelector, $this->componentClass, $this->helpStorage);
+        if (is_int ($this->componentSelector))
+        {
+            $this->callMethod ('Dispose');
 
-        $this->callMethod ('Dispose');
+            Components::removeComponent ($this->componentSelector);
+            VoidEngine::removeObject ($this->componentSelector);
+            unset ($this->componentSelector, $this->componentClass, $this->helpStorage);
+        }
+
+        else throw new \Exception ('Object already disposed');
     }
 }
 

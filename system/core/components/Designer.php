@@ -47,6 +47,7 @@ class VoidDesigner extends Component
             {
                 $objects     = VoidEngine::callMethod ('. $this->componentSelector .', "GetSelectedComponents", "object");
                 $firstObject = VoidEngine::getArrayValue ($objects, 0, "object");
+                $content     = VoidEngine::callMethod ($firstObject, "ToString", "string");
                 $className   = substr (explode (".", explode (",", $content)[0])[3], 0, -1);
                 $component   = Components::getComponent ($firstObject);
 
@@ -94,15 +95,10 @@ class VoidDesigner extends Component
                     $objects->selectedItem = $cmp;
                     $objects->items->remove ($objects->selectedIndex);
 
+                    if (($id = array_search ($cmp, $GLOBALS["forms"][$form])) !== false)
+                        unset ($GLOBALS["forms"][$form][$id]);
+
                     $component->dispose ();
-
-                    foreach ($GLOBALS["forms"][$form] as $id => $name)
-                        if ($name == $cmp)
-                        {
-                            unset ($GLOBALS["forms"][$form][$id]);
-
-                            break;
-                        }
                 }
             }
         ');

@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     build-2019/01/07
+ * @version     build-2019/01/15
  * 
  * Contacts:
  *
@@ -42,9 +42,7 @@ $GLOBALS['__debug'] = [
     'error_count' => 0
 ];
 
-$files = scandir ('debug');
-
-if (is_array ($files))
+if (is_array ($files = scandir ('debug')))
     foreach ($files as $id => $file)
         if (is_file ('debug/'. $file))
             unlink ('debug/'. $file);
@@ -105,7 +103,7 @@ class Components
     static $components = [];
     static $events = [];
 
-    static function addComponent (int $selector, object $object)
+    static function addComponent (int $selector, object $object): void
     {
         self::$components[$selector] = $object;
         self::$events[$selector] = [];
