@@ -6,6 +6,9 @@
  * 
  * Документация:
  * @see <https://vk.com/@winforms-vlf-dlya-chainikov>
+ * 
+ * ! Признано устаревшим
+ * ! Более новая версия: extensions/VLF
  */
 
 namespace VoidEngine;

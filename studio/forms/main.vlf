@@ -6,7 +6,7 @@ Form MainForm
 
     caption: 'VoidStudio'
 
-    ->icon->loadFromFile (STUDIO_DIR. '/Icon.ico')
+    ->icon->loadFromFile (STUDIO_DIR .'/Icon.ico')
 
     SplitContainer BottomPanel__Container
         dock: dsFill

@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     build-2019/01/15
+ * @version     build-2019/01/20
  * 
  * Contacts:
  *
@@ -52,7 +52,12 @@ require 'common/Others.php';
 require 'common/EngineInterface.php';
 require 'common/Globals.php';
 require 'common/Constants.php';
-require 'common/LanguageFiles.php';
+// require 'common/LanguageFiles.php';
+
+if (is_array ($exts = scandir ('extensions')))
+    foreach ($exts as $id => $ext)
+        if (is_dir ('extensions/'. $ext) && file_exists ($ext = 'extensions/'. $ext .'/main.php'))
+            require $ext;
 
 require 'events/Events.php';
 require 'events/MouseEventArgs.php';
@@ -97,115 +102,6 @@ require 'components/ColorDialog.php';
 require 'components/FolderBrowserDialog.php';
 require 'components/Designer.php';
 require 'components/MainMenu.php';
-
-class Components
-{
-    static $components = [];
-    static $events = [];
-
-    static function addComponent (int $selector, object $object): void
-    {
-        self::$components[$selector] = $object;
-        self::$events[$selector] = [];
-    }
-
-    static function getComponent (int $selector)
-    {
-        return isset (self::$components[$selector]) ?
-            self::$components[$selector] : false;
-    }
-
-    static function setComponentEvent (int $selector, string $eventName, string $code): void
-    {
-        self::$events[$selector][$eventName] = $code;
-    }
-
-    static function getComponentEvent (int $selector, string $eventName)
-    {
-        return isset (self::$events[$selector][$eventName]) ?
-            self::$events[$selector][$eventName] : false;
-    }
-
-    static function removeComponentEvent (int $selector, string $eventName): void
-    {
-        unset (self::$events[$selector][$eventName]);
-    }
-
-    static function removeComponent (int $selector): void
-    {
-        unset (self::$components[$selector], self::$events[$selector]);
-    }
-
-    static function cleanJunk (): array
-    {
-        $junk = [];
-
-        foreach (self::$components as $selector => $object)
-            if (!VoidEngine::objectExists ($selector))
-            {
-                $junk[$selector] = $object;
-
-                unset (self::$components[$selector]);
-
-                if (isset (self::$events[$selector]))
-                    unset (self::$events[$selector]);
-            }
-
-        return $junk;
-    }
-}
-
-class Clipboard
-{
-    static $clipboard;
-
-    public static function getText (): string
-    {
-        if (!isset (self::$clipboard))
-            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
-
-        return VoidEngine::callMethod (self::$clipboard, 'GetText', 'string');
-    }
-    
-    public static function setText (string $text): void
-    {
-        if (!isset (self::$clipboard))
-            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
-
-        VoidEngine::callMethod (self::$clipboard, 'SetText', '', $text, 'string');
-    }
-    
-    public static function getFiles (): array
-    {
-        if (!isset (self::$clipboard))
-            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
-
-        $array = VoidEngine::callMethod (self::$clipboard, 'GetFileDropList', 'object');
-        $size  = VoidEngine::getProperty ($arr, 'Count', 'int');
-        $files = [];
-
-        for ($i = 0; $i < $size; ++$i)
-            $files[] = VoidEngine::getArrayValue ($arr, $i, 'string');
-
-        VoidEngine::removeObject ($array);
-
-        return $files;
-    }
-    
-    public static function setFiles (array $files): void
-    {
-        if (!isset (self::$clipboard))
-            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
-
-        $coll = VoidEngine::buildObject (new WFObject ('System.Collections.Specialized.StringCollection', 'System'));
-
-        foreach($files as $file)
-            VoidEngine::callMethod ($coll, 'Add', '', (string) $file, 'string');
-
-        VoidEngine::callMethod (self::$clipboard, 'SetFileDropList', '', $coll, 'object');
-        VoidEngine::removeObject ($coll);
-    }
-}
 
 $studioStart = dirname (dirname (ENGINE_DIR)) .'/studio/start.php';
 

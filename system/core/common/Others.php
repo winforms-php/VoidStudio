@@ -179,6 +179,115 @@ function getLogicalVarType ($data): string
     else return 'string';
 }
 
+class Components
+{
+    static $components = [];
+    static $events = [];
+
+    static function addComponent (int $selector, object $object): void
+    {
+        self::$components[$selector] = $object;
+        self::$events[$selector] = [];
+    }
+
+    static function getComponent (int $selector)
+    {
+        return isset (self::$components[$selector]) ?
+            self::$components[$selector] : false;
+    }
+
+    static function setComponentEvent (int $selector, string $eventName, string $code): void
+    {
+        self::$events[$selector][$eventName] = $code;
+    }
+
+    static function getComponentEvent (int $selector, string $eventName)
+    {
+        return isset (self::$events[$selector][$eventName]) ?
+            self::$events[$selector][$eventName] : false;
+    }
+
+    static function removeComponentEvent (int $selector, string $eventName): void
+    {
+        unset (self::$events[$selector][$eventName]);
+    }
+
+    static function removeComponent (int $selector): void
+    {
+        unset (self::$components[$selector], self::$events[$selector]);
+    }
+
+    static function cleanJunk (): array
+    {
+        $junk = [];
+
+        foreach (self::$components as $selector => $object)
+            if (!VoidEngine::objectExists ($selector))
+            {
+                $junk[$selector] = $object;
+
+                unset (self::$components[$selector]);
+
+                if (isset (self::$events[$selector]))
+                    unset (self::$events[$selector]);
+            }
+
+        return $junk;
+    }
+}
+
+class Clipboard
+{
+    static $clipboard;
+
+    public static function getText (): string
+    {
+        if (!isset (self::$clipboard))
+            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
+
+        return VoidEngine::callMethod (self::$clipboard, 'GetText', 'string');
+    }
+    
+    public static function setText (string $text): void
+    {
+        if (!isset (self::$clipboard))
+            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
+
+        VoidEngine::callMethod (self::$clipboard, 'SetText', '', $text, 'string');
+    }
+    
+    public static function getFiles (): array
+    {
+        if (!isset (self::$clipboard))
+            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
+
+        $array = VoidEngine::callMethod (self::$clipboard, 'GetFileDropList', 'object');
+        $size  = VoidEngine::getProperty ($arr, 'Count', 'int');
+        $files = [];
+
+        for ($i = 0; $i < $size; ++$i)
+            $files[] = VoidEngine::getArrayValue ($arr, $i, 'string');
+
+        VoidEngine::removeObject ($array);
+
+        return $files;
+    }
+    
+    public static function setFiles (array $files): void
+    {
+        if (!isset (self::$clipboard))
+            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
+
+        $coll = VoidEngine::buildObject (new WFObject ('System.Collections.Specialized.StringCollection', 'System'));
+
+        foreach($files as $file)
+            VoidEngine::callMethod ($coll, 'Add', '', (string) $file, 'string');
+
+        VoidEngine::callMethod (self::$clipboard, 'SetFileDropList', '', $coll, 'object');
+        VoidEngine::removeObject ($coll);
+    }
+}
+
 class Items extends \ArrayObject
 {
     protected $selector;
@@ -347,7 +456,9 @@ set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '',
 
     $log = text ('Поймана ошибка и сохранена как "error_'. $GLOBALS['__debug']['error_count'] .'.log"');
 
-    VoidStudioAPI::getObjects ('main')['Log__List']->items->add ('[!] '. $log);
+    if (is_object ($logList = VoidStudioAPI::getObjects ('main')['Log__List']))
+        $logList->items->add ('[!] '. $log);
+    
     pre ($log);
 });
 
@@ -361,7 +472,9 @@ set_exception_handler (function ($exception)
 
     $log = text ('Поймано исключение и сохранено как "exception_'. $GLOBALS['__debug']['error_count'] .'.log"');
 
-    VoidStudioAPI::getObjects ('main')['Log__List']->items->add ('[!] '. $log);
+    if (is_object ($logList = VoidStudioAPI::getObjects ('main')['Log__List']))
+        $logList->items->add ('[!] '. $log);
+        
     pre ($log);
 });
 
