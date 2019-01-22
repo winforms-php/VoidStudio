@@ -51,21 +51,23 @@ $constants = array
 	
 	# Константы форм
 	
-	'fbs3D' 					=> 2,
-	'fbsDialog' 				=> 3,
-	'fbsSingle' 				=> 1,
-	'fbsToolWindow' 			=> 5,
-	'fbsNone' 					=> 0,
-	'fbsSizable' 				=> 4,
-	'fbsSizableToolWindow' 		=> 6,
-	'fwsMaximized' 				=> 2,
-	'fwsMinimized'				=> 1,
-	'fwsNormal' 				=> 0,
-	'fspCenterParent' 			=> 4,
-	'fspCenterScreen' 			=> 1,
+	'fbsNone'			   => 0,
+	'fbsSingle'			   => 1,
+	'fbs3D'				   => 2,
+	'fbsDialog'			   => 3,
+	'fbsSizable'		   => 4,
+	'fbsToolWindow'		   => 5,
+	'fbsSizableToolWindow' => 6,
+
+	'fwsNormal'	   => 0,
+	'fwsMinimized' => 1,
+	'fwsMaximized' => 2,
+
 	'fspManual' 				=> 0,
-	'fspWindowsDefaultBounds'   => 3,
+	'fspCenterScreen' 			=> 1,
 	'fspWindowsDefaultLocation' => 2,
+	'fspWindowsDefaultBounds'   => 3,
+	'fspCenterParent' 			=> 4,
 
 	# Константы стиля оконтовки
 

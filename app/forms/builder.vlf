@@ -1,0 +1,78 @@
+Form MainForm
+    size: [340, 242]
+    startPosition: fspCenterScreen
+    backgroundColor: clWhite
+    formBorderStyle: fbsToolWindow
+
+    caption: text ('Сборка проекта')
+
+    ->icon->loadFromFile (STUDIO_DIR. '/Icon.ico')
+
+    FormClosingEvent:^ function ($self, $arg)
+        {
+            $arg = new FormClosingEventArgs ($arg);
+            $arg->cancel = true;
+
+            $self->hide ();
+        }
+
+    Label EntryPoint
+        location: [16, 16]
+        font: ['Segoe UI', 12]
+
+        caption: text ('Точка входа')
+
+    ComboBox FormSelection
+        dropDownStyle: ddDropDownList
+        bounds: [16, 48, 220, 16]
+
+        ->items->addRange (array_keys ($GLOBALS['forms']))
+        selectedItem: current (array_keys ($GLOBALS['forms']))
+
+    Label BuildConfigs
+        location: [16, 96]
+        font: ['Segoe UI', 12]
+
+        caption: text ('Настройки сборки проекта')
+
+    CheckBox UseCaching
+        bounds: [16, 128, 220, 16]
+        caption: text ('Использовать кэширование')
+
+        checked: true
+
+    Button BuildProject
+        bounds: [16, 160, 104, 32]
+
+        caption: text ('Собрать')
+
+        ClickEvent:^ function ($self)
+            {
+                $dir = new FolderBrowserDialog;
+                
+                if ($dir->execute () && is_dir ($dir = $dir->path))
+                {
+                    dir_clean ($dir .'/system');
+                    dir_clean ($dir .'/app');
+
+                    dir_copy (dirname (ENGINE_DIR), $dir .'/system');
+
+                    file_put_contents ($dir .'/app/main.vlf', VoidStudioBuilder::constructVLF ());
+                    file_put_contents ($dir .'/app/start.php', "<?php\n\nnamespace VoidEngine;\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (__DIR__ .'/main.vlf', [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => ". UseCaching->checked ."\n]))['". FormSelection->selectedItem ."']);\n\n?>\n");
+
+                    pre (text ('Проект успешно собран'));
+                    MainForm->hide ();
+                }
+
+                else pre (text ('Выбран неверный путь для сборки проекта'));
+            }
+
+    Button CompileProject
+        bounds: [128, 160, 120, 32]
+
+        caption: text ('Компилировать')
+
+        ClickEvent:^ function ($self)
+            {
+                MainForm->hide ();
+            }

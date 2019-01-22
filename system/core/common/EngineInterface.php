@@ -122,6 +122,79 @@ class VoidEngine
     }
 }
 
+class EngineAdditions
+{
+    static function getObjectProperties (int $selector, bool $extended = false): array
+    {
+        $properties = [];
+
+        $type  = VoidEngine::callMethod ($selector, 'GetType', 'object');
+        $props = VoidEngine::callMethod ($type, 'GetProperties', 'object');
+        $len   = VoidEngine::getProperty ($props, 'Length', 'int');
+
+        for ($i = 0; $i < $len; ++$i)
+        {
+            $index = VoidEngine::getArrayValue ($props, $i, 'object');
+            $name  = VoidEngine::getProperty ($index, 'Name', 'string');
+
+            $property = self::getProperty ($selector, $name);
+
+            $properties[$name] = $extended ?
+                $property : $property['value'];
+        }
+
+        return $properties;
+    }
+
+    static function getProperty (int $selector, string $name): array
+    {
+        $type         = VoidEngine::callMethod ($selector, 'GetType', 'object');
+        $property     = VoidEngine::callMethod ($type, 'GetProperty', 'object', $name, 'string');
+        $propertyType = VoidEngine::getProperty ($property, 'PropertyType', 'string');
+
+        switch ($propertyType)
+        {
+            case 'System.String':
+                $property = 'string';
+            break;
+
+            case 'System.Int32':
+            case 'System.Int64':
+                $property = 'int';
+            break;
+
+            case 'System.Double':
+                $property = 'double';
+            break;
+
+            case 'System.Boolean':
+                $property = 'bool';
+            break;
+
+            case 'System.Drawing.Color':
+                $property = 'color';
+            break;
+
+            default:
+                try
+                {
+                    $property = 'int';
+                }
+
+                catch (\WinFormsException $e)
+                {
+                    $property = 'object';
+                }
+            break;
+        }
+
+        return [
+            'type'  => $property,
+            'value' => VoidEngine::getProperty ($selector, $name, $property)
+        ];
+    }
+}
+
 class WFObject
 {
     public $version  = '4.0.0.0';
@@ -190,7 +263,7 @@ class WFClass
         if (is_int ($this->class))
             return VoidEngine::getProperty ($this->class, $name, '');
 
-        else throw new \Exception ("Class isn't initialized");
+        else throw new \Exception ('Class isn\'t initialized');
     }
 
     public function __set ($name, $value)
@@ -198,7 +271,7 @@ class WFClass
         if (is_int ($this->class))
             VoidEngine::setProperty ($this->class, $name, $value);
 
-        else throw new \Exception ("Class isn't initialized");
+        else throw new \Exception ('Class isn\'t initialized');
     }
 
     public function __call ($method, $args)
@@ -226,7 +299,7 @@ class WFClass
             return VoidEngine::callMethod ($this->class, $method, '', ...$setArgs);
         }
 
-        else throw new \Exception ("Class isn't initialized");
+        else throw new \Exception ('Class isn\'t initialized');
 	}
 }
 

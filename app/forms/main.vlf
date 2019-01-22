@@ -1,0 +1,273 @@
+Form MainForm
+    size: [$SCREEN->width / 1.2, $SCREEN->height / 1.2]
+    windowState: fwsMaximized
+    startPosition: fspCenterScreen
+    backgroundColor: clWhite
+
+    caption: 'VoidStudio'
+
+    ->icon->loadFromFile (STUDIO_DIR .'/Icon.ico')
+
+    SplitContainer BottomPanel__Container
+        dock: dsFill
+
+        Orientation: 0
+        SplitterDistance: MainForm->h - 180
+
+TabPage Log__Page
+    text: text ('Лог')
+
+    ListBox Log__List
+        dock: dsFill
+
+        font: ['Microsoft Sans Serif', 9]
+
+TabPage EvalTool__Page
+    text: text ('Выполнение кода')
+
+    Scintilla EvalTool_Editor
+        dock: dsFill
+        
+        syntax: 'syntax.json'
+
+    Button EvalTool_Eval
+        dock: dsBottom
+        caption: text ('Выполнить')
+
+        ClickEvent:^ function ($self) use (EvalTool_Editor $editor)
+            {
+                file_put_contents ('system/last_eval.php', $editor->text);
+
+                eval ($editor->text);
+            }
+
+TabControl BottomPanel (BottomPanel__Container->panel2):
+    dock: dsFill
+
+    ->tabPages->addRange ([Log__Page, EvalTool__Page])
+
+%^ if (file_exists ('system/last_eval.php'))
+        EvalTool_Editor->text = file_get_contents ('system/last_eval.php');
+
+TabPage TopMenu__Form1
+    name: 'Form1'
+    text: 'Form1'
+
+Panel TopMenu__Panel (BottomPanel__Container->panel1):
+    dock: dsFill
+
+    TabControl TopMenu
+        dock: dsFill
+
+        ->tabPages->add (TopMenu__Form1)
+
+TabPage LeftMenu__Properties
+    text: text ('Свойства')
+
+    PropertyGridEx PropertiesList
+        dock: dsFill
+
+        PropertyValueChangedEvent:^ function ($self, $args)
+            {
+                $args = new PropertyValueChangedEventArgs ($args);
+                $name = VoidEngine::getProperty ($args->changedItem, 'Label');
+
+                $GLOBALS['AvailableObjects'][$self->selectedObject][$name] = EngineAdditions::getProperty ($self->selectedObject, $name);
+            }
+
+TabPage LeftMenu__Events
+    text: text ('События')
+
+    ListBox LeftMenu__EventsList
+        dock: dsFill
+
+        font: ['Microsoft Sans Serif', 9]
+
+        DoubleClickEvent:^ function ($self) use (PropertiesList $propertyGrid)
+            {
+                if ($event = $self->selected)
+                    VoidStudioAPI::openEventEditor (Components::getComponent ($propertyGrid->selectedObject), $event);
+            }
+
+Panel LeftMenu__Panel (MainForm):
+    dock: dsLeft
+    width: 280
+
+    TabControl LeftMenu
+        dock: dsFill
+
+        ->tabPages->addRange ([LeftMenu__Properties, LeftMenu__Events])
+
+VoidDesigner Form1Designer (TopMenu__Form1, PropertiesList, 'Form1')
+
+% VoidEngine\VoidStudioAPI::createProject ('Project'. time (), Form1Designer->form);
+
+TabControl TopMenu (TopMenu__Panel)
+
+ComboBox Objects (LeftMenu__Panel):
+    dock: dsTop
+    dropDownStyle: ddDropDownList
+
+    SelectedIndexChangedEvent:^ function ($self) use (PropertiesList $propertyGrid)
+        {
+            $item = $self->selectedItem;
+
+            $propertyGrid->selectedObject = substr ($item, 1, strpos ($item, ']') - 1);
+        }
+
+    SelectionChangeCommittedEvent:^ function ($self) use (TopMenu $menu)
+        {
+            $item     = $self->selectedItem;
+            $form     = VoidEngine::getProperty ($menu->selectedTab, 'Text');
+            $designer = VoidStudioAPI::$objects['main'][$form .'Designer'];
+
+            VoidEngine::callMethod ($designer->selector, 'SetSelectedComponents', substr ($item, 1, strpos ($item, ']') - 1), 'object');
+        }
+
+TabControl TopMenu (TopMenu__Panel):
+    SelectedEvent:^ function ($self) use (Objects $objs, TopMenu $menu)
+        {
+            $form = VoidEngine::getProperty ($menu->selectedTab, 'Text');
+
+            $objs->items->clear ();
+            $objs->items->addRange ($GLOBALS['forms'][$form]);
+            $objs->selectedIndex = 0;
+            
+            VoidStudioAPI::$objects['main'][$form .'Designer']->focus ();
+        }
+
+%^  PropertiesList->selectedObject = Form1Designer->form->selector;
+    Objects->items->add ('['. Form1Designer->form->selector .'] Form1');
+
+    $GLOBALS['forms']['Form1'][] = '['. Form1Designer->form->selector .'] Form1';
+    $GLOBALS['registeredComponents']['Form'] = 'Form1';
+
+    VoidEngine\VoidStudioAPI::loadObjectEvents (Form1Designer->form, LeftMenu__EventsList);
+
+#^ ColumnHeader ComponentsImagesColumn
+    width: 24
+
+ColumnHeader ComponentsNamesColumn
+    text: text ('Название компонента')
+    # width: 216 - ComponentsImagesColumn->width
+    width: 216
+
+ListView ComponentsList (MainForm):
+    dock: dsRight
+    width: 220
+    fullRowSelect: true
+    view: vwDetails
+
+    ->columns->add (ComponentsNamesColumn)
+
+    DoubleClickEvent:^ function ($self) use (Objects $objs, TopMenu $menu)
+        {
+            if (!isset ($GLOBALS['lastFormNum']))
+                $GLOBALS['lastFormNum'] = 1;
+
+            $component = substr ($self->selectedItems->offsetGet (0), 15, -1);
+            $name      = "VoidEngine\\$component";
+
+            if (isset ($GLOBALS['registeredComponents'][$name]))
+            {
+                sort ($GLOBALS['registeredComponents'][$name]);
+
+                $cname = $component .(substr (end ($GLOBALS['registeredComponents'][$name]), strlen ($component)) + 1);
+                $GLOBALS['registeredComponents'][$name][] = $cname;
+            }
+
+            else
+            {
+                $cname = $component .'1';
+                $GLOBALS['registeredComponents'][$name] = [$cname];
+            }
+
+            if ($component == 'Form')
+            {
+                $page = new TabPage ('Form'. (++$GLOBALS['lastFormNum']));
+                
+                $designer = new VoidDesigner ($page, PropertiesList, $page->caption);
+                $designer->form->location = [0, 0];
+                $designer->updateHost ();
+
+                VoidStudioAPI::$objects['main']['Form'. $GLOBALS['lastFormNum'] .'Designer'] = $designer;
+                $menu->tabPages->add ($page);
+
+                $GLOBALS['forms']['Form'. $GLOBALS['lastFormNum']] = ['['. $designer->form->selector .'] '. $page->caption];
+                VoidStudioAPI::loadObjectEvents ($designer->form, LeftMenu__EventsList);
+            }
+
+            else
+            {
+                $form     = VoidEngine::getProperty ($menu->selectedTab, 'Text');
+                $designer = VoidStudioAPI::$objects['main'][$form .'Designer'];
+
+                $obj = new $name;
+                $obj->parent  = VoidStudioAPI::$objects['main'][$form .'Designer']->form;
+                $obj->caption = $component;
+
+                $GLOBALS['forms'][$form][] = '['. $obj->selector .'] '. $cname;
+
+                $objs->items->clear ();
+                $objs->items->addRange ($GLOBALS['forms'][$form]);
+                $objs->selectedItem = end ($GLOBALS['forms'][$form]);
+
+                $designer->addComponent ($obj, $cname);
+                VoidStudioAPI::loadObjectEvents ($obj, LeftMenu__EventsList);
+            }
+
+            VoidStudioAPI::saveProject ();
+        }
+
+MenuItem Menu__studio_restart
+    text: text ('Перезапустить')
+
+    ClickEvent:^ function ($self)
+        {
+            $APPLICATION->restart ();
+        }
+
+MenuItem Menu__studio_about
+    text: text ('О программе')
+
+    ClickEvent:^ function ($self)
+        {
+            $msg = new MessageBox;
+            $msg->show (text ("Авторы сие произведения:\n\nАндрей Кусов (vk.com/postmessage) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms"), text ('О программе'));
+        }
+
+MenuItem Menu__project_build
+    text: text ('Собрать')
+
+    ClickEvent:^ function ($self)
+        {
+            $form = VoidStudioAPI::$objects['builder']['MainForm'];
+
+            $form->show ();
+        }
+
+MenuItem Menu__studio
+    text: text ('Среда')
+
+    ->items->addRange ([Menu__studio_restart, Menu__studio_about])
+
+MenuItem Menu__project
+    text: text ('Проект')
+
+    ->items->add (Menu__project_build)
+
+MainMenu Menu
+    ->items->addRange ([Menu__studio, Menu__project])
+
+Form MainForm
+    menu: Menu
+
+    ShownEvent:^ function ($self) use (Log__List $log, Form1Designer $designer)
+        {
+            $designer->form->location = [0, 0];
+            $designer->updateHost ();
+
+            $time = round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 4);
+
+            $log->items->add (text ('VoidStudio запущен за '. ($time > 0 ? $time : '[мало]') .' секунд'));
+        }

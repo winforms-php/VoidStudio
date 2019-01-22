@@ -46,20 +46,24 @@ class VLFParser
         {
             $info = unserialize (gzinflate (file_get_contents ($file)));
 
-            $this->tree  = $info[0];
-            $this->links = $info[1];
+            if ($info[0] == sha1 (file_get_contents (__FILE__)))
+            {
+                $this->tree  = $info[1][0];
+                $this->links = $info[1][1];
+
+                return;
+            }
+
+            else unlink ($file);
         }
 
-        else
-        {
-            $info = $this->generateSyntaxTree ($content);
+        $info = $this->generateSyntaxTree ($content);
 
-            $this->tree  = $info[0];
-            $this->links = $info[1];
+        $this->tree  = $info[0];
+        $this->links = $info[1];
 
-            if ($this->use_caching)
-                file_put_contents (VLF_EXT_DIR .'/cache/'. sha1 ($content) .'.cache', gzdeflate (serialize ($info)));
-        }
+        if ($this->use_caching)
+            file_put_contents (VLF_EXT_DIR .'/cache/'. sha1 ($content) .'.cache', gzdeflate (serialize ([sha1 (file_get_contents (__FILE__)), $info])));
     }
 
     /**
@@ -94,6 +98,28 @@ class VLFParser
 
             if ($this->debug_mode)
                 pre ($words);
+
+            /**
+             * Высокоинтеллектуальный фикс
+             * Редирект из объектов более высокого уровня к более низкому уровню
+             * 
+             * Form MainForm
+             *     Button MainButton1
+             *         ...
+             * 
+             *     caption: 'MainForm'
+             * 
+             * Нужно для того, что-бы указатель с объекта MainButton1 спрыгнул обратно на MainForm
+             * 
+             */
+
+            if ($current_object !== null && $tree[$current_object]['hard'] >= $height)
+                if (
+                    isset ($tree[$current_object]['info']['arguments']) &&
+                    isset ($tree[$current_object]['info']['arguments'][0]) &&
+                    $tree[$current_object]['info']['arguments'][0] instanceof VLFLink &&
+                    $tree[$tree[$current_object]['info']['arguments'][0]->link]['hard'] < $tree[$current_object]['hard']
+                ) $current_object = $tree[$current_object]['info']['arguments'][0]->link;
 
             /**
              * Button ...
@@ -196,17 +222,24 @@ class VLFParser
                         $parent_objects[$id] = $current_object;
                     }
 
+                    /**
+                     * Если высота блока будет выше, чем высота текущего объекта, то текущий объект будет обработан кодом выше
+                     * Если высота блока будет ниже, чем высота текущего объекта, то он создан вне блока текущего объекта и вообще не обрабатывается
+                     * Если же высоты совпадают, то мы дописываем текущему объекту в аргументы 
+                     */
+
                     elseif (
                         $current_object !== null &&
-                        $tree[$current_object]['hard'] == $height &&
-                        isset ($tree[$current_object]['info']['arguments']) &&
-                        isset ($tree[$current_object]['info']['arguments'][0]) &&
-                        $tree[$current_object]['info']['arguments'][0] instanceof VLFLink
+                        $tree[$current_object]['hard'] == $height
                     )
                     {
-                        $tree[$id]['info']['arguments'] = [$tree[$current_object]['info']['arguments'][0]];
+                        // trigger_error ('Sub-parents pyramids permamentrly not functionally at line "'. $line .'"', E_USER_NOTICE);
 
-                        $parent_objects[$id] = $tree[$current_object]['info']['arguments'][0]->link;
+                        $tree[$id]['info']['arguments'] = [
+                            new VLFLink ($tree[$current_object]['info']['object_name'], $current_object)
+                        ];
+
+                        $parent_objects[$id] = $current_object;
 
                         /**
                          * FIXME BLAT
@@ -221,12 +254,6 @@ class VLFParser
                          * ? KNOCK KNOCK KNOCK KNOCK
                          * 
                          */
-
-                        /*while (
-                            isset ($tree[$parent_objects[$id]]['info']['arguments']) &&
-                            isset ($tree[$parent_objects[$id]]['info']['arguments'][0]) &&
-                            $tree[$parent_objects[$id]]['info']['arguments'][0] instanceof VLFLink
-                        ) $parent_objects[$id] = $tree[$parent_objects[$id]]['info']['arguments'][0]->link;*/
                     }
 
                     $links[$tree[$id]['info']['object_name']] = $id;

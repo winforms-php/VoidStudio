@@ -11,6 +11,19 @@ function text (string $text): string
     return mb_convert_encoding ($text, 'Windows-1251');
 }
 
+function dir_create (string $path): void
+{
+    if (!is_dir ($path))
+    {
+        $path = explode ('/', replaceSl ($path));
+        $dir  = '';
+
+        foreach ($path as $id => $subdir)
+            if (!is_dir ($dir = ($dir ? "$dir/" : '') . $subdir))
+                mkdir ($dir);
+    }
+}
+
 function dir_delete (string $path): bool
 {
     if (!is_dir ($path))
@@ -20,12 +33,18 @@ function dir_delete (string $path): bool
 
     if (is_array ($files))
         foreach ($files as $id => $file)
-            if (is_dir ($file))
-                dir_delete ($file);
+            if (is_dir ("$path/$file"))
+                dir_delete ("$path/$file");
 
-            else unlink ($file);
+            else unlink ("$path/$file");
 
     return true;
+}
+
+function dir_clean (string $path): void
+{
+    dir_delete ($path);
+    dir_create ($path);
 }
 
 function dir_copy (string $from, string $to): bool
@@ -48,6 +67,26 @@ function dir_copy (string $from, string $to): bool
             else copy ("$from/$file", "$to/$file");
 
     return true;
+}
+
+function _c (int $selector)
+{
+    return Components::getComponent ($selector);
+}
+
+function c ($name)
+{
+    if (is_int ($name) && is_object ($object = _c ($name)))
+        return $object;
+
+    else
+    {
+        foreach (Components::$components as $selector => $object)
+            if ($object->name == $name)
+                return $object;
+
+        return false;
+    }
 }
 
 function run (string $file, int $windowStyle, bool $wait = false)
@@ -455,9 +494,6 @@ set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '',
     ]));
 
     $log = text ('Поймана ошибка и сохранена как "error_'. $GLOBALS['__debug']['error_count'] .'.log"');
-
-    if (is_object ($logList = VoidStudioAPI::getObjects ('main')['Log__List']))
-        $logList->items->add ('[!] '. $log);
     
     pre ($log);
 });
@@ -471,9 +507,6 @@ set_exception_handler (function ($exception)
     ]));
 
     $log = text ('Поймано исключение и сохранено как "exception_'. $GLOBALS['__debug']['error_count'] .'.log"');
-
-    if (is_object ($logList = VoidStudioAPI::getObjects ('main')['Log__List']))
-        $logList->items->add ('[!] '. $log);
         
     pre ($log);
 });

@@ -17,12 +17,13 @@ class VoidDesigner extends Component
     protected $host;
     protected $selService;
 
-    public function __construct (Control $parent, PropertyGrid $propertyGrid)
+    public function __construct (Control $parent, PropertyGrid $propertyGrid, string $formName = 'form')
     {
         $this->form = new Form;
         $this->form->caption = 'Form Caption';
+        $this->form->name    = $formName;
 
-        $this->componentSelector = VoidEngine::createObject (new WFObject ('WinForms_PHP.FormDesigner', false, true), $this->form->selector, 'object', 'form', 'string');
+        $this->componentSelector = VoidEngine::createObject (new WFObject ('WinForms_PHP.FormDesigner', false, true), $this->form->selector, 'object', $formName, 'string');
         Components::addComponent ($this->componentSelector, $this);
 
         $this->control    = $this->callMethod ('GetControl', 'object');
@@ -83,6 +84,8 @@ class VoidDesigner extends Component
                             }
 
                         // VoidStudioAPI::$objects["main"]["{$form}Designer"]->dispose ();
+
+                        Components::cleanJunk ();
                     }
                     
                     else pre (text ("Нельзя удалить единственную форму проекта"));
@@ -99,6 +102,7 @@ class VoidDesigner extends Component
                         unset ($GLOBALS["forms"][$form][$id]);
 
                     $component->dispose ();
+                    Components::cleanJunk ();
                 }
             }
         ');
@@ -114,13 +118,13 @@ class VoidDesigner extends Component
 
             $objects = VoidEngine::callMethod ('. $this->componentSelector .', "GetSelectedComponents", "object");
 
-            VoidEngine::setProperty ('. $propertyGrid->selector .', "SelectedObjects", $objects, "object");
-
             $firstObject = VoidEngine::getArrayValue ($objects, 0, "object");
             $content     = VoidEngine::callMethod ($firstObject, "ToString");
             $className   = substr (explode (".", explode (",", $content)[0])[3], 0, -1);
+			
+			VoidEngine::setProperty ('. $propertyGrid->selector .', "SelectedObject", $firstObject, "object");
 
-            VoidStudioAPI::getObjects ("main")["Objects"]->selectedItem = "[$firstObject] $className";
+            VoidStudioAPI::getObjects ("main")["Objects"]->selectedItem = "[$firstObject] ". VoidEngine::getProperty ($firstObject, "Name");
             VoidStudioAPI::loadObjectEvents (Components::getComponent ($firstObject), VoidStudioAPI::getObjects ("main")["LeftMenu__EventsList"]);
         ');
     }

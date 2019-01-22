@@ -30,6 +30,8 @@ class VLFReader
     
     static function read (string $file): array
     {
+		trigger_error ('This VLF module is deprecated. Please, use VLFParser & VLFInterpreter in extension "extensions/VLF/main.php"', E_USER_NOTICE);
+		
         if (file_exists ($file))
             $file = file_get_contents ($file);
 

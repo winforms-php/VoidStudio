@@ -50,7 +50,7 @@ class VLFInterpreter
 
                         try
                         {
-                            self::$objects[$name] = eval ("namespace VoidEngine; return new $class (". implode (', ', $args) .");");
+                            self::$objects[$name] = eval ("namespace VoidEngine; includeComponent ('$class'); return new $class (". implode (', ', $args) .");");
 
                             if (property_exists (self::$objects[$name], 'name'))
                                 self::$objects[$name]->name = $name;

@@ -52,7 +52,7 @@ require 'common/Others.php';
 require 'common/EngineInterface.php';
 require 'common/Globals.php';
 require 'common/Constants.php';
-// require 'common/LanguageFiles.php';
+// require 'common/LanguageFiles.php'; // Признан устаревшим
 
 if (is_array ($exts = scandir ('extensions')))
     foreach ($exts as $id => $ext)
@@ -66,6 +66,7 @@ require 'events/FormClosedEventArgs.php';
 require 'events/FormClosingEventArgs.php';
 require 'events/KeyEventArgs.php';
 require 'events/KeyPressEventArgs.php';
+require 'events/PropertyValueChangedEventArgs.php';
 
 require 'components/Component.php';
 require 'components/Control.php';
@@ -103,9 +104,9 @@ require 'components/FolderBrowserDialog.php';
 require 'components/Designer.php';
 require 'components/MainMenu.php';
 
-$studioStart = dirname (dirname (ENGINE_DIR)) .'/studio/start.php';
+$app = dirname (dirname (ENGINE_DIR)) .'/app/start.php';
 
-if (file_exists ($studioStart))
-    require $studioStart;
+if (file_exists ($app))
+    require $app;
 
 ?>
