@@ -10,7 +10,7 @@ class MainMenu extends Component
     {
         parent::__construct (self::class);
 
-        $this->items = new MenuItems ($this->getProperty ('MenuItems', 'object'));
+        $this->items = new MenuItems ($this->getProperty (['MenuItems', 'object']));
     }
 
     public function get_items ()
@@ -27,7 +27,7 @@ class ContextMenu extends Component
     {
         parent::__construct (self::class);
 
-        $this->items = new MenuItems ($this->getProperty ('MenuItems', 'object'));
+        $this->items = new MenuItems ($this->getProperty (['MenuItems', 'object']));
     }
 
     public function get_items ()
@@ -45,12 +45,12 @@ class MenuItem extends Control
         parent::__construct (null, self::class);
 
         $this->text  = $text;
-        $this->items = new MenuItems ($this->getProperty ('MenuItems', 'object'));
+        $this->items = new MenuItems ($this->getProperty (['MenuItems', 'object']));
     }
 
     public function get_index ()
     {
-        return $this->getProperty ('Index', 'int');
+        return $this->getProperty (['Index', 'int']);
     }
 }
 
@@ -61,15 +61,15 @@ class MenuItems extends Items
 		switch (strtolower ($name))
 		{
 			case 'count':
-                return VoidEngine::getProperty ($this->selector, 'Count', 'int');
+                return VoidEngine::getProperty ($this->selector, ['Count', 'int']);
             break;
 				
             case 'list':
-                $size = VoidEngine::getProperty ($this->selector, 'Count', 'int');
+                $size = VoidEngine::getProperty ($this->selector, ['Count', 'int']);
                 $list = [];
                 
 				for ($i = 0; $i < $size; ++$i)
-                    $list[] = VoidEngine::getArrayValue ($this->selector, $i, 'object');
+                    $list[] = VoidEngine::getArrayValue ($this->selector, [$i, 'object']);
                     
                 return $list;
             break;
@@ -89,13 +89,13 @@ class MenuItems extends Items
 	public function offsetSet ($index, $value)
 	{
         return $index === null ?
-            VoidEngine::callMethod ($this->selector, 'Add', '', $value, 'object') :
-            VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', $value, 'object');
+            VoidEngine::callMethod ($this->selector, 'Add', [$value, 'object']) :
+            VoidEngine::callMethod ($this->selector, 'Insert', [(int) $index, 'int'], [$value, 'object']);
 	}
 	
 	public function offsetGet ($index)
 	{
-		return VoidEngine::getArrayValue ($this->selector, (int) $index, 'object');
+		return VoidEngine::getArrayValue ($this->selector, [(int) $index, 'object']);
 	}
 }
 

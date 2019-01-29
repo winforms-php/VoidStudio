@@ -2,7 +2,7 @@
 
 namespace VoidEngine;
 
-VoidEngine::loadModule ('ScintillaNET.dll');
+EngineAdditions::loadModule ('ScintillaNET.dll');
 
 class Scintilla extends NoVisual
 {
@@ -13,7 +13,7 @@ class Scintilla extends NoVisual
         $this->componentSelector = VoidEngine::createObject (new WFObject ('ScintillaNET.Scintilla', 'ScintillaNET', true));
         Components::addComponent ($this->componentSelector, $this);
 
-        $this->styles = $this->getProperty ('Styles', 'object');
+        $this->styles = $this->getProperty (['Styles', 'object']);
         
 		if ($parent instanceof Control)
 			$this->set_parent ($parent);
@@ -21,12 +21,12 @@ class Scintilla extends NoVisual
 
     public function get_lexer ()
     {
-        return $this->getProperty ('Lexer', 'int');
+        return $this->getProperty (['Lexer', 'int']);
     }
 
     public function set_lexer (int $lexer)
     {
-        $this->setProperty ('Lexer', $lexer, 'int');
+        $this->setProperty ('Lexer', [$lexer, 'int']);
     }
 
     public function resetSyntax ()
@@ -41,12 +41,12 @@ class Scintilla extends NoVisual
 
     public function setKeywords (int $index, string $keywords)
     {
-        $this->callMethod ('SetKeywords', $index, 'int', $keywords, 'string');
+        $this->callMethod ('SetKeywords', [$index, 'int'], [$keywords, 'string']);
     }
 
     public function propertyInit (string $propertyName, $propertyValue)
     {
-        $this->callMethod ('SetProperty', $propertyName, 'string', $propertyValue, 'string');
+        $this->callMethod ('SetProperty', [$propertyName, 'string'], [$propertyValue, 'string']);
     }
 
     public function set_syntax ($syntax)
@@ -70,13 +70,13 @@ class Scintilla extends NoVisual
             foreach ($syntax['references'] as $name => $value)
                 if (isset ($syntax['syntax'][$name]))
                 {
-                    $element = VoidEngine::getArrayValue ($this->styles, $value, 'object');
+                    $element = VoidEngine::getArrayValue ($this->styles, [$value, 'object']);
                     $color   = $syntax['syntax'][$name];
 
                     if (defined ($color))
                         $color = constant ($color);
                     
-                    VoidEngine::setProperty ($element, 'ForeColor', $color, 'color');
+                    VoidEngine::setProperty ($element, 'ForeColor', [$color, 'color']);
                 }
 
             $this->lexer = $syntax['lexer'];

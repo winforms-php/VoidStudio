@@ -31,7 +31,7 @@ class VLFInterpreter
             {
                 switch ($syntaxInfo['type'])
                 {
-                    case VLF_OBJECT_DIFINITION:
+                    case VLF_OBJECT_DEFINITION:
                         $class = $syntaxInfo['info']['object_class'];
                         $name  = $syntaxInfo['info']['object_name'];
                         $args  = [];
@@ -50,6 +50,10 @@ class VLFInterpreter
 
                         try
                         {
+                            // pre ('VLF_OBJECT_DEFINITION BEGIN');
+
+                            // pre ("namespace VoidEngine; return new $class (". implode (', ', $args) .");");
+
                             self::$objects[$name] = eval ("namespace VoidEngine; includeComponent ('$class'); return new $class (". implode (', ', $args) .");");
 
                             if (property_exists (self::$objects[$name], 'name'))
@@ -57,16 +61,20 @@ class VLFInterpreter
                                 
                             elseif (method_exists (self::$objects[$name], 'set_name'))
                                 self::$objects[$name]->set_name ($name);
+
+                            // pre ('VLF_OBJECT_DEFINITION END');
                         }
 
-                        catch (\Exception $e)
+                        catch (\Throwable $e)
                         {
                             throw new \Exception ('Interpeter couldn\'t create object "'. $class .'" with name "'. $name .'" at line "'. $syntaxInfo['line'] .'"');
                         }
                     break;
 
-                    case VLF_SUBOBJECT_DIFINITION:
+                    case VLF_SUBOBJECT_DEFINITION:
+                        // pre ('VLF_SUBOBJECT_DEFINITION BEGIN');
                         self::run ((new VLFParser ($syntaxInfo['info']['object_vlf_info']))->tree, $syntaxInfo);
+                        // pre ('VLF_SUBOBJECT_DEFINITION END');
                     break;
 
                     case VLF_PROPERTY_SET:
@@ -107,19 +115,23 @@ class VLFInterpreter
 
                             try
                             {
+                                // pre ('VLF_PROPERTY_SET BEGIN');
                                 self::$objects[$name]->$propertyName = eval ("namespace VoidEngine; $preset return $propertyValue;");
+                                // pre ('VLF_PROPERTY_SET END');
                             }
 
-                            catch (\Exception $e)
+                            catch (\Throwable $e)
                             {
                                 try
                                 {
                                     $propertyValue = $syntaxInfo['info']['property_raw_value'];
 
+                                    // pre ('VLF_PROPERTY_SET 2 BEGIN');
                                     self::$objects[$name]->$propertyName = eval ("namespace VoidEngine; return $propertyValue;");
+                                    // pre ('VLF_PROPERTY_SET 2 END');
                                 }
 
-                                catch (\Exception $e)
+                                catch (\Throwable $e)
                                 {
                                     throw new \Exception ('Interpeter couldn\'t set property "'. $propertyName .'" with value "'. $propertyValue .'" at line "'. $syntaxInfo['line'] .'"');
                                 }
@@ -144,13 +156,15 @@ class VLFInterpreter
 
                             try
                             {
+                                // pre ('VLF_METHOD_CALL BEGIN');
                                 if (strpos ($methodName, '->') !== false && self::$allow_multimethods_calls)
                                     eval ('namespace VoidEngine; Components::getComponent ("'. self::$objects[$name]->selector .'")->'. $methodName .' ('. implode (', ', $methodArgs) .');');
 
                                 else self::$objects[$name]->$methodName (...$methodArgs);
+                                // pre ('VLF_METHOD_CALL END');
                             }
 
-                            catch (\Exception $e)
+                            catch (\Throwable $e)
                             {
                                 throw new \Exception ('Interpeter couldn\'t call method "'. $methodName .'" with arguments '. json_encode ($methodArgs) .' at line "'. $syntaxInfo['line'] .'"');
                             }
@@ -160,7 +174,9 @@ class VLFInterpreter
                     break;
 
                     case VLF_RUNTIME_EXECUTABLE:
+                        // pre ('VLF_RUNTIME_EXECUTABLE BEGIN');
                         eval (self::formatLine ($syntaxInfo['info']['code'], self::$objects));
+                        // pre ('VLF_RUNTIME_EXECUTABLE END');
                     break;
                 }
 

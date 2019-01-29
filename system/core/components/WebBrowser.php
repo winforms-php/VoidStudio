@@ -11,22 +11,22 @@ class WebBrowser extends Control
 
     public function get_scriptErrorsSuppressed ()
     {
-        return $this->getProperty ('ScriptErrorsSuppressed', 'bool');
+        return $this->getProperty (['ScriptErrorsSuppressed', 'bool']);
     }
 	
     public function set_scriptErrorsSuppressed (bool $supress)
     {
-        $this->setProperty ('ScriptErrorsSuppressed', $supress, 'bool');
+        $this->setProperty ('ScriptErrorsSuppressed', [$supress, 'bool']);
     }
 	
     public function browse (string $url)
     {
-        return $this->callMethod ('Navigate', '', $url, 'string');
+        return $this->callMethod ('Navigate', [$url, 'string']);
     }
 	
     public function loadHTML (string $html)
     {
-        return $this->callMethod ('LoadHTML', '', $html, 'string');
+        return $this->callMethod ('LoadHTML', [$html, 'string']);
     }
 }
 

@@ -162,7 +162,7 @@ class VLFParser
                 else
                 {
                     $tree[$id] = [
-                        'type'  => VLF_OBJECT_DIFINITION,
+                        'type'  => VLF_OBJECT_DEFINITION,
                         'line'  => $line,
                         'hard'  => $height,
                         'words' => $words,
@@ -204,7 +204,7 @@ class VLFParser
                             $tree[$id]['info']['arguments'] = $arguments;
 
                             if (!$this->ignore_postobject_info && trim (substr ($line, $end)) > 0)
-                                throw new \Exception ('You mustn\'t write any chars after arguments difinition');
+                                throw new \Exception ('You mustn\'t write any chars after arguments definition');
                         }
                     }
 
@@ -226,9 +226,11 @@ class VLFParser
                      * Если высота блока будет выше, чем высота текущего объекта, то текущий объект будет обработан кодом выше
                      * Если высота блока будет ниже, чем высота текущего объекта, то он создан вне блока текущего объекта и вообще не обрабатывается
                      * Если же высоты совпадают, то мы дописываем текущему объекту в аргументы 
+                     * 
+                     * ? Вариант с одинаковыми высотами временно отключен -_-
                      */
 
-                    elseif (
+                    /*elseif (
                         $current_object !== null &&
                         $tree[$current_object]['hard'] == $height
                     )
@@ -240,21 +242,7 @@ class VLFParser
                         ];
 
                         $parent_objects[$id] = $current_object;
-
-                        /**
-                         * FIXME BLAT
-                         * 
-                         * ! WARNIGN WARNING SUKA
-                         * ! YOU MUST FIX THIS
-                         * 
-                         * TODO TODO TODO TODO
-                         * TODO ARMY
-                         * 
-                         * ? I KNOW THE WAY, FOLLOW ME
-                         * ? KNOCK KNOCK KNOCK KNOCK
-                         * 
-                         */
-                    }
+                    }*/
 
                     $links[$tree[$id]['info']['object_name']] = $id;
                     $current_object = $id;
@@ -344,9 +332,6 @@ class VLFParser
             {
                 if ($height <= $tree[$current_object]['hard'] && isset ($parent_objects[$current_object]))
                 {
-                    /*while ($tree[$parent_objects[$current_object]]['type'] == VLF_OBJECT_REDIRECTION)
-                        $current_object = $parent_objects[$current_object];*/
-                    
                     $redirect = $parent_objects[$current_object];
 
                     $tree[$id] = [
@@ -451,7 +436,7 @@ class VLFParser
                             }
 
                             if (!$this->ignore_postobject_info && trim (substr ($line, $end)) > 0)
-                                throw new \Exception ('You mustn\'t write any chars after arguments difinition');
+                                throw new \Exception ('You mustn\'t write any chars after arguments definition');
                         }
                     }
 
@@ -486,8 +471,8 @@ class VLFParser
                  *     Button MainButton
                  *         ...
                  * 
-                 * И вот весь этот Button и всё, что после него - это и есть VLF_SUBOBJECT_DIFINITION
-                 * Но на практике я придумал какой-то дикий костыль в блоке с VLF_OBJECT_DIFINITION
+                 * И вот весь этот Button и всё, что после него - это и есть VLF_SUBOBJECT_DEFINITION
+                 * Но на практике я придумал какой-то дикий костыль в блоке с VLF_OBJECT_DEFINITION
                  * Не вините меня ;D
                  * 
                  * ? UPD: я чекнул АСД главной формы VoidStudio и заметил, что там всё-же где-то да есть эта штука, так что лучше её не трогать и всё оставить как есть ;D
@@ -500,7 +485,7 @@ class VLFParser
                     $skip_at = $parsed[1];
                     
                     $tree[$id] = [
-                        'type'  => VLF_SUBOBJECT_DIFINITION,
+                        'type'  => VLF_SUBOBJECT_DEFINITION,
                         'line'  => $line,
                         'hard'  => $height,
                         'words' => $words,
@@ -599,8 +584,8 @@ class VLFParser
 
     protected function linesFilter (array $segments): array
     {
-        return array_filter ($segments, function ($text) {
-            
+        return array_filter ($segments, function ($text)
+        {
             if ($this->strong_line_parser && preg_match ('/[^a-z0-9]/i', $text))
                 throw new \Exception  ('Line "'. $text .'" mustn\'t have any not-alphabet or not-numeric characters');
             

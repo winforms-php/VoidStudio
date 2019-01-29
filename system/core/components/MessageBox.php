@@ -9,9 +9,9 @@ class MessageBox extends WFClass
         parent::__construct ('System.Windows.Forms.MessageBox');
     }
 
-    public function show (string $text, string $caption = '')
+    public function show (string $text, string $caption = ''): int
     {
-        $this->__call ('ShowEx', [$text, 'string', $caption, 'string']);
+        return $this->__call (['Show', 'int'], [[$text, 'string'], [$caption, 'string']]);
     }
 }
 

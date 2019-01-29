@@ -11,7 +11,7 @@ class FolderBrowserDialog extends CommonDialog
 	
     public function get_path ()
     {
-        return $this->getProperty ('SelectedPath', 'string');
+        return $this->getProperty (['SelectedPath', 'string']);
     }
 }
 

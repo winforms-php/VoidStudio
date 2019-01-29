@@ -48,37 +48,34 @@ abstract class Component
 	
 	final function __call ($method, $args)
 	{
-        if (strtoupper ($method[0]) == $method[0])
-            $this->callMethod ($method, ...$args);
-
-        else throw new \Exception ("The \"$method\" method is missing from the \"$this->componentClass\" component");
+        $this->callMethod ($method, ...$args);
 	}
 	
-    final protected function getProperty (string $name, string $type)
+    final protected function getProperty ($name)
     {
-        return VoidEngine::getProperty ($this->componentSelector, $name, $type);
+        return VoidEngine::getProperty ($this->componentSelector, $name);
     }
 	
-	final protected function getArrayProperty (string $name, string $type)
+	final protected function getArrayProperty ($name, string $type)
 	{
-        $array  = $this->getProperty ($name, 'object');
-        $size   = VoidEngine::getProperty ($array, 'Length', 'int');
+        $array  = $this->getProperty ([$name, 'object']);
+        $size   = VoidEngine::getProperty ($array, ['Length', 'int']);
         $return = [];
 
 		for ($i = 0; $i < $size; ++$i)
-            $return[] = VoidEngine::getArrayValue ($array, $i, $type);
+            $return[] = VoidEngine::getArrayValue ($array, [$i, $type]);
         
         VoidEngine::removeObject ($array); // May be это привидёт к тому, что нельзя будет обратиться к массиву $name несколько раз. Ну, посмотрим, так сказать)
         
 		return $return;
 	}
 	
-    final protected function setProperty (string $name, $value, string $type)
+    final protected function setProperty (string $name, $value)
     {
-        VoidEngine::setProperty ($this->componentSelector, $name, $value, $type);
+        VoidEngine::setProperty ($this->componentSelector, $name, $value);
     }
 	
-    final protected function callMethod (string $method, ...$args) 
+    final protected function callMethod ($method, ...$args) 
     { 
         return VoidEngine::callMethod ($this->componentSelector, $method, ...$args); 
     }
@@ -109,6 +106,7 @@ abstract class Component
 
             Components::removeComponent ($this->componentSelector);
             VoidEngine::removeObject ($this->componentSelector);
+            
             unset ($this->componentSelector, $this->componentClass, $this->helpStorage);
         }
 

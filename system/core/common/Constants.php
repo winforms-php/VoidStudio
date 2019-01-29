@@ -7,11 +7,11 @@
 namespace VoidEngine;
 
 $env   = VoidEngine::buildObject (new WFObject ('System.Environment', 'mscorlib'));
-$array = VoidEngine::callMethod ($env, 'GetCommandLineArgs', 'object');
-$size  = VoidEngine::getProperty ($array, 'Length', 'int');
+$array = VoidEngine::callMethod ($env, ['GetCommandLineArgs', 'object']);
+$size  = VoidEngine::getProperty ($array, ['Length', 'int']);
 
 for ($i = 0; $i < $size; ++$i)
-    $params[] = VoidEngine::getArrayValue ($array, $i, 'string');
+    $params[] = VoidEngine::getArrayValue ($array, [$i, 'string']);
 
 VoidEngine::removeObject ($env, $array);
 

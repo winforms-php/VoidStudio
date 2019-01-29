@@ -1,7 +1,5 @@
 namespace VoidEngine;
 
-file_put_contents ('objects.vlf', VoidStudioBuilder::constructVLF ());
-
 $vlf = <<<'VLF'
 
 Form MainForm

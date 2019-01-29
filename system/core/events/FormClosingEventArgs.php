@@ -10,7 +10,7 @@ class FormClosingEventArgs extends CancelEventArgs
 {
     public function get_closeReason ()
     {
-        return $this->getProperty ('CloseReason', 'int');
+        return $this->getProperty (['CloseReason', 'int']);
     }
 }
 

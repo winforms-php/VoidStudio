@@ -13,8 +13,8 @@ class ListView extends Control
     {
         parent::__construct ($parent, self::class);
 
-        $this->items           = new ListViewItems ($this->getProperty ('Items', 'object'));
-        $this->columns         = new ListViewColumns ($this->getProperty ('Columns', 'object'));
+        $this->items           = new ListViewItems ($this->getProperty (['Items', 'object']));
+        $this->columns         = new ListViewColumns ($this->getProperty (['Columns', 'object']));
         $this->smallImagesList = new ImageList;
         $this->largeImagesList = new ImageList;
 
@@ -29,7 +29,7 @@ class ListView extends Control
 
     public function get_selectedItems ()
     {
-        return new Items ($this->getProperty ('SelectedItems', 'object'));
+        return new Items ($this->getProperty (['SelectedItems', 'object']));
     }
 
     public function get_columns ()
@@ -39,22 +39,22 @@ class ListView extends Control
 
     public function get_fullRowSelect ()
     {
-        return $this->getProperty ('FullRowSelect', 'bool');
+        return $this->getProperty (['FullRowSelect', 'bool']);
     }
 
     public function set_fullRowSelect (bool $fullRowSelect)
     {
-        $this->setProperty ('FullRowSelect', $fullRowSelect, 'bool');
+        $this->setProperty ('FullRowSelect', [$fullRowSelect, 'bool']);
     }
 
     public function get_gridLines ()
     {
-        return $this->getProperty ('GridLines', 'bool');
+        return $this->getProperty (['GridLines', 'bool']);
     }
 
     public function set_gridLines (bool $gridLines)
     {
-        $this->setProperty ('GridLines', $gridLines, 'bool');
+        $this->setProperty ('GridLines', [$gridLines, 'bool']);
     }
 
     public function get_view ()
@@ -64,33 +64,33 @@ class ListView extends Control
 
     public function set_view (int $view)
     {
-        $this->setProperty ('View', $view, 'int');
+        $this->setProperty ('View', [$view, 'int']);
     }
 
     public function get_readOnly ()
     {
-        return $this->getProperty ('LabelEdit', 'bool');
+        return $this->getProperty (['LabelEdit', 'bool']);
     }
 
     public function set_readOnly (bool $readOnly)
     {
-        $this->setProperty ('LabelEdit', $readOnly, 'bool');
+        $this->setProperty ('LabelEdit', [$readOnly, 'bool']);
     }
 
     public function get_checkboxes ()
     {
-        return $this->getProperty ('CheckBoxes', 'bool');
+        return $this->getProperty (['CheckBoxes', 'bool']);
     }
 
     public function set_checkboxes (bool $checkBoxes)
     {
-        $this->setProperty ('CheckBoxes', $checkBoxes, 'bool');
+        $this->setProperty ('CheckBoxes', [$checkBoxes, 'bool']);
     }
 
     public function dispose ()
 	{
-        VoidEngine::removeObject ($this->getProperty ('Items', 'object'));
-        VoidEngine::removeObject ($this->getProperty ('Columns', 'object'));
+        VoidEngine::removeObject ($this->getProperty (['Items', 'object']));
+        VoidEngine::removeObject ($this->getProperty (['Columns', 'object']));
         unset ($this->items, $this->columns);
         
         parent::dispose ();
@@ -106,7 +106,7 @@ class ListViewItem extends Control
         parent::__construct (null, self::class);
 
         $this->text     = $text;
-        $this->subItems = new Items ($this->getProperty ('SubItems', 'object'));
+        $this->subItems = new Items ($this->getProperty (['SubItems', 'object']));
     }
 
     public function get_subItems ()
@@ -122,15 +122,15 @@ class ListViewItems extends Items
 		switch (strtolower ($name))
 		{
 			case 'count':
-                return VoidEngine::getProperty ($this->selector, 'Count', 'int');
+                return VoidEngine::getProperty ($this->selector, ['Count', 'int']);
             break;
 				
             case 'list':
-                $size = VoidEngine::getProperty ($this->selector, 'Count', 'int');
+                $size = VoidEngine::getProperty ($this->selector, ['Count', 'int']);
                 $list = [];
                 
 				for ($i = 0; $i < $size; ++$i)
-                    $list[] = VoidEngine::getArrayValue ($this->selector, $i, 'object');
+                    $list[] = VoidEngine::getArrayValue ($this->selector, [$i, 'object']);
                     
                 return $list;
             break;
@@ -150,13 +150,13 @@ class ListViewItems extends Items
 	public function offsetSet ($index, $value)
 	{
         return $index === null ?
-            VoidEngine::callMethod ($this->selector, 'Add', '', $value, 'object') :
-            VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', $value, 'object');
+            VoidEngine::callMethod ($this->selector, 'Add', [$value, 'object']) :
+            VoidEngine::callMethod ($this->selector, 'Insert', [(int) $index, 'int'], [$value, 'object']);
 	}
 	
 	public function offsetGet ($index)
 	{
-		return VoidEngine::getArrayValue ($this->selector, (int) $index, 'object');
+		return VoidEngine::getArrayValue ($this->selector, [(int) $index, 'object']);
 	}
 }
 
@@ -191,7 +191,7 @@ class ImageList extends Component
     {
         parent::__construct (self::class);
 
-        $this->images = new ImageListImages ($this->getProperty ('Images', 'object'));
+        $this->images = new ImageListImages ($this->getProperty (['Images', 'object']));
     }
 
     public function get_images ()

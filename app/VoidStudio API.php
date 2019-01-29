@@ -88,14 +88,14 @@ class VoidStudioAPI
     {
         $list->items->clear ();
 
-        $type  = VoidEngine::callMethod ($object->selector, 'GetType', 'object');
-        $props = VoidEngine::callMethod ($type, 'GetEvents', 'object');
-        $len   = VoidEngine::getProperty ($props, 'Length', 'int');
+        $type  = VoidEngine::callMethod ($object->selector, ['GetType', 'object']);
+        $props = VoidEngine::callMethod ($type, ['GetEvents', 'object']);
+        $len   = VoidEngine::getProperty ($props, ['Length', 'int']);
 
         for ($i = 0; $i < $len; ++$i)
         {
-            $index = VoidEngine::getArrayValue ($props, $i, 'object');
-            $name  = VoidEngine::getProperty ($index, 'Name', 'string');
+            $index = VoidEngine::getArrayValue ($props, [$i, 'object']);
+            $name  = VoidEngine::getProperty ($index, ['Name', 'string']);
 
             $list->items->add ($name);
         }

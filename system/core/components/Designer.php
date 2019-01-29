@@ -8,6 +8,8 @@ namespace VoidEngine;
  * ! Разработан для работы в рамках VoidStudio
  * ! Для портирования в свой проект - измените обозначеный ниже код
  * 
+ * TODO переписать класс
+ * 
  */
 
 class VoidDesigner extends Component
@@ -15,20 +17,14 @@ class VoidDesigner extends Component
     protected $form;
     protected $control;
     protected $host;
-    protected $selService;
 
-    public function __construct (Control $parent, PropertyGrid $propertyGrid, string $formName = 'form')
+    public function __construct (Control $parent, string $formName = 'form')
     {
-        $this->form = new Form;
-        $this->form->caption = 'Form Caption';
-        $this->form->name    = $formName;
-
-        $this->componentSelector = VoidEngine::createObject (new WFObject ('WinForms_PHP.FormDesigner', false, true), $this->form->selector, 'object', $formName, 'string');
+        $this->componentSelector = VoidEngine::createObject (new WFObject ('WinForms_PHP.FormDesigner', false, true), [$parent->selector, 'object'], [$formName, 'string']);
         Components::addComponent ($this->componentSelector, $this);
 
-        $this->control    = $this->callMethod ('GetControl', 'object');
-        $this->host       = $this->callMethod ('GetHost', 'object');
-        $this->selService = $this->callMethod ('GetSelService', 'object');
+        $this->form    = $this->callMethod (['GetForm', 'object']);
+        $this->control = $this->callMethod (['GetControl', 'object']);
 
         /**
          * * Удаление объектов или формы по нажатию кнопки "Del"
@@ -38,17 +34,19 @@ class VoidDesigner extends Component
          * @var objects
          * 
          * А так же систему парсинга названий объектов форм ($GLOBALS["forms"]...)
+         * 
          */
-        VoidEngine::setObjectEvent ($this->control, 'KeyDown', '
+
+        /*VoidEngine::setObjectEvent ($this->control, 'KeyDown', '
             namespace VoidEngine;
 
             $args = new KeyEventArgs ($args);
 
             if ($args->keycode == 46)
             {
-                $objects     = VoidEngine::callMethod ('. $this->componentSelector .', "GetSelectedComponents", "object");
-                $firstObject = VoidEngine::getArrayValue ($objects, 0, "object");
-                $content     = VoidEngine::callMethod ($firstObject, "ToString", "string");
+                $objects     = VoidEngine::callMethod ('. $this->componentSelector .', ["GetSelectedComponents", "object"]);
+                $firstObject = VoidEngine::getArrayValue ($objects, [0, "object"]);
+                $content     = VoidEngine::callMethod ($firstObject, ["ToString", "string"]);
                 $className   = substr (explode (".", explode (",", $content)[0])[3], 0, -1);
                 $component   = Components::getComponent ($firstObject);
 
@@ -105,47 +103,61 @@ class VoidDesigner extends Component
                     Components::cleanJunk ();
                 }
             }
-        ');
-
-        VoidEngine::setProperty ($this->control, 'Parent', $parent->selector, 'object');
+        ');*/
 
         /**
          * * Выделение компонентов на форме
          * Изменить последнюю строку с указанием выделенного объекта
          */
-        VoidEngine::setObjectEvent ($this->selService, 'SelectionChanged', '
+        /*VoidEngine::setObjectEvent ($this->selService, 'SelectionChanged', '
             namespace VoidEngine;
 
-            $objects = VoidEngine::callMethod ('. $this->componentSelector .', "GetSelectedComponents", "object");
+            $objects = VoidEngine::callMethod ('. $this->componentSelector .', ["GetSelectedComponents", "object"]);
 
             $firstObject = VoidEngine::getArrayValue ($objects, 0, "object");
             $content     = VoidEngine::callMethod ($firstObject, "ToString");
             $className   = substr (explode (".", explode (",", $content)[0])[3], 0, -1);
 			
-			VoidEngine::setProperty ('. $propertyGrid->selector .', "SelectedObject", $firstObject, "object");
+			VoidEngine::setProperty ('. $propertyGrid->selector .', "SelectedObject", [$firstObject, "object"]);
 
-            VoidStudioAPI::getObjects ("main")["Objects"]->selectedItem = "[$firstObject] ". VoidEngine::getProperty ($firstObject, "Name");
+            VoidStudioAPI::getObjects ("main")["Objects"]->selectedItem = "[$firstObject] ". VoidEngine::getProperty ([$firstObject, "Name");
             VoidStudioAPI::loadObjectEvents (Components::getComponent ($firstObject), VoidStudioAPI::getObjects ("main")["LeftMenu__EventsList"]);
-        ');
+        ');*/
     }
 
-    public function updateHost ()
+    public function updateHost (): void
     {
         $this->callMethod ('UpdateHost');
     }
 
-    public function focus ()
+    public function focus (): void
     {
-        $this->form->focus ();
+        VoidEngine::callMethod ($this->form, 'Focus');
     }
 
-    public function addComponent (Control $component, string $name)
+    public function getSharpCode (): string
     {
-        VoidEngine::callMethod ($this->host, 'Add', '', $component->selector, 'object', $name, 'string');
-        // VoidEngine::setProperty ($component->selector, 'Parent', $this->form->selector, 'object');
-        
-        $this->focus ();
-        $this->callMethod ('SetSelectedComponents', $component->selector, 'object');
+        return $this->callMethod (['GetSharpCode', 'string']);
+    }
+
+    public function createComponent (WFObject $component, string $componentName): int
+    {
+        return $this->callMethod (['CreateComponent', 'object'], [VoidEngine::objectType ($component), 'object'], [$componentName, 'string']);
+    }
+
+    public function removeComponent (int $component): void
+    {
+        $this->callMethod ('RemoveComponent', [$component, 'object']);
+    }
+
+    public function renameComponent (int $component, string $name): void
+    {
+        $this->callMethod ('RenameComponent', [$component, 'object'], [$name, 'string']);
+    }
+
+    public function getComponentName (int $component): string
+    {
+        return $this->callMethod (['GetComponentName', 'string'], [$component, 'object']);
     }
 }
 

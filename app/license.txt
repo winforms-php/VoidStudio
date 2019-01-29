@@ -1,5 +1,5 @@
 VoidStudio
-Copyright © 2018 - 2019 Podvirnyy Nikita (KRypt0n_)
+Copyright © 2018 - 2019 Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,6 +23,10 @@ https://vk.com/topic-113350174_36400959
 
 Contacts:
 
+Podvirnyy Nikita:
 Email: <suimin.tu.mu.ga.mi@gmail.com>
 VK:    vk.com/technomindlp
 	   vk.com/hphp_convertation
+
+Andrey Kusov:
+VK: vk.com/postmessage

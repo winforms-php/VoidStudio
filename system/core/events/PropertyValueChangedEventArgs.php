@@ -10,7 +10,7 @@ class PropertyValueChangedEventArgs extends EventArgs
 {
     public function get_changedItem ()
     {
-        return $this->getProperty ('ChangedItem', 'object');
+        return $this->getProperty (['ChangedItem', 'object']);
     }
 	
     public function get_oldValue ()

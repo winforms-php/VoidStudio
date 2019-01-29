@@ -64,7 +64,7 @@ Panel TopMenu__Panel (BottomPanel__Container->panel1):
 TabPage LeftMenu__Properties
     text: text ('Свойства')
 
-    PropertyGridEx PropertiesList
+    PropertyGrid PropertiesList
         dock: dsFill
 
         PropertyValueChangedEvent:^ function ($self, $args)
@@ -98,9 +98,7 @@ Panel LeftMenu__Panel (MainForm):
 
         ->tabPages->addRange ([LeftMenu__Properties, LeftMenu__Events])
 
-VoidDesigner Form1Designer (TopMenu__Form1, PropertiesList, 'Form1')
-
-% VoidEngine\VoidStudioAPI::createProject ('Project'. time (), Form1Designer->form);
+VoidDesigner Form1Designer (TopMenu__Form1, 'Form1')
 
 TabControl TopMenu (TopMenu__Panel)
 
@@ -136,13 +134,13 @@ TabControl TopMenu (TopMenu__Panel):
             VoidStudioAPI::$objects['main'][$form .'Designer']->focus ();
         }
 
-%^  PropertiesList->selectedObject = Form1Designer->form->selector;
-    Objects->items->add ('['. Form1Designer->form->selector .'] Form1');
+%^  PropertiesList->selectedObject = Form1Designer->form;
+    Objects->items->add ('['. Form1Designer->form .'] Form1');
 
-    $GLOBALS['forms']['Form1'][] = '['. Form1Designer->form->selector .'] Form1';
+    $GLOBALS['forms']['Form1'][] = '['. Form1Designer->form .'] Form1';
     $GLOBALS['registeredComponents']['Form'] = 'Form1';
 
-    VoidEngine\VoidStudioAPI::loadObjectEvents (Form1Designer->form, LeftMenu__EventsList);
+    // VoidEngine\VoidStudioAPI::loadObjectEvents (Form1Designer->form, LeftMenu__EventsList);
 
 #^ ColumnHeader ComponentsImagesColumn
     width: 24
@@ -186,15 +184,14 @@ ListView ComponentsList (MainForm):
             {
                 $page = new TabPage ('Form'. (++$GLOBALS['lastFormNum']));
                 
-                $designer = new VoidDesigner ($page, PropertiesList, $page->caption);
-                $designer->form->location = [0, 0];
+                $designer = new VoidDesigner ($page, $page->caption);
                 $designer->updateHost ();
 
                 VoidStudioAPI::$objects['main']['Form'. $GLOBALS['lastFormNum'] .'Designer'] = $designer;
                 $menu->tabPages->add ($page);
 
                 $GLOBALS['forms']['Form'. $GLOBALS['lastFormNum']] = ['['. $designer->form->selector .'] '. $page->caption];
-                VoidStudioAPI::loadObjectEvents ($designer->form, LeftMenu__EventsList);
+                // VoidStudioAPI::loadObjectEvents ($designer->form, LeftMenu__EventsList);
             }
 
             else
@@ -202,18 +199,16 @@ ListView ComponentsList (MainForm):
                 $form     = VoidEngine::getProperty ($menu->selectedTab, 'Text');
                 $designer = VoidStudioAPI::$objects['main'][$form .'Designer'];
 
-                $obj = new $name;
-                $obj->parent  = VoidStudioAPI::$objects['main'][$form .'Designer']->form;
-                $obj->caption = $component;
+                // $GLOBALS['forms'][$form][] = '['. $obj->selector .'] '. $cname;
 
-                $GLOBALS['forms'][$form][] = '['. $obj->selector .'] '. $cname;
-
-                $objs->items->clear ();
+                /*$objs->items->clear ();
                 $objs->items->addRange ($GLOBALS['forms'][$form]);
-                $objs->selectedItem = end ($GLOBALS['forms'][$form]);
+                $objs->selectedItem = end ($GLOBALS['forms'][$form]);*/
 
-                $designer->addComponent ($obj, $cname);
-                VoidStudioAPI::loadObjectEvents ($obj, LeftMenu__EventsList);
+                $obj = $designer->createComponent (new WFObject ("System.Windows.Forms.$component"), $cname);
+                VoidEngine::setProperty ($obj, 'Text', [$cname, 'string']);
+
+                // VoidStudioAPI::loadObjectEvents ($obj, LeftMenu__EventsList);
             }
 
             VoidStudioAPI::saveProject ();
@@ -264,7 +259,6 @@ Form MainForm
 
     ShownEvent:^ function ($self) use (Log__List $log, Form1Designer $designer)
         {
-            $designer->form->location = [0, 0];
             $designer->updateHost ();
 
             $time = round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 4);

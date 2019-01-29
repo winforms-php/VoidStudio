@@ -28,10 +28,10 @@
 
 namespace VoidEngine;
 
-const VLF_OBJECT_DIFINITION    = 1;
+const VLF_OBJECT_DEFINITION    = 1;
 const VLF_PROPERTY_SET         = 2;
 const VLF_METHOD_CALL          = 3;
-const VLF_SUBOBJECT_DIFINITION = 4;
+const VLF_SUBOBJECT_DEFINITION = 4;
 const VLF_OBJECT_REDIRECTION   = 5;
 const VLF_RUNTIME_EXECUTABLE   = 6;
 

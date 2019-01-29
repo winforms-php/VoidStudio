@@ -14,8 +14,8 @@ class Process extends Component
             $obj = VoidEngine::buildObject ($obj);
             
             $this->componentSelector = ($pid == getmypid ()) ?
-                VoidEngine::callMethod ($obj, 'GetCurrentProcess', 'object') :
-                VoidEngine::callMethod ($obj, 'GetProcessById', 'object', $pid, 'int');
+                VoidEngine::callMethod ($obj, ['GetCurrentProcess', 'object']) :
+                VoidEngine::callMethod ($obj, ['GetProcessById', 'object'], [$pid, 'int']);
         }
         
 		else $this->componentSelector = VoidEngine::createObject ($obj);
@@ -25,42 +25,42 @@ class Process extends Component
 	
     public function get_processName ()
     {
-        return $this->getProperty ('ProcessName', 'string');
+        return $this->getProperty (['ProcessName', 'string']);
     }
 	
     public function get_mainWindowTitle ()
     {
-        return $this->getProperty ('MainWindowTitle', 'string');
+        return $this->getProperty (['MainWindowTitle', 'string']);
     }
 	
-    public function get_id ()
+    public function get_id (): int
     {
-        return $this->getPrperty ('Id', 'int');
+        return $this->getPrperty (['Id', 'int']);
     }
 	
-    public function get_exitCode ()
+    public function get_exitCode (): int
     {
-        return $this->getProperty ('ExitCode', 'int');
+        return $this->getProperty (['ExitCode', 'int']);
     }
 	
     public function get_handle ()
     {
-        return $this->getProperty ('Handle', 'handle');
+        return $this->getProperty (['Handle', 'handle']);
     }
 	
-    public function get_handleCount ()
+    public function get_handleCount (): int
     {
-        return $this->getProperty ('HandleCount', 'int');
+        return $this->getProperty (['HandleCount', 'int']);
     }
 	
-    public function get_hasExited ()
+    public function get_hasExited (): bool
     {
-        return $this->getProperty ('HasExited', 'bool');
+        return $this->getProperty (['HasExited', 'bool']);
     }
 	
-    public function start ()
+    public function start (): bool
     {
-        return $this->callMethod ('Start', 'bool');
+        return $this->callMethod (['Start', 'bool']);
     }
 	
     public function kill ()

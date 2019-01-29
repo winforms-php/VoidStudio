@@ -9,25 +9,83 @@ namespace VoidEngine;
 
 class VoidEngine
 {
+    /**
+     * * Создание объекта
+     * 
+     * @param WFObject object - объект конфигурации
+     * [@param args - список аргументов создания]
+     * 
+     * @return int selector - возвращает указатель на созданный объект
+     * 
+     * VoidEngine::createObject (new WFObject ('System.Windows.Forms.Button'));
+     * 
+     */
+
     static function createObject (WFObject $object, ...$args): int
     {
         return winforms_objectcreate ($object->getResourceLine (), ...$args);
     }
+
+    /**
+     * * Удаление объекта
+     * 
+     * @param int selectors - список указателей для удаления
+     * 
+     * $button_1 = VoidEngine::createObject (new WFObject ('System.Windows.Forms.Button'));
+     * $button_2 = VoidEngine::createObject (new WFObject ('System.Windows.Forms.Button'));
+     * 
+     * VoidEngine::removeObject ($button_1, $button_2);
+     * 
+     */
 
     static function removeObject (int ...$selectors): void
     {
         winforms_objectdelete (...$selectors);
     }
 
+    /**
+     * * Получение указателя на статичный класс
+     * 
+     * @param WFObject object - объект конфигурации класса
+     * 
+     * @return int selector - возвращает указатель на созданный объект
+     * 
+     * VoidEngine::buildObject (new WFObject ('System.Windows.Forms.MessageBox'));
+     * 
+     */
+
     static function buildObject (WFObject $object): int
     {
         return winforms_objectget ($object->getResourceLine ());
     }
 
+    /**
+     * * Проверка объекта на существование
+     * 
+     * @param int selector - указатель на проверяемый объект
+     * 
+     * @return bool exists - возвращает true, если объект существует, и false в противном случае
+     * 
+     * $button = VoidEngine::createObject (new WFObject ('System.Windows.Forms.Button'));
+     * VoidEngine::removeObject ($button);
+     * 
+     * var_dump (VoidEngine::objectExists ($button)); // false
+     * 
+     */
+
     static function objectExists (int $selector): bool
     {
         return winforms_objectexists ($selector);
     }
+
+    /**
+     * * Создание экземпляра типа объекта
+     * 
+     * @param object - объект конфигурации или полное название объекта
+     * 
+     * @return mixed type - возвращает указатель на объект типа объекта или false в случае ошибки
+     * 
+     */
 
     static function objectType ($object)
     {
@@ -37,54 +95,128 @@ class VoidEngine
         elseif (!is_string ($object))
             return false;
 
-        else return winforms_typeof ($object);
+        return winforms_typeof ($object);
     }
 
-    static function loadModule (string $path): void
+    /**
+     * * Получение свойства объекта
+     * 
+     * @param int selector - указатель на объект
+     * @param propertyName - название свойства
+     * 
+     * @param propertyName может быть передан с указанием на тип возвращаемого значения через структуру вида
+     * [название свойства, возвращаемый им тип]
+     * 
+     * @return property - возвращает свойство объекта
+     * 
+     * $selector = VoidEngine::createObject (new WFObject ('System.Windows.Forms.Button'));
+     * 
+     * pre (VoidEngine::getProperty ($selector, 'Text'));
+     * pre (VoidEngine::getProperty ($selector, ['Text', 'string']));
+     * 
+     */
+
+    static function getProperty (int $selector, $propertyName)
     {
-        $assembly = new WFClass ('System.Reflection.Assembly', 'mscorlib');
-        $assembly->LoadFrom ($path);
+        return winforms_getprop ($selector, $propertyName);
     }
 
-    static function getProperty (int $selector, string $propertyName, string $type = 'string')
+    /**
+     * * Установка свойства объекта
+     * 
+     * @param int selector - указатель на объект
+     * @param string propertyName - название свойства
+     * @param value - значение свойства
+     * 
+     * @param value может быть передан в качестве определённого типа через структуру вида
+     * [значение, тип]
+     * 
+     * $selector = VoidEngine::createObject (new WFObject ('System.Windows.Forms.Button'));
+     * 
+     * VoidEngine::setProperty ($selector, 'Text', 'Hello!');
+     * VoidEngine::setProperty ($selector, 'Text', ['Hello!', 'string']);
+     * 
+     */
+
+    static function setProperty (int $selector, string $propertyName, $value): void
     {
-        if ($type == 'auto')
-            throw new \Exception ('getProperty function can\'t read "auto" type');
-
-        return winforms_getprop ($selector, $propertyName, $type);
+        winforms_setprop ($selector, $propertyName, $value);
     }
 
-    static function setProperty (int $selector, string $propertyName, $value, string $type = 'auto'): void
+    /**
+     * * Вызов метода объекта
+     * 
+     * @param int selector - указатель на объект
+     * @param methodName - название метода
+     * 
+     * @param methodName так же может быть передан с указанием на тип возвращаемого методом значения через структуру вида
+     * [название метода, возвращаемый им тип]
+     * 
+     * @return result - возвращает результат выполнения метода
+     * 
+     * $selector = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.MessageBox'));
+     * 
+     * VoidEngine::callMethod ($selector, 'Show', 'Hello, World!', 'Test Box');
+     * VoidEngine::callMethod ($selector, 'Show', ['Hello, World!', 'string'], ['Test Box', 'string']);
+     * 
+     * $result = VoidEngine::callMethod ($selector, ['Show', 'int'], ['Hello, World!', 'string'], ['Test Box', 'string']);
+     * 
+     */
+
+    static function callMethod (int $selector, $methodName, ...$args)
     {
-        if ($type == 'auto')
-            $type = getLogicalVarType ($value);
-
-        winforms_setprop ($selector, $propertyName, $value, $type);
+        return winforms_callmethod ($selector, $methodName, ...$args);
     }
 
-    static function callMethod (int $selector, string $methodName, string $type = 'string', ...$args)
+    /**
+     * * Получение значения массива
+     * 
+     * @param int selector - указатель на объект массива
+     * @param index - индекс массива
+     * 
+     * @param index так же может быть передан с указанием на тип возвращаемого значения через структуру вида
+     * [индекс, возвращаемый тип]
+     * 
+     * @return value - возвращает значение массива
+     * 
+     */
+
+    static function getArrayValue (int $selector, $index)
     {
-        if ($type == 'auto')
-            throw new \Exception ('callMethod function can\'t read "auto" type');
-
-        return winforms_callmethod ($selector, $methodName, $type, ...$args);
+        return winforms_getindex ($selector, $index);
     }
 
-    static function getArrayValue (int $selector, int $index, string $type = 'string')
+    /**
+     * * Установка значения массива
+     * 
+     * @param int selector - указатель на объект массива
+     * @param index - индекс массива
+     * @param value - значение для установки
+     * 
+     * @param indexможет быть передан с указанием на его тип через структуру вида
+     * [индекс, тип]
+     * 
+     * @param value так же может быть передан с указанием на тип значения через структуру вида
+     * [значение, тип]
+     * 
+     */
+
+    static function setArrayValue (int $selector, $index, $value): void
     {
-        if ($type == 'auto')
-            throw new \Exception ('getArrayValue function can\'t read "auto" type');
-
-        return winforms_getindex ($selector, $index, $type);
+        winforms_setindex ($selector, $index, $value);
     }
 
-    static function setArrayValue (int $selector, int $index, $value, string $type = 'auto'): void
-    {
-        if ($type == 'auto')
-            $type = getLogicalVarType ($value);
-
-        winforms_setindex ($selector, $index, $value, $type);
-    }
+    /**
+     * * Установка события объекту
+     * 
+     * @param int selector - указатель на объект
+     * @param string eventName - название события
+     * @param string code - PHP код без тэгов
+     * 
+     * $selector = VoidEngine::createObject (new WFObject ('System.Windows.Forms.Button'));
+     * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
+     * 
+     */
 
     static function setObjectEvent (int $selector, string $eventName, string $code = ''): void
     {
@@ -98,16 +230,43 @@ class VoidEngine
             Components::setComponentEvent ($selector, $eventName, $code);
         }
 
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             throw $e;
         }
     }
 
+    /**
+     * * Проверка события объекта на существование
+     * 
+     * @param int selector - указатель на объект
+     * @param string eventName - название события
+     * 
+     * $selector = VoidEngine::createObject (new WFObject ('System.Windows.Forms.Button'));
+     * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
+     * 
+     * var_dump ($selector, 'Click'); // true
+     * 
+     */
+
     static function eventExists (int $selector, string $eventName): bool
     {
         return winforms_existsevent ($selector, $eventName);
     }
+
+    /**
+     * * Удаление события объекта
+     * 
+     * @param int selector - указатель на объект
+     * @param string eventName - название события
+     * 
+     * $selector = VoidEngine::createObject (new WFObject ('System.Windows.Forms.Button'));
+     * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
+     * VoidEngine::removeEvent ($selector, 'Click');
+     * 
+     * var_dump ($selector, 'Click'); // false
+     * 
+     */
 
     static function removeEvent (int $selector, string $eventName): void
     {
@@ -115,6 +274,41 @@ class VoidEngine
 
         Components::removeComponentEvent ($selector, $eventName);
     }
+
+    /**
+     * * Импортирование объекта в ядро
+     * 
+     * @param string data - сериализированные данные ядра
+     * 
+     */
+
+    static function importObject (string $data): int
+    {
+        return winforms_dataimport ($data);
+    }
+
+    /**
+     * * Экспортирование объекта из ядра
+     * 
+     * @param int selector - указатель на объект
+     * 
+     * @return string data - возвращает сериализованные данные объекта
+     * 
+     */
+
+    static function exportObject (int $selector): string
+    {
+        return winforms_dataexport ($selector);
+    }
+
+    /**
+     * * Компиляция PHP кода
+     * 
+     * @param string savePath - путь для компиляции
+     * @param string iconPath - путь до иконки
+     * @param string phpCode - код для компиляции без тэгов
+     * 
+     */
 
     static function compile (string $savePath, string $iconPath, string $phpCode): void
     {
@@ -124,18 +318,24 @@ class VoidEngine
 
 class EngineAdditions
 {
+    static function loadModule (string $path): void
+    {
+        $assembly = new WFClass ('System.Reflection.Assembly', 'mscorlib');
+        $assembly->LoadFrom ($path);
+    }
+
     static function getObjectProperties (int $selector, bool $extended = false): array
     {
         $properties = [];
 
-        $type  = VoidEngine::callMethod ($selector, 'GetType', 'object');
-        $props = VoidEngine::callMethod ($type, 'GetProperties', 'object');
-        $len   = VoidEngine::getProperty ($props, 'Length', 'int');
+        $type  = VoidEngine::callMethod ($selector, ['GetType', 'object']);
+        $props = VoidEngine::callMethod ($type, ['GetProperties', 'object']);
+        $len   = VoidEngine::getProperty ($props, ['Length', 'int']);
 
         for ($i = 0; $i < $len; ++$i)
         {
-            $index = VoidEngine::getArrayValue ($props, $i, 'object');
-            $name  = VoidEngine::getProperty ($index, 'Name', 'string');
+            $index = VoidEngine::getArrayValue ($props, [$i, 'object']);
+            $name  = VoidEngine::getProperty ($index, ['Name', 'string']);
 
             $property = self::getProperty ($selector, $name);
 
@@ -148,49 +348,58 @@ class EngineAdditions
 
     static function getProperty (int $selector, string $name): array
     {
-        $type         = VoidEngine::callMethod ($selector, 'GetType', 'object');
-        $property     = VoidEngine::callMethod ($type, 'GetProperty', 'object', $name, 'string');
-        $propertyType = VoidEngine::getProperty ($property, 'PropertyType', 'string');
+        $type     = VoidEngine::callMethod ($selector, ['GetType', 'object']);
+        $property = VoidEngine::callMethod ($type, ['GetProperty', 'object'], [$name, 'string']);
 
-        switch ($propertyType)
+        try
         {
-            case 'System.String':
-                $property = 'string';
-            break;
+            $propertyType = VoidEngine::getProperty ($property, ['PropertyType', 'string']);
 
-            case 'System.Int32':
-            case 'System.Int64':
-                $property = 'int';
-            break;
+            switch ($propertyType)
+            {
+                case 'System.String':
+                    $property = 'string';
+                break;
 
-            case 'System.Double':
-                $property = 'double';
-            break;
-
-            case 'System.Boolean':
-                $property = 'bool';
-            break;
-
-            case 'System.Drawing.Color':
-                $property = 'color';
-            break;
-
-            default:
-                try
-                {
+                case 'System.Int32':
+                case 'System.Int64':
                     $property = 'int';
-                }
+                break;
 
-                catch (\WinFormsException $e)
-                {
-                    $property = 'object';
-                }
-            break;
+                case 'System.Double':
+                    $property = 'double';
+                break;
+
+                case 'System.Single':
+                    $property = 'float';
+                break;
+
+                case 'System.Boolean':
+                    $property = 'bool';
+                break;
+
+                case 'System.IntPtr':
+                    $property = 'handle';
+                break;
+
+                case 'System.Drawing.Color':
+                    $property = 'color';
+                break;
+
+                default:
+                    $property = 'int';
+                break;
+            }
+        }
+
+        catch (\WinFormsException $e)
+        {
+            $property = 'object';
         }
 
         return [
             'type'  => $property,
-            'value' => VoidEngine::getProperty ($selector, $name, $property)
+            'value' => VoidEngine::getProperty ($selector, [$name, $property])
         ];
     }
 }
@@ -261,7 +470,7 @@ class WFClass
     public function __get ($name)
     {
         if (is_int ($this->class))
-            return VoidEngine::getProperty ($this->class, $name, '');
+            return VoidEngine::getProperty ($this->class, $name);
 
         else throw new \Exception ('Class isn\'t initialized');
     }
@@ -277,27 +486,7 @@ class WFClass
     public function __call ($method, $args)
 	{
         if (is_int ($this->class))
-        {
-            $autoDetectVarType = true;
-            $setArgs           = [];
-            
-            if (substr ($method, strlen ($method) - 2) == 'Ex')
-            {
-                $autoDetectVarType = false;
-
-                $method = substr ($method, 0, -2);
-            }
-
-            foreach ($args as $id => $arg)
-            {
-                $setArgs[] = $arg;
-
-                if ($autoDetectVarType)
-                    $setArgs[] = getLogicalVarType ($arg);
-            }
-
-            return VoidEngine::callMethod ($this->class, $method, '', ...$setArgs);
-        }
+            return VoidEngine::callMethod ($this->class, $method, ...$args);
 
         else throw new \Exception ('Class isn\'t initialized');
 	}

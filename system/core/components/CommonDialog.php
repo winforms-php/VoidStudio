@@ -9,9 +9,9 @@ abstract class CommonDialog extends Component
         parent::__construct ($className);
     }
     
-    public function showDialog ()
+    public function showDialog (): int
     {
-        return (int) $this->callMethod ('ShowDialog', 'int');
+        return $this->callMethod (['ShowDialog', 'int']);
     }
 
     public function execute ()

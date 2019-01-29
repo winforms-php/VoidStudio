@@ -10,7 +10,7 @@ class TabControl extends Control
 	{
         parent::__construct ($parent, self::class);
 
-        $this->tabs = new TabPages ($this->getProperty ('TabPages', 'object'));
+        $this->tabs = new TabPages ($this->getProperty (['TabPages', 'object']));
     }
     
     public function get_tabPages ()
@@ -20,17 +20,17 @@ class TabControl extends Control
 
     public function get_selectedTab ()
     {
-        return $this->getProperty ('SelectedTab', 'object');
+        return $this->getProperty (['SelectedTab', 'object']);
     }
 
     public function get_selectedIndex ()
     {
-        return $this->getProperty ('SelectedIndex', 'int');
+        return $this->getProperty (['SelectedIndex', 'int']);
     }
 
     public function set_selectedIndex (int $index)
     {
-        $this->setProperty ('SelectedIndex', $index, 'int');
+        $this->setProperty ('SelectedIndex', [$index, 'int']);
     }
 }
 
@@ -51,15 +51,15 @@ class TabPages extends Items
 		switch (strtolower ($name))
 		{
 			case 'count':
-                return VoidEngine::getProperty ($this->selector, 'Count', 'int');
+                return VoidEngine::getProperty ($this->selector, ['Count', 'int']);
             break;
 				
             case 'list':
-                $size = VoidEngine::getProperty ($this->selector, 'Count', 'int');
+                $size = VoidEngine::getProperty ($this->selector, ['Count', 'int']);
                 $list = [];
                 
 				for ($i = 0; $i < $size; ++$i)
-                    $list[] = VoidEngine::getArrayValue ($this->selector, $i, 'object');
+                    $list[] = VoidEngine::getArrayValue ($this->selector, [$i, 'object']);
                     
                 return $list;
             break;
@@ -79,13 +79,13 @@ class TabPages extends Items
 	public function offsetSet ($index, $value)
 	{
         return $index === null ?
-            VoidEngine::callMethod ($this->selector, 'Add', '', $value, 'object') :
-            VoidEngine::callMethod ($this->selector, 'Insert', '', (int) $index, 'int', $value, 'object');
+            VoidEngine::callMethod ($this->selector, 'Add', [$value, 'object']) :
+            VoidEngine::callMethod ($this->selector, 'Insert', [(int) $index, 'int'], [$value, 'object']);
 	}
 	
 	public function offsetGet ($index)
 	{
-		return VoidEngine::getArrayValue ($this->selector, (int) $index, 'object');
+		return VoidEngine::getArrayValue ($this->selector, [(int) $index, 'object']);
 	}
 }
 

@@ -10,27 +10,27 @@ class MouseEventArgs extends EventArgs
 {
     public function get_button ()
     {
-        return $this->getProperty ('Button', 'string');
+        return $this->getProperty (['Button', 'string']);
     }
 	
     public function get_clicks ()
     {
-        return $this->getProperty ('Clicks', 'int');
+        return $this->getProperty (['Clicks', 'int']);
     }
 	
     public function get_delta ()
     {
-        return $this->getProperty ('Delta', 'int'); 
+        return $this->getProperty (['Delta', 'int']); 
     }
 	
     public function get_x ()
     {
-        return $this->getProperty ('X', 'int');
+        return $this->getProperty (['X', 'int']);
     }
 	
     public function get_y ()
     {
-        return $this->getProperty ('Y', 'int');
+        return $this->getProperty (['Y', 'int']);
     }
 	
     public function get_location ()

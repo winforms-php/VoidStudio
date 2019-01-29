@@ -11,32 +11,32 @@ class ColorDialog extends CommonDialog
 	
     public function get_color ()
     {
-        return $this->getProperty ('Color', 'color');
+        return $this->getProperty (['Color', 'color']);
     }
 	
-    public function set_color ($color)
+    public function set_color (int $color)
     {
-        $this->setProperty ('Color', $color, 'color');
+        $this->setProperty ('Color', [$color, 'color']);
     }
 	
     public function get_anyColor ()
     { 
-        return $this->getProperty ('AnyColor', 'bool');
+        return $this->getProperty (['AnyColor', 'bool']);
     }
 	
-    public function set_anyColor (bool $any)
+    public function set_anyColor (bool $anyColor)
     {
-        $this->setProperty ('AnyColor', $any, 'bool');
+        $this->setProperty ('AnyColor', [$anyColor, 'bool']);
     }
 	
     public function get_fullOpen ()
     {
-        return $this->getProperty ('FullOpen', 'bool');
+        return $this->getProperty (['FullOpen', 'bool']);
     }
 	
-    public function set_fullOpen (bool $full)
+    public function set_fullOpen (bool $fullOpen)
     {
-        $this->setProperty ('FullOpen', $full, 'bool');
+        $this->setProperty ('FullOpen', [$fullOpen, 'bool']);
     }
 	
     public function get_customColors ()

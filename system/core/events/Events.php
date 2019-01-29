@@ -10,7 +10,7 @@ class Events
 {
     static $events = [];
 
-    static function setObjectEvent (Component $object, string $eventName, $function)
+    static function setObjectEvent (Control $object, string $eventName, $function)
     {
         $selector = $object->selector;
 
@@ -19,7 +19,7 @@ class Events
         VoidEngine::setObjectEvent ($selector, $eventName, "if (isset (VoidEngine\Events::\$events['$selector']['$eventName'])) VoidEngine\Events::\$events['$selector']['$eventName'] (VoidEngine\Components::getComponent ('$selector'), isset (\$args) ? \$args : false);");
     }
 
-    static function removeObjectEvent (Component $object, string $eventName)
+    static function removeObjectEvent (Control $object, string $eventName)
     {
         $selector = $object->selector;
 
@@ -27,7 +27,7 @@ class Events
         unset (self::$events[$selector][$eventName]);
     }
 
-    static function getObjectEvent (Component $object, string $eventName)
+    static function getObjectEvent (Control $object, string $eventName)
     {
         $selector = $object->selector;
 
@@ -49,7 +49,7 @@ class EventArgs
 		if (method_exists ($this, $method = "get_$name"))
             return $this->$method ();
         
-        else return $this->getProperty ($name, '');
+        else return $this->getProperty ($name);
 	}
 	
     final public function __set ($name, $value)
@@ -57,7 +57,7 @@ class EventArgs
 		if (method_exists ($this, $method = "set_$name"))
             return $this->$method ($value);
         
-        else $this->setProperty ($name, $value, 'auto');
+        else $this->setProperty ($name, $value);
     }
     
     final public function get_selector ()
@@ -65,14 +65,14 @@ class EventArgs
         return $this->selector;
     }
 	
-	final protected function getProperty (string $name, string $type)
+	final protected function getProperty ($name)
     {
-        return VoidEngine::getProperty ($this->selector, $name, $type);
+        return VoidEngine::getProperty ($this->selector, $name);
     }
 	
-    final protected function setProperty (string $name, $value, string $type)
+    final protected function setProperty (string $name, $value)
     {
-        VoidEngine::setProperty ($this->selector, $name, $value, $type);
+        VoidEngine::setProperty ($this->selector, $name, $value);
     }
 	
 }

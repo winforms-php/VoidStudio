@@ -6,12 +6,14 @@ class VScrollBar extends Control
 {
     public function __construct (Control $parent = null)
 	{
+        trigger_error ('Component "VScrollBar" is deprecated');
+
         parent::__construct ($parent, self::class);
 
         if ($parent instanceof Control)
         {
-            $this->setProperty ('Parent', $parent->selector, 'object');
-            $this->setProperty ('Dock', dsRight, 'int');
+            $this->parent = $parent;
+            $this->dock   = dsRight;
 
             //$parent->setProperty ('ScrollBars', $this->componentSelector, 'object');
         }

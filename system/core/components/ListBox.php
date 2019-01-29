@@ -10,17 +10,17 @@ class ListBox extends Control
 	{
         parent::__construct ($parent, self::class);
 
-        $this->items = new Items ($this->getProperty ('Items', 'object'));
+        $this->items = new Items ($this->getProperty (['Items', 'object']));
     }
     
     public function get_selectedItems ()
     {
-        return new Items ($this->getProperty ('SelectedItems', 'object'));
+        return new Items ($this->getProperty (['SelectedItems', 'object']));
     }
 
     public function get_selected ()
     {
-        $index = $this->getProperty ('SelectedIndex', 'int');
+        $index = $this->getProperty (['SelectedIndex', 'int']);
 
         return ($index >= 0 && $index < $this->items->count) ? 
             $this->items[$index] : false;
