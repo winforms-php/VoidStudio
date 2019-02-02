@@ -50,10 +50,6 @@ class VLFInterpreter
 
                         try
                         {
-                            // pre ('VLF_OBJECT_DEFINITION BEGIN');
-
-                            // pre ("namespace VoidEngine; return new $class (". implode (', ', $args) .");");
-
                             self::$objects[$name] = eval ("namespace VoidEngine; includeComponent ('$class'); return new $class (". implode (', ', $args) .");");
 
                             if (property_exists (self::$objects[$name], 'name'))
@@ -61,8 +57,6 @@ class VLFInterpreter
                                 
                             elseif (method_exists (self::$objects[$name], 'set_name'))
                                 self::$objects[$name]->set_name ($name);
-
-                            // pre ('VLF_OBJECT_DEFINITION END');
                         }
 
                         catch (\Throwable $e)
@@ -72,9 +66,7 @@ class VLFInterpreter
                     break;
 
                     case VLF_SUBOBJECT_DEFINITION:
-                        // pre ('VLF_SUBOBJECT_DEFINITION BEGIN');
-                        self::run ((new VLFParser ($syntaxInfo['info']['object_vlf_info']))->tree, $syntaxInfo);
-                        // pre ('VLF_SUBOBJECT_DEFINITION END');
+                        self::$objects = self::run ((new VLFParser ($syntaxInfo['info']['object_vlf_info']))->tree, $syntaxInfo);
                     break;
 
                     case VLF_PROPERTY_SET:
@@ -115,9 +107,7 @@ class VLFInterpreter
 
                             try
                             {
-                                // pre ('VLF_PROPERTY_SET BEGIN');
                                 self::$objects[$name]->$propertyName = eval ("namespace VoidEngine; $preset return $propertyValue;");
-                                // pre ('VLF_PROPERTY_SET END');
                             }
 
                             catch (\Throwable $e)
@@ -126,9 +116,7 @@ class VLFInterpreter
                                 {
                                     $propertyValue = $syntaxInfo['info']['property_raw_value'];
 
-                                    // pre ('VLF_PROPERTY_SET 2 BEGIN');
                                     self::$objects[$name]->$propertyName = eval ("namespace VoidEngine; return $propertyValue;");
-                                    // pre ('VLF_PROPERTY_SET 2 END');
                                 }
 
                                 catch (\Throwable $e)
@@ -156,12 +144,10 @@ class VLFInterpreter
 
                             try
                             {
-                                // pre ('VLF_METHOD_CALL BEGIN');
                                 if (strpos ($methodName, '->') !== false && self::$allow_multimethods_calls)
-                                    eval ('namespace VoidEngine; Components::getComponent ("'. self::$objects[$name]->selector .'")->'. $methodName .' ('. implode (', ', $methodArgs) .');');
+                                    eval ('namespace VoidEngine; _c("'. self::$objects[$name]->selector .'")->'. $methodName .' ('. implode (', ', $methodArgs) .');');
 
                                 else self::$objects[$name]->$methodName (...$methodArgs);
-                                // pre ('VLF_METHOD_CALL END');
                             }
 
                             catch (\Throwable $e)
@@ -174,14 +160,12 @@ class VLFInterpreter
                     break;
 
                     case VLF_RUNTIME_EXECUTABLE:
-                        // pre ('VLF_RUNTIME_EXECUTABLE BEGIN');
                         eval (self::formatLine ($syntaxInfo['info']['code'], self::$objects));
-                        // pre ('VLF_RUNTIME_EXECUTABLE END');
                     break;
                 }
 
                 if (isset ($syntaxInfo['syntax_nodes']) && sizeof ($syntaxInfo['syntax_nodes']) > 0)
-                    self::run ($syntaxInfo['syntax_nodes'], $syntaxInfo);
+                    self::$objects = self::run ($syntaxInfo['syntax_nodes'], $syntaxInfo);
             }
 
             else throw new \Exception ('Catched unknown syntax node: '. json_encode ($syntaxInfo));
@@ -208,14 +192,24 @@ class VLFInterpreter
 
             $replacement = array_map (function ($object)
             {
-                return $object instanceof Control ? 
-                    '\VoidEngine\Components::getComponent (\''. $object->selector .'\')' :
+                return Components::getComponent ($object->selector) !== false ? 
+                    '_c(\''. $object->selector .'\')' :
                     'unserialize (\''. serialize ($object) .'\')';
             }, $objects);
 
-            $replacement = array_flip ($replacement);
+            $replacement = array_map (function ($name)
+            {
+                return strlen ($name = trim ($name)) + substr_count ($name, '_');
+            }, $omap = array_flip ($replacement));
+
             arsort ($replacement);
-            $replacement = array_flip ($replacement);
+
+            $nReplacement = [];
+
+            foreach ($replacement as $replaceTo => $nLn)
+                $nReplacement[$omap[$replaceTo]] = $replaceTo;
+
+            $replacement = $nReplacement;
 
             $blacklist = array_flip (['\'', '"', '$']);
 

@@ -37,6 +37,18 @@ const VLF_RUNTIME_EXECUTABLE   = 6;
 
 const VLF_EXT_DIR = __DIR__;
 
+final class VLFLink
+{
+    public $name; // Имя объекта
+    public $link; // АСД-ссылка на объект
+
+    public function __construct (string $name, int $link)
+    {
+        $this->name = $name;
+        $this->link = $link;
+    }
+}
+
 require 'bin/parser.php';
 require 'bin/interpreter.php';
 

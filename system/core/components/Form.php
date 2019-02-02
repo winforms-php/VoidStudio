@@ -17,22 +17,22 @@ class Form extends Control
 	
 	public function get_owner ()
 	{
-		return Components::getComponent ($this->getProperty (['Owner', 'object']));
+		return Components::getComponent ($this->getProperty ('Owner'));
 	}
 	
 	public function set_owner (Form $form)
 	{
-		$this->setProperty ('Owner', [$form->selector, 'object']);
+		$this->setProperty ('Owner', $form->selector);
 	}
 
 	public function get_menu ()
 	{
-		return $this->getProperty (['Menu', 'object']);
+		return $this->getProperty ('Menu');
 	}
 
 	public function set_menu (MainMenu $menu)
 	{
-		$this->setProperty ('Menu', [$menu->selector, 'object']);
+		$this->setProperty ('Menu', $menu->selector);
 	}
 
 	public function get_icon ()
@@ -42,130 +42,130 @@ class Form extends Control
 	
 	public function get_opacity ()
 	{
-		return $this->getProperty (['Opacity', 'double']);
+		return $this->getProperty ('Opacity');
 	}
 	
 	public function set_opacity ($opacity) // float
 	{
-		$this->setProperty ('Opacity', [(float) $opacity, 'double']);
+		$this->setProperty ('Opacity', (float) $opacity);
 	}
 
 	public function get_borderStyle ()
 	{
-		return $this->getProperty (['FormBorderStyle', 'int']);
+		return $this->getProperty ('FormBorderStyle');
 	}
 	
 	public function set_borderStyle (int $borderStyle)
 	{
-		$this->setProperty ('FormBorderStyle', [$borderStyle, 'int']);
+		$this->setProperty ('FormBorderStyle', $borderStyle);
 	}
 	
 	public function get_windowState ()
 	{
-		return $this->getProperty (['WindowState', 'int']);
+		return $this->getProperty ('WindowState');
 	}
 	
 	public function set_windowState (int $windowState)
 	{
-		$this->setProperty ('WindowState', [$windowState, 'int']);
+		$this->setProperty ('WindowState', $windowState);
 	}
 	
 	public function get_startPosition ()
 	{
-		return $this->getProperty (['StartPosition', 'int']);
+		return $this->getProperty ('StartPosition');
 	}
 	
 	public function set_startPosition (int $startPosition)
 	{
-		$this->setProperty ('StartPosition', [$startPosition, 'int']);
+		$this->setProperty ('StartPosition', $startPosition);
 	}
 	
 	public function get_showInTaskbar ()
 	{
-		return $this->getProperty (['ShowInTaskbar', 'bool']);
+		return $this->getProperty ('ShowInTaskbar');
 	}
 	
 	public function set_showInTaskbar (bool $showInTaskbar)
 	{
-		$this->setProperty ('ShowInTaskbar', [$showInTaskbar, 'bool']);
+		$this->setProperty ('ShowInTaskbar', $showInTaskbar);
 	}
 	
 	public function get_minimizeBox ()
 	{
-		return $this->getProperty (['MinimizeBox', 'bool']);
+		return $this->getProperty ('MinimizeBox');
 	}
 	
 	public function set_minimizeBox (bool $minimizeBox)
 	{
-		$this->setProperty ('MinimizeBox', [$minimizeBox, 'bool']);
+		$this->setProperty ('MinimizeBox', $minimizeBox);
 	}
 	
 	public function get_maximizeBox ()
 	{
-		return $this->getProperty (['MaximizeBox', 'bool']);
+		return $this->getProperty ('MaximizeBox');
 	}
 	
 	public function set_maximizeBox (bool $maximizeBox)
 	{
-		$this->setProperty ('MaximizeBox', [$maximizebox, 'bool']);
+		$this->setProperty ('MaximizeBox', $maximizebox);
 	}
 	
 	public function get_controlBox ()
 	{
-		return $this->getProperty (['ControlBox', 'bool']);
+		return $this->getProperty ('ControlBox');
 	}
 	
 	public function set_controlBox (bool $controlBox)
 	{
-		$this->setProperty ('ControlBox', [$controlBox, 'bool']);
+		$this->setProperty ('ControlBox', $controlBox);
 	}
 	
 	public function get_showIcon ()
 	{
-		return $this->getProperty (['ShowIcon', 'bool']);
+		return $this->getProperty ('ShowIcon');
 	}
 	
 	public function set_showIcon (bool $showIcon)
 	{
-		$this->setProperty ('ShowIcon', [$showIcon, 'bool']);
+		$this->setProperty ('ShowIcon', $showIcon);
 	}
 	
 	public function get_topLevel ()
 	{
-		return $this->getProperty (['TopLevel', 'bool']);
+		return $this->getProperty ('TopLevel');
 	}
 	
 	public function set_topLevel (bool $level)
 	{
-		$this->setProperty ('TopLevel', [$level, 'bool']);
+		$this->setProperty ('TopLevel', $level);
 	}
 	
 	public function get_acceptButton ()
 	{
-		return Components::getComponent ($this->getProperty (['AcceptButton', 'object']));
+		return Components::getComponent ($this->getProperty ('AcceptButton'));
 	}
 	
 	public function set_acceptButton (Button $button)
 	{
-		$this->setProperty ('AcceptButton', [$button->selector, 'object']);
+		$this->setProperty ('AcceptButton', $button->selector);
 	}
 	
 	public function get_cancelButton ()
 	{
-		return Components::getComponent ($this->getProperty (['CancelButton', 'object']));
+		return Components::getComponent ($this->getProperty ('CancelButton'));
 	}
 	
 	public function set_cancelButton (Button $button)
 	{
-		$this->setProperty ('CancelButton', [$button->selector, 'object']);
+		$this->setProperty ('CancelButton', $button->selector);
 	}
 	
 	public function get_clientSize ()
 	{
-		$obj = $this->getProperty (['ClientSize', 'object']);
+		$obj = $this->getProperty ('ClientSize');
 
-		$w = VoidEngine::getProperty ($obj, ['Width', 'int']);
-		$h = VoidEngine::getProperty ($obj, ['Height', 'int']);
+		$w = VoidEngine::getProperty ($obj, 'Width');
+		$h = VoidEngine::getProperty ($obj, 'Height');
 		
 		VoidEngine::removeObject ($obj);
 		
@@ -174,19 +174,19 @@ class Form extends Control
 	
 	public function set_clientSize (array $size)
 	{
-		$obj = $this->getProperty (['ClientSize', 'object']);
+		$obj = $this->getProperty ('ClientSize');
 
-		VoidEngine::setProperty ($obj, 'Width', [array_shift ($size), 'int']);
-		VoidEngine::setProperty ($obj, 'Height', [array_shift ($size), 'int']);
+		VoidEngine::setProperty ($obj, 'Width', array_shift ($size));
+		VoidEngine::setProperty ($obj, 'Height', array_shift ($size));
 
-		$this->setProperty ('ClientSize', [$obj, 'object']);
+		$this->setProperty ('ClientSize', $obj);
 
 		VoidEngine::removeObject ($obj);
 	}
 	
 	public function dispose ()
 	{
-		VoidEngine::removeObject ($this->getProperty (['Icon', 'object']));
+		VoidEngine::removeObject ($this->getProperty ('Icon'));
 
 		parent::dispose ();
     }
@@ -223,9 +223,9 @@ class FormIcon extends Icon
         $icon = new WFObject ('System.Drawing.Icon', 'System.Drawing');
         $icon->token = 'b03f5f7f11d50a3a';
 
-		$icon = VoidEngine::createObject ($icon, [text ($file), 'string']);
+		$icon = VoidEngine::createObject ($icon, text ($file));
         
-        VoidEngine::setProperty ($this->formSelector, 'Icon', [$icon, 'object']);
+        VoidEngine::setProperty ($this->formSelector, 'Icon', $icon);
 
 		if (!isset ($this->selector))
 		    $this->selector = $icon;

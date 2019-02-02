@@ -10,7 +10,7 @@ class ContextMenuStrip extends NoVisual
     {
         parent::__construct (null, self::class);
 
-        $this->items = $this->getProperty (['Items', 'object']);
+        $this->items = $this->getProperty ('Items');
     }
 
     public function get_items ()

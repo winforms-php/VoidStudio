@@ -14,8 +14,8 @@ class Process extends Component
             $obj = VoidEngine::buildObject ($obj);
             
             $this->componentSelector = ($pid == getmypid ()) ?
-                VoidEngine::callMethod ($obj, ['GetCurrentProcess', 'object']) :
-                VoidEngine::callMethod ($obj, ['GetProcessById', 'object'], [$pid, 'int']);
+                VoidEngine::callMethod ($obj, 'GetCurrentProcess') :
+                VoidEngine::callMethod ($obj, 'GetProcessById', $pid);
         }
         
 		else $this->componentSelector = VoidEngine::createObject ($obj);
@@ -25,42 +25,42 @@ class Process extends Component
 	
     public function get_processName ()
     {
-        return $this->getProperty (['ProcessName', 'string']);
+        return $this->getProperty ('ProcessName');
     }
 	
     public function get_mainWindowTitle ()
     {
-        return $this->getProperty (['MainWindowTitle', 'string']);
+        return $this->getProperty ('MainWindowTitle');
     }
 	
     public function get_id (): int
     {
-        return $this->getPrperty (['Id', 'int']);
+        return $this->getPrperty ('Id');
     }
 	
     public function get_exitCode (): int
     {
-        return $this->getProperty (['ExitCode', 'int']);
+        return $this->getProperty ('ExitCode');
     }
 	
     public function get_handle ()
     {
-        return $this->getProperty (['Handle', 'handle']);
+        return $this->getProperty ('Handle');
     }
 	
     public function get_handleCount (): int
     {
-        return $this->getProperty (['HandleCount', 'int']);
+        return $this->getProperty ('HandleCount');
     }
 	
     public function get_hasExited (): bool
     {
-        return $this->getProperty (['HasExited', 'bool']);
+        return $this->getProperty ('HasExited');
     }
 	
     public function start (): bool
     {
-        return $this->callMethod (['Start', 'bool']);
+        return $this->callMethod ('Start');
     }
 	
     public function kill ()

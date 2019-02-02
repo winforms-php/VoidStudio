@@ -13,7 +13,7 @@ class Scintilla extends NoVisual
         $this->componentSelector = VoidEngine::createObject (new WFObject ('ScintillaNET.Scintilla', 'ScintillaNET', true));
         Components::addComponent ($this->componentSelector, $this);
 
-        $this->styles = $this->getProperty (['Styles', 'object']);
+        $this->styles = $this->getProperty ('Styles');
         
 		if ($parent instanceof Control)
 			$this->set_parent ($parent);
@@ -21,12 +21,12 @@ class Scintilla extends NoVisual
 
     public function get_lexer ()
     {
-        return $this->getProperty (['Lexer', 'int']);
+        return $this->getProperty ('Lexer');
     }
 
     public function set_lexer (int $lexer)
     {
-        $this->setProperty ('Lexer', [$lexer, 'int']);
+        $this->setProperty ('Lexer', $lexer);
     }
 
     public function resetSyntax ()
@@ -70,7 +70,7 @@ class Scintilla extends NoVisual
             foreach ($syntax['references'] as $name => $value)
                 if (isset ($syntax['syntax'][$name]))
                 {
-                    $element = VoidEngine::getArrayValue ($this->styles, [$value, 'object']);
+                    $element = VoidEngine::getArrayValue ($this->styles, $value);
                     $color   = $syntax['syntax'][$name];
 
                     if (defined ($color))

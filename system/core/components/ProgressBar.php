@@ -11,52 +11,52 @@ class ProgressBar extends Control
 
     public function get_max ()
     {
-        return $this->getProperty (['Maximum', 'int']);
+        return $this->getProperty ('Maximum');
     }
 
     public function set_max (int $max)
     {
-        $this->setProperty ('Maximum', [$max, 'int']);
+        $this->setProperty ('Maximum', $max);
     }
 
     public function get_min ()
     {
-        return $this->getProperty (['Minimum', 'int']);
+        return $this->getProperty ('Minimum');
     }
 
     public function set_min (int $min)
     {
-        $this->setProperty ('Minimum', [$min, 'int']);
+        $this->setProperty ('Minimum', $min);
     }
 
     public function get_position ()
     {
-        return $this->getProperty (['Value', 'int']);
+        return $this->getProperty ('Value');
     }
 
     public function set_position (int $position)
     {
-        $this->setProperty ('Value', [$position, 'int']);
+        $this->setProperty ('Value', $position);
     }
 
     public function get_step ()
     {
-        return $this->getProperty (['Step', 'int']);
+        return $this->getProperty ('Step');
     }
 
     public function set_step (int $step)
     {
-        $this->setProperty ('Step', [$step, 'int']);
+        $this->setProperty ('Step', $step);
     }
 
     public function get_style ()
     {
-        return $this->getProperty (['Style', 'int']);
+        return $this->getProperty ('Style');
     }
 
     public function set_style (int $style)
     {
-        $this->setProperty ('Style', [$style, 'int']);
+        $this->setProperty ('Style', $style);
     }
 }
 

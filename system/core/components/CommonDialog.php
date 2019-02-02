@@ -11,7 +11,7 @@ abstract class CommonDialog extends Component
     
     public function showDialog (): int
     {
-        return $this->callMethod (['ShowDialog', 'int']);
+        return $this->callMethod ('ShowDialog');
     }
 
     public function execute ()

@@ -3,7 +3,6 @@
 namespace VoidEngine;
 
 $name = basenameNoExt (__FILE__);
-//VoidStudioAPI::addObjects ($name, VLFReader::read (__DIR__. '/'. $name .'.vlf'));
 
 $parser = new VLFParser (__DIR__. '/'. $name .'.vlf', [
     'strong_line_parser'            => false,

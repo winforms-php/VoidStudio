@@ -11,8 +11,8 @@ class SplitContainer extends NoVisual
 	{
         parent::__construct ($parent, self::class);
 
-        $this->panel1 = new SplitterPanel ($this->getProperty (['Panel1', 'object']));
-        $this->panel2 = new SplitterPanel ($this->getProperty (['Panel2', 'object']));
+        $this->panel1 = new SplitterPanel ($this->getProperty ('Panel1'));
+        $this->panel2 = new SplitterPanel ($this->getProperty ('Panel2'));
 	}
 }
 

@@ -11,12 +11,12 @@ class PropertyGrid extends Control
 
     public function get_selectedObject ()
     {
-        return $this->getProperty (['SelectedObject', 'object']);
+        return $this->getProperty ('SelectedObject');
     }
 
     public function set_selectedObject (int $selector)
     {
-        $this->setProperty ('SelectedObject', [$selector, 'object']);
+        $this->setProperty ('SelectedObject', $selector);
     }
 
     public function refresh ()

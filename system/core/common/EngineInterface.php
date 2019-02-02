@@ -280,6 +280,8 @@ class VoidEngine
      * 
      * @param string data - сериализированные данные ядра
      * 
+     * @return int selector - возвращает указатель на импортированный объект
+     * 
      */
 
     static function importObject (string $data): int
@@ -328,14 +330,14 @@ class EngineAdditions
     {
         $properties = [];
 
-        $type  = VoidEngine::callMethod ($selector, ['GetType', 'object']);
-        $props = VoidEngine::callMethod ($type, ['GetProperties', 'object']);
-        $len   = VoidEngine::getProperty ($props, ['Length', 'int']);
+        $type  = VoidEngine::callMethod ($selector, 'GetType');
+        $props = VoidEngine::callMethod ($type, 'GetProperties');
+        $len   = VoidEngine::getProperty ($props, 'Length');
 
         for ($i = 0; $i < $len; ++$i)
         {
-            $index = VoidEngine::getArrayValue ($props, [$i, 'object']);
-            $name  = VoidEngine::getProperty ($index, ['Name', 'string']);
+            $index = VoidEngine::getArrayValue ($props, $i);
+            $name  = VoidEngine::getProperty ($index, 'Name');
 
             $property = self::getProperty ($selector, $name);
 
@@ -348,12 +350,12 @@ class EngineAdditions
 
     static function getProperty (int $selector, string $name): array
     {
-        $type     = VoidEngine::callMethod ($selector, ['GetType', 'object']);
-        $property = VoidEngine::callMethod ($type, ['GetProperty', 'object'], [$name, 'string']);
+        $type     = VoidEngine::callMethod ($selector, 'GetType');
+        $property = VoidEngine::callMethod ($type, 'GetProperty', $name);
 
         try
         {
-            $propertyType = VoidEngine::getProperty ($property, ['PropertyType', 'string']);
+            $propertyType = VoidEngine::getProperty ($property, 'PropertyType');
 
             switch ($propertyType)
             {
@@ -437,18 +439,6 @@ class WFObject
                 $postArgs .= ", $name=$value";
 
         return $this->className .', '. $this->classGroup .', Version='. $this->version .', Culture='. $this->culture .', PublicKeyToken='. $this->token .$postArgs;
-    }
-
-    public function __get ($name)
-    {
-        return isset ($this->$name) ?
-            $this->$name : false;
-    }
-
-    public function __set ($name, $value): void
-    {
-        if (isset ($this->$name))
-            $this->$name = $value;
     }
 }
 

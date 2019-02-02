@@ -11,12 +11,12 @@ class Label extends Control
 
     public function get_textAlign ()
     {
-        return $this->getProperty (['TextAlign', 'int']);
+        return $this->getProperty ('TextAlign');
     }
 
     public function set_textAlign (int $textAlign)
     {
-        $this->setProperty ('TextAlign', [$textAlign, 'int']);
+        $this->setProperty ('TextAlign', $textAlign);
     }
 }
 

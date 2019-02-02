@@ -20,22 +20,22 @@ class PictureBox extends Control
 	
     public function get_imageLocation ()
     {
-        return $this->getProperty (['ImageLocation', 'string']);
+        return $this->getProperty ('ImageLocation');
     }
 	
     public function set_imageLocation (string $path)
     {
-        $this->setProperty ('ImageLocation', [$path, 'string']);
+        $this->setProperty ('ImageLocation', $path);
     }
 
     public function get_sizeMode ()
     {
-        return $this->getProperty (['SizeMode', 'int']);
+        return $this->getProperty ('SizeMode');
     }
 
     public function set_sizeMode (int $sizeMode)
     {
-        $this->setProperty ('SizeMode', [$sizeMode, 'int']);
+        $this->setProperty ('SizeMode', $sizeMode);
     }
 }
 
@@ -57,12 +57,12 @@ class PictureBoxImage
         $obj->token = 'b03f5f7f11d50a3a';
 
         $obj   = VoidEngine::buildObject ($obj);
-        $image = VoidEngine::callMethod ($obj, ['FromFile', 'object'], [$file, 'string']);
+        $image = VoidEngine::callMethod ($obj, 'FromFile', $file);
         
-        VoidEngine::setProperty ($this->pictureBoxSelector, 'Image', [$image, 'object']);
+        VoidEngine::setProperty ($this->pictureBoxSelector, 'Image', $image);
         
 		if (!isset ($this->selector))
-            $this->selector = VoidEngine::getProperty ($this->pictureBoxSelector, ['Image', 'object']);
+            $this->selector = VoidEngine::getProperty ($this->pictureBoxSelector, 'Image');
         
 		VoidEngine::removeObject ($obj, $image);
 	}
@@ -70,7 +70,7 @@ class PictureBoxImage
 	public function saveToFile (string $file)
 	{
 		if ($this->selector)
-			VoidEngine::callMethod ($this->selector, 'Save', [$file, 'string']);
+			VoidEngine::callMethod ($this->selector, 'Save', $file);
 	}
 	
 	public function loadFromClipboard ()
@@ -78,9 +78,9 @@ class PictureBoxImage
 		if (!isset (self::$clipboard))
             self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
 
-        $image = VoidEngine::callMethod (self::$clipboard, ['GetImage', 'object']);
+        $image = VoidEngine::callMethod (self::$clipboard, 'GetImage');
         
-        VoidEngine::getProperty ($this->pictureBoxSelector, 'Image', [$image, 'object']);
+        VoidEngine::getProperty ($this->pictureBoxSelector, 'Image', $image);
         
 		if (!isset ($this->selector))
 		    $this->selector = $image;
@@ -91,9 +91,9 @@ class PictureBoxImage
 		if (!isset (self::$clipboard))
             self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
 
-        $image = VoidEngine::getProperty ($this->pictureBoxSelector, ['Image', 'object']);
+        $image = VoidEngine::getProperty ($this->pictureBoxSelector, 'Image');
         
-		VoidEngine::callMethod (self::$clipboard, 'SetImage', [$image, 'object']);
+		VoidEngine::callMethod (self::$clipboard, 'SetImage', $image);
 	}
 }
 

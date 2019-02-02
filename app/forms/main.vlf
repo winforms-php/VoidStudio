@@ -8,260 +8,180 @@ Form MainForm
 
     ->icon->loadFromFile (STUDIO_DIR .'/Icon.ico')
 
-    SplitContainer BottomPanel__Container
+    SplitContainer ToolsPanel__Container
         dock: dsFill
 
         Orientation: 0
         SplitterDistance: MainForm->h - 180
 
-TabPage Log__Page
-    text: text ('Лог')
+    TabPage ToolsPanel__Log (text ('Лог'))
+        ListBox ToolsPanel__LogList
+            dock: dsFill
 
-    ListBox Log__List
+    TabPage ToolsPanel__Eval (text ('Выполнение кода'))
+        Scintilla ToolsPanel__EvalEditor
+            dock: dsFill
+
+            syntax: 'syntax.json'
+
+        Button ToolsPanel__EvalButton
+            dock: dsBottom
+
+            text: text ('Выполнить')
+
+            ClickEvent:^ function ($self) use (ToolsPanel__EvalEditor $editor)
+                {
+                    file_put_contents ('system/last_eval.php', $editor->text);
+
+                    eval ($editor->text);
+                }
+
+    TabControl ToolsPanel__ToolsList (ToolsPanel__Container->panel2)
         dock: dsFill
 
-        font: ['Microsoft Sans Serif', 9]
+        ->items->addRange ([ToolsPanel__Log, ToolsPanel__Eval])
 
-TabPage EvalTool__Page
-    text: text ('Выполнение кода')
+    ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
+        width: 268
 
-    Scintilla EvalTool_Editor
-        dock: dsFill
-        
-        syntax: 'syntax.json'
+    Panel PropertiesPanel
+        dock: dsLeft
+        width: 280
 
-    Button EvalTool_Eval
-        dock: dsBottom
-        caption: text ('Выполнить')
+        TabPage PropertiesList__Page (text ('Свойства'))
+            PropertyGrid PropertiesList__List
+                dock: dsFill
 
-        ClickEvent:^ function ($self) use (EvalTool_Editor $editor)
-            {
-                file_put_contents ('system/last_eval.php', $editor->text);
-
-                eval ($editor->text);
-            }
-
-TabControl BottomPanel (BottomPanel__Container->panel2):
-    dock: dsFill
-
-    ->tabPages->addRange ([Log__Page, EvalTool__Page])
-
-%^ if (file_exists ('system/last_eval.php'))
-        EvalTool_Editor->text = file_get_contents ('system/last_eval.php');
-
-TabPage TopMenu__Form1
-    name: 'Form1'
-    text: 'Form1'
-
-Panel TopMenu__Panel (BottomPanel__Container->panel1):
-    dock: dsFill
-
-    TabControl TopMenu
-        dock: dsFill
-
-        ->tabPages->add (TopMenu__Form1)
-
-TabPage LeftMenu__Properties
-    text: text ('Свойства')
-
-    PropertyGrid PropertiesList
-        dock: dsFill
-
-        PropertyValueChangedEvent:^ function ($self, $args)
-            {
-                $args = new PropertyValueChangedEventArgs ($args);
-                $name = VoidEngine::getProperty ($args->changedItem, 'Label');
-
-                $GLOBALS['AvailableObjects'][$self->selectedObject][$name] = EngineAdditions::getProperty ($self->selectedObject, $name);
-            }
-
-TabPage LeftMenu__Events
-    text: text ('События')
-
-    ListBox LeftMenu__EventsList
-        dock: dsFill
-
-        font: ['Microsoft Sans Serif', 9]
-
-        DoubleClickEvent:^ function ($self) use (PropertiesList $propertyGrid)
-            {
-                if ($event = $self->selected)
-                    VoidStudioAPI::openEventEditor (Components::getComponent ($propertyGrid->selectedObject), $event);
-            }
-
-Panel LeftMenu__Panel (MainForm):
-    dock: dsLeft
-    width: 280
-
-    TabControl LeftMenu
-        dock: dsFill
-
-        ->tabPages->addRange ([LeftMenu__Properties, LeftMenu__Events])
-
-VoidDesigner Form1Designer (TopMenu__Form1, 'Form1')
-
-TabControl TopMenu (TopMenu__Panel)
-
-ComboBox Objects (LeftMenu__Panel):
-    dock: dsTop
-    dropDownStyle: ddDropDownList
-
-    SelectedIndexChangedEvent:^ function ($self) use (PropertiesList $propertyGrid)
-        {
-            $item = $self->selectedItem;
-
-            $propertyGrid->selectedObject = substr ($item, 1, strpos ($item, ']') - 1);
-        }
-
-    SelectionChangeCommittedEvent:^ function ($self) use (TopMenu $menu)
-        {
-            $item     = $self->selectedItem;
-            $form     = VoidEngine::getProperty ($menu->selectedTab, 'Text');
-            $designer = VoidStudioAPI::$objects['main'][$form .'Designer'];
-
-            VoidEngine::callMethod ($designer->selector, 'SetSelectedComponents', substr ($item, 1, strpos ($item, ']') - 1), 'object');
-        }
-
-TabControl TopMenu (TopMenu__Panel):
-    SelectedEvent:^ function ($self) use (Objects $objs, TopMenu $menu)
-        {
-            $form = VoidEngine::getProperty ($menu->selectedTab, 'Text');
-
-            $objs->items->clear ();
-            $objs->items->addRange ($GLOBALS['forms'][$form]);
-            $objs->selectedIndex = 0;
-            
-            VoidStudioAPI::$objects['main'][$form .'Designer']->focus ();
-        }
-
-%^  PropertiesList->selectedObject = Form1Designer->form;
-    Objects->items->add ('['. Form1Designer->form .'] Form1');
-
-    $GLOBALS['forms']['Form1'][] = '['. Form1Designer->form .'] Form1';
-    $GLOBALS['registeredComponents']['Form'] = 'Form1';
-
-    // VoidEngine\VoidStudioAPI::loadObjectEvents (Form1Designer->form, LeftMenu__EventsList);
-
-#^ ColumnHeader ComponentsImagesColumn
-    width: 24
-
-ColumnHeader ComponentsNamesColumn
-    text: text ('Название компонента')
-    # width: 216 - ComponentsImagesColumn->width
-    width: 216
-
-ListView ComponentsList (MainForm):
-    dock: dsRight
-    width: 220
-    fullRowSelect: true
-    view: vwDetails
-
-    ->columns->add (ComponentsNamesColumn)
-
-    DoubleClickEvent:^ function ($self) use (Objects $objs, TopMenu $menu)
-        {
-            if (!isset ($GLOBALS['lastFormNum']))
-                $GLOBALS['lastFormNum'] = 1;
-
-            $component = substr ($self->selectedItems->offsetGet (0), 15, -1);
-            $name      = "VoidEngine\\$component";
-
-            if (isset ($GLOBALS['registeredComponents'][$name]))
-            {
-                sort ($GLOBALS['registeredComponents'][$name]);
-
-                $cname = $component .(substr (end ($GLOBALS['registeredComponents'][$name]), strlen ($component)) + 1);
-                $GLOBALS['registeredComponents'][$name][] = $cname;
-            }
-
-            else
-            {
-                $cname = $component .'1';
-                $GLOBALS['registeredComponents'][$name] = [$cname];
-            }
-
-            if ($component == 'Form')
-            {
-                $page = new TabPage ('Form'. (++$GLOBALS['lastFormNum']));
+                #^ В общем, тут прикол в том, что можно заранее создать компонент с именем какой-то формы, и будет пи%да
                 
-                $designer = new VoidDesigner ($page, $page->caption);
-                $designer->updateHost ();
+                    PropertyValueChangedEvent:^ function ($self, $args)
+                    {
+                        $args = new PropertyValueChangedEventArgs ($args);
 
-                VoidStudioAPI::$objects['main']['Form'. $GLOBALS['lastFormNum'] .'Designer'] = $designer;
-                $menu->tabPages->add ($page);
+                        if (VoidEngine::getProperty ($args->changedItem, 'Label') == '(Name)')
+                            if (substr (VoidEngine::getProperty ($args->changedItem, 'Value'), 0, 4) == 'Form')
+                            {
+                                VoidStudioAPI::getObjects ('main')['Designer__'. _c(Designer__FormsList->selectedTab)->text .'Designer']->renameComponent ($self->selectedObject, $args->oldValue);
 
-                $GLOBALS['forms']['Form'. $GLOBALS['lastFormNum']] = ['['. $designer->form->selector .'] '. $page->caption];
-                // VoidStudioAPI::loadObjectEvents ($designer->form, LeftMenu__EventsList);
-            }
+                                pre ('123');
+                            }
+                    }
 
-            else
+        TabPage EventsList__Page (text ('События'))
+            ListBox EventsList__Events
+                dock: dsFill
+
+        TabControl Properties__Items
+            dock: dsFill
+
+            ->items->addRange ([PropertiesList__Page, EventsList__Page])
+
+    TabPage Designer__Form1 (text ('Form1'))
+        VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List)
+
+    TabControl Designer__FormsList (ToolsPanel__Container->panel1)
+        dock: dsFill
+
+        ->items->add (Designer__Form1)
+
+        SelectedIndexChangedEvent:^ function ($self)
             {
-                $form     = VoidEngine::getProperty ($menu->selectedTab, 'Text');
-                $designer = VoidStudioAPI::$objects['main'][$form .'Designer'];
+                $designer = VoidStudioAPI::getObjects ('main')['Designer__'. _c($self->selectedTab)->text .'Designer'];
+                $designer->focus ();
 
-                // $GLOBALS['forms'][$form][] = '['. $obj->selector .'] '. $cname;
-
-                /*$objs->items->clear ();
-                $objs->items->addRange ($GLOBALS['forms'][$form]);
-                $objs->selectedItem = end ($GLOBALS['forms'][$form]);*/
-
-                $obj = $designer->createComponent (new WFObject ("System.Windows.Forms.$component"), $cname);
-                VoidEngine::setProperty ($obj, 'Text', [$cname, 'string']);
-
-                // VoidStudioAPI::loadObjectEvents ($obj, LeftMenu__EventsList);
+                PropertiesList__List->selectedObject = $designer->form;
             }
 
-            VoidStudioAPI::saveProject ();
-        }
+    ListView ComponentsList
+        dock: dsRight
+        width: 280
 
-MenuItem Menu__studio_restart
-    text: text ('Перезапустить')
+        fullRowSelect: true
+        view: vwDetails
 
-    ClickEvent:^ function ($self)
-        {
-            $APPLICATION->restart ();
-        }
+        ->columns->add (ComponentsNamesColumn)
 
-MenuItem Menu__studio_about
-    text: text ('О программе')
+        DoubleClickEvent:^ function ($self) use (Designer__FormsList $formsList)
+            {
+                $form      = _c($formsList->selectedTab)->text;
+                $component = _c($self->selectedItems[0])->text;
+                $designer  = VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer'];
 
-    ClickEvent:^ function ($self)
-        {
-            $msg = new MessageBox;
-            $msg->show (text ("Авторы сие произведения:\n\nАндрей Кусов (vk.com/postmessage) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms"), text ('О программе'));
-        }
+                if ($component == 'Form')
+                {
+                    $page     = new TabPage ($form = 'Form'. (substr ($form, 4) + 1));
+                    $designer = new VoidDesigner ($page, $form, PropertiesList__List);
 
-MenuItem Menu__project_build
-    text: text ('Собрать')
+                    VoidStudioAPI::addObjects ('main', ['Designer__'. $form .'Designer' => $designer]);
 
-    ClickEvent:^ function ($self)
-        {
-            $form = VoidStudioAPI::$objects['builder']['MainForm'];
+                    $formsList->items->add ($page);
+                    $formsList->selectedTab = $page->selector;
+                }
 
-            $form->show ();
-        }
+                else
+                {
+                    $designer->createComponent (new WFObject ("System.Windows.Forms.$component"), $component . time () . rand (100000, 999999));
 
-MenuItem Menu__studio
-    text: text ('Среда')
+                    pre ($objects = VoidStudioBuilder::parseObjectsProperties ($designer));
+                    pre (VoidStudioBuilder::constructVLF ($objects, $designer));
+                }
+            }
 
-    ->items->addRange ([Menu__studio_restart, Menu__studio_about])
+    MenuItem Menu__studio (text ('Среда'))
+        MenuItem Menu__studio_restart (text ('Перезапустить'))
+            ClickEvent:^ function ($self)
+                {
+                    $APPLICATION->restart ();
+                }
 
-MenuItem Menu__project
-    text: text ('Проект')
+        MenuItem Menu__studio_about (text ('О программе'))
+            ClickEvent:^ function ($self)
+                {
+                    $msg = new MessageBox;
 
-    ->items->add (Menu__project_build)
+                    $msg->show
+                    (
+                        text ("Авторы сие произведения:\n\nАндрей Кусов (vk.com/postmessage) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms"),
 
-MainMenu Menu
-    ->items->addRange ([Menu__studio, Menu__project])
+                        text ('О программе')
+                    );
+                }
+
+    #^ Здесь тупая ошибка: я не могу обратиться к ->items->addRange... т.к. этот метод вызывается от имени
+       Menu__studio_about. Типо, опять фиксить и всё такое, но мне влом пока что
+
+    MenuItem Menu__studio
+        ->items->addRange ([Menu__studio_restart, Menu__studio_about])
+
+    MenuItem Menu__project (text ('Проект'))
+        MenuItem Menu__project_build (text ('Собрать'))
+            ClickEvent:^ function ($self)
+                {
+                    $form = VoidStudioAPI::$objects['builder']['MainForm'];
+
+                    $form->show ();
+                }
+
+    MenuItem Menu__project
+        ->items->add (Menu__project_build)
+
+    MainMenu Menu
+        ->items->addRange ([Menu__studio, Menu__project])
+
+#^ И тут тоже достаточно тупая ошибка:
+   Я почему-то не могу обратиться к объект, который только что создал
 
 Form MainForm
     menu: Menu
 
-    ShownEvent:^ function ($self) use (Log__List $log, Form1Designer $designer)
+    ShownEvent:^ function ($self)
         {
-            $designer->updateHost ();
+            if (file_exists ('system/last_eval.php'))
+                ToolsPanel__EvalEditor->text = file_get_contents ('system/last_eval.php');
+
+            PropertiesList__List->selectedObject = Designer__Form1Designer->form;
 
             $time = round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 4);
 
-            $log->items->add (text ('VoidStudio запущен за '. ($time > 0 ? $time : '[мало]') .' секунд'));
+            ToolsPanel__LogList->items->add (text ('VoidStudio запущен за '. ($time > 0 ? $time : '[мало]') .' секунд'));
         }

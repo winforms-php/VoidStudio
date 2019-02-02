@@ -10,7 +10,7 @@ class ComboBox extends Control
     {
         parent::__construct ($parent, self::class);
 
-        $this->items = new Items ($this->getProperty (['Items', 'object']));
+        $this->items = new Items ($this->getProperty ('Items'));
     }
 	
     public function get_items ()
@@ -20,37 +20,37 @@ class ComboBox extends Control
 
     public function get_dropDownStyle ()
     {
-        return $this->getProperty (['DropDownStyle', 'int']);
+        return $this->getProperty ('DropDownStyle');
     }
 
     public function set_dropDownStyle (int $style)
     {
-        $this->setProperty ('DropDownStyle', [$style, 'int']);
+        $this->setProperty ('DropDownStyle', $style);
     }
 	
     public function get_selectedItem ()
     {
-        return $this->getProperty (['SelectedItem', 'string']);
+        return $this->getProperty ('SelectedItem');
     }
 
     public function set_selectedItem (string $item)
     {
-        $this->setProperty ('SelectedItem', [$item, 'string']);
+        $this->setProperty ('SelectedItem', $item);
     }
 	
     public function get_selectedIndex ()
     {
-        return $this->getProperty (['SelectedIndex', 'int']);
+        return $this->getProperty ('SelectedIndex');
     }
 	
     public function set_selectedIndex (int $index)
     {
-        $this->setProperty ('SelectedIndex', [$index, 'int']);
+        $this->setProperty ('SelectedIndex', $index);
     }
 	
 	public function dispose ()
 	{
-        VoidEngine::removeObject ($this->getProperty (['Items', 'object']));
+        VoidEngine::removeObject ($this->getProperty ('Items'));
         unset ($this->items);
         
         parent::dispose ();

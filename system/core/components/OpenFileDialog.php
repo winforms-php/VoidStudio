@@ -11,32 +11,32 @@ class OpenFileDialog extends FileDialog
 	
     public function get_multiselect ()
     {
-        return $this->getProperty (['Multiselect', 'bool']);
+        return $this->getProperty ('Multiselect');
     }
 	
     public function set_multiselect (bool $multiselect)
     {
-        $this->setProperty ('Multiselect', [$multiselect, 'bool']);
+        $this->setProperty ('Multiselect', $multiselect);
     }
 	
     public function get_checkFileExists ()
     {
-        return $this->getProperty (['CheckFileExists', 'bool']);
+        return $this->getProperty ('CheckFileExists');
     }
 	
     public function set_checkFileExists (bool $checkfile)
     {
-        $this->setProperty ('CheckFileExists', [$checkfile, 'bool']);
+        $this->setProperty ('CheckFileExists', $checkfile);
     }
 	
     public function get_readOnlyChecked ()
     {
-        return $this->getProperty (['ReadOnlyChecked', 'bool']);
+        return $this->getProperty ('ReadOnlyChecked');
     }
 	
     public function set_readOnlyChecked (bool $checked)
     {
-        $this->setProperty ('ReadOnlyChecked', [$checked, 'bool']);
+        $this->setProperty ('ReadOnlyChecked', $checked);
     }
 }
 

@@ -17,32 +17,32 @@ class FastColoredTextBox extends NoVisual
 	
     public function get_readOnly ()
     {
-        return $this->getProperty (['ReadOnly', 'bool']);
+        return $this->getProperty ('ReadOnly');
     }
 	
     public function set_readOnly (bool $readOnly)
     {
-        $this->setProperty ('ReadOnly', [$readOnly, 'bool']);
+        $this->setProperty ('ReadOnly', $readOnly);
     }
 
     public function get_wordWrap ()
     {
-        return $this->getProperty (['WordWrap', 'bool']);
+        return $this->getProperty ('WordWrap');
     }
 
     public function set_wordWrap (bool $wordWrap)
     {
-        return $this->setProperty ('WordWrap', [$wordWrap, 'bool']);
+        return $this->setProperty ('WordWrap', $wordWrap);
     }
 	
     public function get_language ()
     {
-        return $this->getProperty (['Language', 'int']);
+        return $this->getProperty ('Language');
     }
 	
     public function set_language (int $language)
     {
-        $this->setProperty ('Language', [$language, 'int']);
+        $this->setProperty ('Language', $language);
     }
 }
 

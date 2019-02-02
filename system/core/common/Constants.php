@@ -7,16 +7,15 @@
 namespace VoidEngine;
 
 $env   = VoidEngine::buildObject (new WFObject ('System.Environment', 'mscorlib'));
-$array = VoidEngine::callMethod ($env, ['GetCommandLineArgs', 'object']);
-$size  = VoidEngine::getProperty ($array, ['Length', 'int']);
+$array = VoidEngine::callMethod ($env, 'GetCommandLineArgs');
+$size  = VoidEngine::getProperty ($array, 'Length');
 
 for ($i = 0; $i < $size; ++$i)
-    $params[] = VoidEngine::getArrayValue ($array, [$i, 'string']);
+    $params[] = VoidEngine::getArrayValue ($array, $i);
 
 VoidEngine::removeObject ($env, $array);
 
-$constants = array
-(
+$constants = [
 	# Константы MessageBox'а
 	
 	'MB_YESNO' 			  => 4,
@@ -173,7 +172,14 @@ $constants = array
 	'pbBlocks'	   => 0,
 	'pbContinuous' => 1,
 	'pbMarquee'    => 2,
+
+	# Константы свойства FlatStyle
 	
+	'flFlat'	 => 0,
+	'flPopup'	 => 1,
+	'flStandard' => 2,
+	'flSystem'   => 3,
+
 	# Цветовые константы
 	
 	'clAliceBlue'			 => 0xFFF0F8FF,
@@ -316,7 +322,7 @@ $constants = array
 	'clWhiteSmoke'			 => 0xFFF5F5F5,
 	'clYellow'				 => 0xFFFFFF00,
 	'clYellowGreen'			 => 0xFF9ACD32
-);
+];
 
 foreach ($constants as $constantName => $constantValue)
 	define ($constantName, $constantValue);

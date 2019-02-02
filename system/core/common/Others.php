@@ -82,7 +82,7 @@ function c ($name)
     else
     {
         foreach (Components::$components as $selector => $object)
-            if ($object->name == $name)
+            if (($object instanceof Control || method_exists ($object, 'get_name') || property_exists ($object, 'name')) && $object->name == $name)
                 return $object;
 
         return false;
@@ -284,7 +284,7 @@ class Clipboard
         if (!isset (self::$clipboard))
             self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
 
-        return VoidEngine::callMethod (self::$clipboard, ['GetText', 'string']);
+        return VoidEngine::callMethod (self::$clipboard, 'GetText');
     }
     
     public static function setText (string $text): void
@@ -292,7 +292,7 @@ class Clipboard
         if (!isset (self::$clipboard))
             self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
 
-        VoidEngine::callMethod (self::$clipboard, 'SetText', [$text, 'string']);
+        VoidEngine::callMethod (self::$clipboard, 'SetText', $text);
     }
     
     public static function getFiles (): array
@@ -300,12 +300,12 @@ class Clipboard
         if (!isset (self::$clipboard))
             self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
 
-        $array = VoidEngine::callMethod (self::$clipboard, ['GetFileDropList', 'object']);
-        $size  = VoidEngine::getProperty ($arr, ['Count', 'int']);
+        $array = VoidEngine::callMethod (self::$clipboard, 'GetFileDropList');
+        $size  = VoidEngine::getProperty ($arr, 'Count');
         $files = [];
 
         for ($i = 0; $i < $size; ++$i)
-            $files[] = VoidEngine::getArrayValue ($arr, [$i, 'string']);
+            $files[] = VoidEngine::getArrayValue ($arr, $i);
 
         VoidEngine::removeObject ($array);
 
@@ -320,9 +320,9 @@ class Clipboard
         $collection = VoidEngine::buildObject (new WFObject ('System.Collections.Specialized.StringCollection', 'System'));
 
         foreach ($files as $file)
-            VoidEngine::callMethod ($collection, 'Add', [(string) $file, 'string']);
+            VoidEngine::callMethod ($collection, 'Add', (string) $file);
 
-        VoidEngine::callMethod (self::$clipboard, 'SetFileDropList', [$collection, 'object']);
+        VoidEngine::callMethod (self::$clipboard, 'SetFileDropList', $collection);
         VoidEngine::removeObject ($collection);
     }
 }
@@ -341,15 +341,15 @@ class Items extends \ArrayObject
 		switch (strtolower ($name))
 		{
 			case 'count':
-                return VoidEngine::getProperty ($this->selector, ['Count', 'int']);
+                return VoidEngine::getProperty ($this->selector, 'Count');
             break;
 				
             case 'list':
-                $size = VoidEngine::getProperty ($this->selector, ['Count', 'int']);
+                $size = VoidEngine::getProperty ($this->selector, 'Count');
                 $list = [];
                 
 				for ($i = 0; $i < $size; ++$i)
-                    $list[] = VoidEngine::getArrayValue ($this->selector, [$i, 'string']);
+                    $list[] = VoidEngine::getArrayValue ($this->selector, $i);
                     
                 return $list;
             break;
@@ -369,13 +369,13 @@ class Items extends \ArrayObject
 	public function offsetSet ($index, $value)
 	{
         return $index === null ?
-            VoidEngine::callMethod ($this->selector, 'Add', [$value, 'string']) :
-            VoidEngine::callMethod ($this->selector, 'Insert', [(int) $index, 'int'], [$value, 'string']);
+            VoidEngine::callMethod ($this->selector, 'Add', $value) :
+            VoidEngine::callMethod ($this->selector, 'Insert', $index, $value);
 	}
 	
 	public function offsetGet ($index)
 	{
-		return VoidEngine::getArrayValue ($this->selector, [(int) $index, 'string']);
+		return VoidEngine::getArrayValue ($this->selector, $index);
 	}
 	
 	public function addRange (array $items): void
@@ -385,7 +385,7 @@ class Items extends \ArrayObject
 	
 	public function offsetUnset ($index): void
 	{
-		VoidEngine::callMethod ($this->selector, 'RemoveAt', [(int) $index, 'int']);
+		VoidEngine::callMethod ($this->selector, 'RemoveAt', $index);
 	}
 	
 	public function remove ($index): void
@@ -400,7 +400,7 @@ class Items extends \ArrayObject
 	
 	public function indexOf (string $value): int
 	{
-		return VoidEngine::callMethod ($this->selector, ['IndexOf', 'int'], [$value, 'string']);
+		return VoidEngine::callMethod ($this->selector, 'IndexOf', $value);
 	}
 	
 	public function insert ($index, $value)
@@ -410,7 +410,7 @@ class Items extends \ArrayObject
 	
 	public function contains (string $value): bool
 	{
-		return VoidEngine::callMethod ($this->selector, ['Contains', 'bool'], [$value, 'string']);
+		return VoidEngine::callMethod ($this->selector, 'Contains', $value);
 	}
 }
 
@@ -423,17 +423,17 @@ class Icon
         $icon = new WFObject ('System.Drawing.Icon', 'System.Drawing');
         $icon->token = 'b03f5f7f11d50a3a';
 
-		$this->selector = VoidEngine::createObject ($icon, [$file, 'string']);
+		$this->selector = VoidEngine::createObject ($icon, $file);
     }
 
     public function applyToObject (int $selector): void
 	{
-		VoidEngine::setProperty ($selector, 'Icon', [$this->selector, 'object']);
+		VoidEngine::setProperty ($selector, 'Icon', $this->selector);
 	}
 	
 	public function saveToFile (string $file): void
 	{
-		VoidEngine::callMethod ($this->selector, 'Save', [$file, 'string']);
+		VoidEngine::callMethod ($this->selector, 'Save', $file);
 	}
 }
 
@@ -447,16 +447,16 @@ class Cursor
 
         $this->cursor = $handle === null ?
             VoidEngine::buildObject ($cursor) :
-            VoidEngine::createObject ($cursor, [$handle, 'handle']);
+            VoidEngine::createObject ($cursor, $handle);
     }
 
     public function getPosition (): array
     {
-        $pos = VoidEngine::getProperty ($this->cursor, ['Position', 'object']);
+        $pos = VoidEngine::getProperty ($this->cursor, 'Position');
 
         return [
-            VoidEngine::getProperty ($pos, ['X', 'int']),
-            VoidEngine::getProperty ($pos, ['Y', 'int'])
+            VoidEngine::getProperty ($pos, 'X'),
+            VoidEngine::getProperty ($pos, 'Y')
         ];
     }
 }

@@ -14,7 +14,7 @@ class Image extends WFClass
 
     public function loadFromFile (string $path)
     {
-        return $this->__call ('FromFile', [[$path, 'string']]);
+        return $this->__call ('FromFile', [$path]);
     }
 }
 

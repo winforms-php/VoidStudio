@@ -111,15 +111,41 @@ class VLFParser
              * 
              * Нужно для того, что-бы указатель с объекта MainButton1 спрыгнул обратно на MainForm
              * 
+             * subparent_link нужен цикл while для того, что-бы перебрать некоторые подобъекты, у которых в аргументах
+             * не используются ссылки на оригиналы объектов
+             * 
              */
 
-            if ($current_object !== null && $tree[$current_object]['hard'] >= $height)
+            while ($current_object !== null && $tree[$current_object]['hard'] >= $height)
+            {
+                $updated = false;
+
+                if ($this->debug_mode)
+                    pre ($current_object);
+
+                while (isset ($tree[$current_object]['info']['subparent_link']) && $tree[$link = $tree[$current_object]['info']['subparent_link']->link]['hard'] < $tree[$current_object]['hard'])
+                {
+                    $current_object = $link;
+                    $updated        = true;
+
+                    if ($this->debug_mode)
+                        pre ($current_object);
+                }
+
                 if (
+                    !$updated &&
                     isset ($tree[$current_object]['info']['arguments']) &&
                     isset ($tree[$current_object]['info']['arguments'][0]) &&
                     $tree[$current_object]['info']['arguments'][0] instanceof VLFLink &&
                     $tree[$tree[$current_object]['info']['arguments'][0]->link]['hard'] < $tree[$current_object]['hard']
                 ) $current_object = $tree[$current_object]['info']['arguments'][0]->link;
+
+                elseif (!$updated)
+                    break;
+
+                if ($this->debug_mode)
+                    pre ($current_object);
+            }
 
             /**
              * Button ...
@@ -206,6 +232,8 @@ class VLFParser
                             if (!$this->ignore_postobject_info && trim (substr ($line, $end)) > 0)
                                 throw new \Exception ('You mustn\'t write any chars after arguments definition');
                         }
+
+                        $tree[$id]['info']['subparent_link'] = new VLFLink ($tree[$current_object]['info']['object_name'], $current_object);
                     }
 
                     /**
@@ -235,8 +263,6 @@ class VLFParser
                         $tree[$current_object]['hard'] == $height
                     )
                     {
-                        // trigger_error ('Sub-parents pyramids permamentrly not functionally at line "'. $line .'"', E_USER_NOTICE);
-
                         $tree[$id]['info']['arguments'] = [
                             new VLFLink ($tree[$current_object]['info']['object_name'], $current_object)
                         ];
@@ -364,7 +390,7 @@ class VLFParser
 
                     $propertyName     = substr ($words[0], 0, -1);
                     $propertyValue    = implode (' ', array_slice ($words, 1));
-                    $propertyRawValue = substr ($line, strlen ($words[0]));
+                    $propertyRawValue = ltrim (substr ($line, strlen ($words[0])));
 
                     /**
                      * property_name:^ property_value_1
@@ -463,8 +489,6 @@ class VLFParser
                 }
 
                 /**
-                 * FIXME ?
-                 * 
                  * ...я хз что тут должно быть, но первоначально это должно было работать так:
                  * 
                  * Form MainForm
@@ -591,26 +615,6 @@ class VLFParser
             
             return strlen (trim ($text)) > 0;
         });
-    }
-}
-
-// Без комментариев, пожалуйста...
-
-final class VLFLink
-{
-    protected $name; // Имя объекта
-    protected $link; // АСД-ссылка на объект
-
-    public function __construct (string $name, int $link)
-    {
-        $this->name = $name;
-        $this->link = $link;
-    }
-
-    public function __get ($name)
-    {
-        return isset ($this->$name) ?
-            $this->$name : false;
     }
 }
 

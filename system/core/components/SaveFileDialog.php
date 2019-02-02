@@ -11,12 +11,12 @@ class SaveFileDialog extends FileDialog
 	
     public function get_createPrompt ()
     {
-        return $this->getProperty (['CreatePrompt', 'bool']);
+        return $this->getProperty ('CreatePrompt');
     }
 	
     public function set_createPrompt (bool $createPrompt)
     {
-        $this->setProperty ('CreatePrompt', [$createprompt, 'bool']);
+        $this->setProperty ('CreatePrompt', $createPrompt);
     }
 }
 

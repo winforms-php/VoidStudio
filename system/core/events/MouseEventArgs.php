@@ -2,35 +2,31 @@
 
 namespace VoidEngine;
 
-/*
-    Класс, отвечающий за работу с аргументами событий мыши
-*/
-
 class MouseEventArgs extends EventArgs
 {
     public function get_button ()
     {
-        return $this->getProperty (['Button', 'string']);
+        return $this->getProperty ('Button');
     }
 	
     public function get_clicks ()
     {
-        return $this->getProperty (['Clicks', 'int']);
+        return $this->getProperty ('Clicks');
     }
 	
     public function get_delta ()
     {
-        return $this->getProperty (['Delta', 'int']); 
+        return $this->getProperty ('Delta'); 
     }
 	
     public function get_x ()
     {
-        return $this->getProperty (['X', 'int']);
+        return $this->getProperty ('X');
     }
 	
     public function get_y ()
     {
-        return $this->getProperty (['Y', 'int']);
+        return $this->getProperty ('Y');
     }
 	
     public function get_location ()

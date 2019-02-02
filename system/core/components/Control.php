@@ -14,22 +14,22 @@ abstract class Control extends Component
 	
     public function get_name ()
     {
-        return $this->getProperty (['Name', 'string']);
+        return $this->getProperty ('Name');
     }
 	
     public function set_name (string $name)
     {
-        $this->setProperty ('Name', [$name, 'string']);
+        $this->setProperty ('Name', $name);
     }
 	
     public function get_text ()
     {
-        return $this->getProperty (['Text', 'string']);
+        return $this->getProperty ('Text');
     }
 	
     public function set_text (string $text)
     {
-        $this->setProperty ('Text', [$text, 'string']);
+        $this->setProperty ('Text', $text);
     }
 	
     public function get_caption ()
@@ -44,11 +44,11 @@ abstract class Control extends Component
 
     public function get_font ()
 	{
-        $font = $this->getProperty (['Font', 'object']);
+        $font = $this->getProperty ('Font');
         
 		return [
-            VoidEngine::getProperty ($font, ['Name', 'string']),
-            VoidEngine::getProperty ($font, ['Size', 'double'])
+            VoidEngine::getProperty ($font, 'Name'),
+            VoidEngine::getProperty ($font, 'Size')
         ];
 	}
 	
@@ -59,19 +59,19 @@ abstract class Control extends Component
         $obj = new WFObject ('System.Drawing.Font', 'System.Drawing');
         $obj->token = 'b03f5f7f11d50a3a';
 
-        $obj = VoidEngine::createObject ($obj, [$font[0], 'string'], [$font[1], 'float']);
+        $obj = VoidEngine::createObject ($obj, $font[0], [$font[1], 'float']);
         
-		$this->setProperty ('Font', [$obj, 'object']);
+		$this->setProperty ('Font', $obj);
     }
     
     public function get_flatStyle ()
     {
-        return $this->getProperty (['FlatStyle', 'int']);
+        return $this->getProperty ('FlatStyle');
     }
 	
     public function set_flatStyle (int $style)
     {
-        $this->setProperty ('FlatStyle', [$style, 'int']);
+        $this->setProperty ('FlatStyle', $style);
     }
 	
     public function get_backgroundColor ()
@@ -96,28 +96,28 @@ abstract class Control extends Component
 	
     public function get_parent ()
     {
-        return $this->getProperty (['Parent', 'object']);
+        return $this->getProperty ('Parent');
     }
 	
     public function set_parent ($parent)
     {
         if ($parent instanceof Control)
-            $this->setProperty ('Parent', [$parent->selector, 'object']);
+            $this->setProperty ('Parent', $parent->selector);
 
         elseif (is_numeric ($parent))
-            $this->setProperty ('Parent', [$parent, 'object']);
+            $this->setProperty ('Parent', $parent);
 
         else throw new \Exception ('$parent must be instance of "Control" or his selector');
     }
 	
     public function get_width ()
     {
-        return $this->getProperty (['Width', 'int']);
+        return $this->getProperty ('Width');
     }
 	
     public function set_width (int $width)
     {
-        $this->setProperty ('Width', [$width, 'int']);
+        $this->setProperty ('Width', $width);
     }
 	
     public function get_w ()
@@ -132,12 +132,12 @@ abstract class Control extends Component
 	
     public function get_height ()
     {
-        return $this->getProperty (['Height', 'int']);
+        return $this->getProperty ('Height');
     }
 	
     public function set_height (int $height)
     {
-        $this->setProperty ('Height', [$height, 'int']);
+        $this->setProperty ('Height', $height);
     }
 	
     public function get_h ()
@@ -152,12 +152,12 @@ abstract class Control extends Component
 	
     public function get_left ()
     {
-        return $this->getProperty (['Left', 'int']);
+        return $this->getProperty ('Left');
     }
 	
     public function set_left (int $left)
     {
-        $this->setProperty ('Left', [$left, 'int']);
+        $this->setProperty ('Left', $left);
     }
 	
     public function get_x ()
@@ -172,12 +172,12 @@ abstract class Control extends Component
 	
     public function get_top ()
     {
-        return $this->getProperty (['Top', 'int']);
+        return $this->getProperty ('Top');
     }
 	
     public function set_top (int $top)
     {
-        $this->setProperty ('Top', [$top, 'int']);
+        $this->setProperty ('Top', $top);
     }
 	
     public function get_y ()
@@ -259,57 +259,57 @@ abstract class Control extends Component
 
     public function get_bottom ()
     {
-        return $this->getProperty (['Bottom', 'int']);
+        return $this->getProperty ('Bottom');
     }
 	
     public function get_right ()
     {
-        return $this->getProperty (['Right', 'int']);
+        return $this->getProperty ('Right');
     }
 
     public function get_autoSize ()
     {
-        return $this->getProperty (['AutoSize', 'bool']);
+        return $this->getProperty ('AutoSize');
     }
 
     public function set_autoSize (bool $autoSize)
     {
-        return $this->setProperty ('AutoSize', [$autoSize, 'bool']);
+        return $this->setProperty ('AutoSize', $autoSize);
     }
 
     public function get_dock ()
     {
-        return $this->getProperty (['Dock', 'int']);
+        return $this->getProperty ('Dock');
     }
 	
     public function set_dock (int $dock)
     {
-        $this->setProperty ('Dock', [$dock, 'int']);
+        $this->setProperty ('Dock', $dock);
     }
 	
     public function get_enabled ()
     {
-        return $this->getProperty (['Enabled', 'bool']);
+        return $this->getProperty ('Enabled');
     }
 	
     public function set_enabled (bool $enabled)
     {
-        $this->setProperty ('Enabled', [$enabled, 'bool']);
+        $this->setProperty ('Enabled', $enabled);
     }
 	
     public function get_visible ()
     {
-        return $this->getProperty (['Visible', 'bool']);
+        return $this->getProperty ('Visible');
     }
 	
     public function set_visible (bool $visible)
     {
-        $this->setProperty ('Visible', [$visible, 'bool']);
+        $this->setProperty ('Visible', $visible);
     }
     
     public function get_anchor ()
     {
-        return $this->getProperty (['Anchor', 'int']);
+        return $this->getProperty ('Anchor');
     }
 
     /*public function set_anchor (array $anchors)
@@ -324,22 +324,22 @@ abstract class Control extends Component
 
     public function set_anchor (int $anchor)
     {
-        $this->setProperty ('Anchor', [$anchor, 'int']);
+        $this->setProperty ('Anchor', $anchor);
     }
 
     public function get_borderStyle ()
 	{
-		return $this->getProperty (['BorderStyle', 'int']);
+		return $this->getProperty ('BorderStyle');
 	}
 	
 	public function set_borderStyle (int $borderStyle)
 	{
-		$this->setProperty ('BorderStyle', [$borderStyle, 'int']);
+		$this->setProperty ('BorderStyle', $borderStyle);
 	}
 
     public function get_handle ()
     {
-        return $this->getProperty (['Handle', 'handle']);
+        return $this->getProperty ('Handle');
     }
 	
     public function toBack()
@@ -374,12 +374,12 @@ abstract class Control extends Component
 	
     public function focus ()
     {
-        return $this->callMethod (['Focus', 'bool']);
+        return $this->callMethod ('Focus');
     }
 	
 	public function dispose ()
 	{
-        VoidEngine::removeObject ($this->getProperty (['Controls', 'object']));
+        VoidEngine::removeObject ($this->getProperty ('Controls'));
 
 		parent::dispose ();
 	}

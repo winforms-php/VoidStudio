@@ -10,7 +10,7 @@ class TreeView extends Control
     {
         parent::__construct ($parent, self::class);
 
-        $this->nodes = new TreeViewNodes ($this->getProperty ('Nodes', 'object'));
+        $this->nodes = new TreeViewNodes ($this->getProperty ('Nodes'));
     }
 
     public function get_nodes ()
@@ -20,7 +20,7 @@ class TreeView extends Control
 
     public function get_selectedNode ()
     {
-        return $this->getProperty ('SelectedNode', 'object');
+        return $this->getProperty ('SelectedNode');
     }
 
     public function get_path ()
@@ -35,12 +35,12 @@ class TreeView extends Control
             return false;
         }
         
-        return VoidEngine::getProperty ($node, 'FullPath', 'string');
+        return VoidEngine::getProperty ($node, 'FullPath');
     }
 
     public function dispose ()
 	{
-        VoidEngine::removeObject ($this->getProperty ('Nodes', 'object'));
+        VoidEngine::removeObject ($this->getProperty ('Nodes'));
         unset ($this->nodes);
         
         parent::dispose ();
@@ -56,7 +56,7 @@ class TreeNode extends Control
         parent::__construct (null, self::class);
 
         $this->text  = $text;
-        $this->nodes = new TreeViewNodes ($this->getProperty (['Nodes', 'object']));
+        $this->nodes = new TreeViewNodes ($this->getProperty ('Nodes'));
     }
 
     public function get_nodes ()
@@ -66,7 +66,7 @@ class TreeNode extends Control
 
     public function get_path ()
     {
-        return $this->getProperty (['FullPath', 'string']);
+        return $this->getProperty ('FullPath');
     }
 }
 
@@ -77,15 +77,15 @@ class TreeViewNodes extends Items
 		switch (strtolower ($name))
 		{
 			case 'count':
-                return VoidEngine::getProperty ($this->selector, ['Count', 'int']);
+                return VoidEngine::getProperty ($this->selector, 'Count');
             break;
 				
             case 'list':
-                $size = VoidEngine::getProperty ($this->selector, ['Count', 'int']);
+                $size = VoidEngine::getProperty ($this->selector, 'Count');
                 $list = [];
                 
 				for ($i = 0; $i < $size; ++$i)
-                    $list[] = VoidEngine::getArrayValue ($this->selector, [$i, 'object']);
+                    $list[] = VoidEngine::getArrayValue ($this->selector, $i);
                     
                 return $list;
             break;
@@ -111,13 +111,13 @@ class TreeViewNodes extends Items
 	public function offsetSet ($index, $value)
 	{
         return $index === null ?
-            VoidEngine::callMethod ($this->selector, 'Add', [$value, 'object']) :
-            VoidEngine::callMethod ($this->selector, 'Insert', [(int) $index, 'int'], [$value, 'object']);
+            VoidEngine::callMethod ($this->selector, 'Add', $value) :
+            VoidEngine::callMethod ($this->selector, 'Insert', $index, $value);
 	}
 	
 	public function offsetGet ($index)
 	{
-		return VoidEngine::getArrayValue ($this->selector, [(int) $index, 'object']);
+		return VoidEngine::getArrayValue ($this->selector, $index);
 	}
 }
 

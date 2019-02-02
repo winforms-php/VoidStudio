@@ -32,7 +32,7 @@ Form MainForm
 
 VLF;
 
-/*pre (($parser = new VLFParser ($vlf, [
+pre (($parser = new VLFParser ($vlf, [
     'strong_line_parser' => false,
     'ignore_postobject_info' => true,
     'ignore_unexpected_method_args' => true,
@@ -41,4 +41,4 @@ VLF;
     'debug_mode' => false
 ]))->tree);
 
-pre (VLFInterpreter::run ($parser->tree));*/
+pre (VLFInterpreter::run ($parser->tree));

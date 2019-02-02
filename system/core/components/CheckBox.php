@@ -11,12 +11,12 @@ class CheckBox extends Control
 	
     public function get_checked ()
     {
-        return $this->getProperty (['Checked', 'bool']);
+        return $this->getProperty ('Checked');
     }
 	
     public function set_checked (bool $checked)
     {
-        $this->setProperty ('Checked', [$checked, 'bool']);
+        $this->setProperty ('Checked', $checked);
     }
 }
 

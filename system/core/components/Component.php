@@ -18,7 +18,7 @@ abstract class Component
         Components::addComponent ($this->componentSelector, $this);
 	}
 	
-	final function __get ($name)
+	public function __get ($name)
 	{
         if (method_exists ($this, $method = "get_$name"))
             return $this->$method ();
@@ -29,71 +29,68 @@ abstract class Component
         elseif (property_exists ($this, $name))
             return $this->$name;
         
-        else return $this->getProperty ($name, '');
+        else return $this->getProperty ($name);
 	}
 	
-	final function __set ($name, $value)
+	public function __set ($name, $value)
 	{
         if (method_exists ($this, $method = "set_$name"))
             return $this->$method ($value);
             
         elseif (substr ($name, strlen ($name) - 5) == 'Event')
             Events::setObjectEvent ($this, substr ($name, 0, -5), $value);
-		
-		elseif (method_exists ($this, "get_$name"))
-			throw new \Exception ("The \"$name\" property of the \"$this->componentClass\" component is read-only");
         
-        else $this->setProperty ($name, $value, 'auto');
+        else $this->setProperty ($name, $value);
 	}
 	
-	final function __call ($method, $args)
+	public function __call ($method, $args)
 	{
         $this->callMethod ($method, ...$args);
 	}
 	
-    final protected function getProperty ($name)
+    protected function getProperty ($name)
     {
         return VoidEngine::getProperty ($this->componentSelector, $name);
     }
 	
-	final protected function getArrayProperty ($name, string $type)
+	protected function getArrayProperty ($name, string $type = null)
 	{
-        $array  = $this->getProperty ([$name, 'object']);
-        $size   = VoidEngine::getProperty ($array, ['Length', 'int']);
+        $array  = $this->getProperty ($name);
+        $size   = VoidEngine::getProperty ($array, 'Length');
         $return = [];
 
 		for ($i = 0; $i < $size; ++$i)
-            $return[] = VoidEngine::getArrayValue ($array, [$i, $type]);
+            $return[] = VoidEngine::getArrayValue ($array, $type === null ? $i : [$i, $type]);
         
-        VoidEngine::removeObject ($array); // May be это привидёт к тому, что нельзя будет обратиться к массиву $name несколько раз. Ну, посмотрим, так сказать)
+        VoidEngine::removeObject ($array); // Maybe это привидёт к тому, что нельзя будет обратиться к массиву $name несколько раз. Ну, посмотрим, так сказать)
         
 		return $return;
 	}
 	
-    final protected function setProperty (string $name, $value)
+    protected function setProperty (string $name, $value)
     {
         VoidEngine::setProperty ($this->componentSelector, $name, $value);
     }
 	
-    final protected function callMethod ($method, ...$args) 
+    protected function callMethod ($method, ...$args) 
     { 
         return VoidEngine::callMethod ($this->componentSelector, $method, ...$args); 
     }
 	
-    final public function get_selector ()
+    public function get_selector ()
     {
         return $this->componentSelector;
     }
 	
-    final function __toString ()
+    function __toString ()
     {
-        return $this->callMethod ('ToString', 'string');
+        return $this->callMethod ('ToString');
     }
 	
     public function __debugInfo ()
     {
         return [
-            'description' => $this->callMethod ('ToString', 'string'),
+            'description' => $this->callMethod ('ToString'),
             'selector'    => $this->componentSelector
         ];
     }

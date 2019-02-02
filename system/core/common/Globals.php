@@ -14,13 +14,13 @@ $APPLICATION = new class
     public function __construct ()
     {
         $this->selector       = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Application'));
-        $this->executablePath = VoidEngine::getProperty ($this->selector, ['ExecutablePath', 'string']);
+        $this->executablePath = VoidEngine::getProperty ($this->selector, 'ExecutablePath');
     }
     
     public function run (Form $form = null): void
     {
         $form ?
-            VoidEngine::callMethod ($this->selector, 'Run', [$form->selector, 'object']) :
+            VoidEngine::callMethod ($this->selector, 'Run', $form->selector) :
             VoidEngine::callMethod ($this->selector, 'Run');
     }
     
@@ -50,9 +50,9 @@ $SCREEN = new class
         {
             case 'width':
             case 'w':
-                $screen = VoidEngine::getProperty ($this->selector, ['PrimaryScreen', 'object']);
-                $bounds = VoidEngine::getProperty ($screen, ['Bounds', 'object']);
-                $width  = VoidEngine::getProperty ($bounds, ['Width', 'int']);
+                $screen = VoidEngine::getProperty ($this->selector, 'PrimaryScreen');
+                $bounds = VoidEngine::getProperty ($screen, 'Bounds');
+                $width  = VoidEngine::getProperty ($bounds, 'Width');
 
                 voidEngine::removeObject ($screen, $bounds);
 
@@ -61,9 +61,9 @@ $SCREEN = new class
             
             case 'height':
             case 'h':
-                $screen = VoidEngine::getProperty ($this->selector, ['PrimaryScreen', 'object']);
-                $bounds = VoidEngine::getProperty ($screen, ['Bounds', 'object']);
-                $height = VoidEngine::getProperty ($bounds, ['Height', 'int']);
+                $screen = VoidEngine::getProperty ($this->selector, 'PrimaryScreen');
+                $bounds = VoidEngine::getProperty ($screen, 'Bounds');
+                $height = VoidEngine::getProperty ($bounds, 'Height');
 
                 voidEngine::removeObject ($screen, $bounds);
 

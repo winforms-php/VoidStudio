@@ -16,15 +16,19 @@ class VoidDesigner extends Component
 {
     protected $form;
     protected $control;
-    protected $host;
+    protected $objects;
 
-    public function __construct (Control $parent, string $formName = 'form')
+    public function __construct (Control $parent, string $formName = 'form', PropertyGrid $propertyGrid = null)
     {
-        $this->componentSelector = VoidEngine::createObject (new WFObject ('WinForms_PHP.FormDesigner', false, true), [$parent->selector, 'object'], [$formName, 'string']);
+        $this->componentSelector = VoidEngine::createObject (new WFObject ('WinForms_PHP.FormDesigner', false, true), $parent->selector, $formName);
         Components::addComponent ($this->componentSelector, $this);
 
-        $this->form    = $this->callMethod (['GetForm', 'object']);
-        $this->control = $this->callMethod (['GetControl', 'object']);
+        $this->form    = $this->callMethod ('GetForm');
+        $this->control = $this->callMethod ('GetControl');
+
+        $this->objects[$formName] = new WFObject ('System.Windows.Forms.Form');
+
+        VoidEngine::setProperty ($this->form, 'Text', $formName);
 
         /**
          * * Удаление объектов или формы по нажатию кнопки "Del"
@@ -108,21 +112,24 @@ class VoidDesigner extends Component
         /**
          * * Выделение компонентов на форме
          * Изменить последнюю строку с указанием выделенного объекта
+         * 
          */
-        /*VoidEngine::setObjectEvent ($this->selService, 'SelectionChanged', '
-            namespace VoidEngine;
 
-            $objects = VoidEngine::callMethod ('. $this->componentSelector .', ["GetSelectedComponents", "object"]);
+        if ($propertyGrid !== null)
+            VoidEngine::setObjectEvent ($this->componentSelector, 'SelectionChanged', '
+                namespace VoidEngine;
 
-            $firstObject = VoidEngine::getArrayValue ($objects, 0, "object");
-            $content     = VoidEngine::callMethod ($firstObject, "ToString");
-            $className   = substr (explode (".", explode (",", $content)[0])[3], 0, -1);
-			
-			VoidEngine::setProperty ('. $propertyGrid->selector .', "SelectedObject", [$firstObject, "object"]);
+                $objects = VoidEngine::callMethod ('. $this->componentSelector .', "GetSelectedComponents");
 
-            VoidStudioAPI::getObjects ("main")["Objects"]->selectedItem = "[$firstObject] ". VoidEngine::getProperty ([$firstObject, "Name");
-            VoidStudioAPI::loadObjectEvents (Components::getComponent ($firstObject), VoidStudioAPI::getObjects ("main")["LeftMenu__EventsList"]);
-        ');*/
+                $firstObject = VoidEngine::getArrayValue ($objects, 0);
+                $content     = VoidEngine::callMethod ($firstObject, "ToString");
+                $className   = substr (explode (".", explode (",", $content)[0])[3], 0, -1);
+                
+                VoidEngine::setProperty ('. $propertyGrid->selector .', "SelectedObject", $firstObject);
+
+                /*VoidStudioAPI::getObjects ("main")["Objects"]->selectedItem = "[$firstObject] ". VoidEngine::getProperty ([$firstObject, "Name");
+                VoidStudioAPI::loadObjectEvents (Components::getComponent ($firstObject), VoidStudioAPI::getObjects ("main")["LeftMenu__EventsList"]);*/
+            ');
     }
 
     public function updateHost (): void
@@ -137,27 +144,46 @@ class VoidDesigner extends Component
 
     public function getSharpCode (): string
     {
-        return $this->callMethod (['GetSharpCode', 'string']);
+        return $this->callMethod ('GetSharpCode');
     }
 
     public function createComponent (WFObject $component, string $componentName): int
     {
-        return $this->callMethod (['CreateComponent', 'object'], [VoidEngine::objectType ($component), 'object'], [$componentName, 'string']);
+        $this->objects[$componentName] = $component;
+
+        return $this->callMethod ('CreateComponent', VoidEngine::objectType ($component), $componentName);
     }
 
     public function removeComponent (int $component): void
     {
-        $this->callMethod ('RemoveComponent', [$component, 'object']);
+        unset ($this->objects[$this->getComponentName ($component)]);
+
+        $this->callMethod ('RemoveComponent', $component);
     }
 
-    public function renameComponent (int $component, string $name): void
+    /*public function renameComponent (int $component, string $name): void
     {
-        $this->callMethod ('RenameComponent', [$component, 'object'], [$name, 'string']);
-    }
+        $info = $this->objects[$this->getComponentName ($component)];
+        unset ($this->objects[$this->getComponentName ($component)]);
+        $this->objects[$name] = $info;
+
+        $this->callMethod ('RenameComponent', $component, $name);
+    }*/
 
     public function getComponentName (int $component): string
     {
-        return $this->callMethod (['GetComponentName', 'string'], [$component, 'object']);
+        return $this->callMethod ('GetComponentName', $component);
+    }
+
+    public function getComponentByName (string $name): int
+    {
+        return $this->callMethod ('GetComponentByName', $name);
+    }
+
+    public function getComponentClass (string $name): WFObject
+    {
+        return isset ($this->objects[$name]) ?
+            $this->objects[$name] : false;
     }
 }
 

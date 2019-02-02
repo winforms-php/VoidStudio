@@ -5,67 +5,6 @@ namespace VoidEngine;
 class VoidStudioAPI
 {
     static $objects = [];
-    //static $project;
-
-    /**
-     * Временно бесполезно
-     */
-
-    static function createProject (string $name, Form $projectMainForm)
-    {
-        /*if (is_dir ($path = STUDIO_DIR .'/projects/'. $name))
-            return false;
-
-        else
-        {
-            self::$project = $name;
-
-            mkdir ($path);
-
-            file_put_contents ($path .'/project.json', json_encode ([
-                'Form1' =>
-                [
-                    $projectMainForm->selector
-                ]
-            ], JSON_PRETTY_PRINT));
-        }*/
-    }
-
-    static function saveProject ()
-    {
-        /*if (!is_dir ($path = STUDIO_DIR .'/projects/'. self::$project))
-            return false;
-
-        else
-        {
-            $data = [];
-
-            foreach ($GLOBALS['forms'] as $form => $objects)
-                foreach ($objects as $id => $object)
-                    $data[$form][] = substr ($object, 1, strpos ($object, ']') - 1);
-            
-            file_put_contents ($path .'/project.json', json_encode ($data, JSON_PRETTY_PRINT));
-        }*/
-    }
-
-    /**
-     * TODO all
-     */
-    /*static function openProject (string $name)
-    {
-        if (!is_dir ($path = STUDIO_DIR .'/projects/'. $name))
-            return false;
-
-        else
-        {
-            $data = json_decode (file_get_contents ($path .'/project.json'));
-            $GLOBALS['forms'] = [];
-
-            foreach ($data as $form => $objects)
-                foreach ($objects as $id => $object)
-                    $GLOBALS['forms'][] = '['. $object .'] ?';
-        }
-    }*/
 
     static function addObjects (string $group, array $objects)
     {
@@ -88,14 +27,14 @@ class VoidStudioAPI
     {
         $list->items->clear ();
 
-        $type  = VoidEngine::callMethod ($object->selector, ['GetType', 'object']);
-        $props = VoidEngine::callMethod ($type, ['GetEvents', 'object']);
-        $len   = VoidEngine::getProperty ($props, ['Length', 'int']);
+        $type  = VoidEngine::callMethod ($object->selector, 'GetType');
+        $props = VoidEngine::callMethod ($type, 'GetEvents');
+        $len   = VoidEngine::getProperty ($props, 'Length');
 
         for ($i = 0; $i < $len; ++$i)
         {
-            $index = VoidEngine::getArrayValue ($props, [$i, 'object']);
-            $name  = VoidEngine::getProperty ($index, ['Name', 'string']);
+            $index = VoidEngine::getArrayValue ($props, $i);
+            $name  = VoidEngine::getProperty ($index, 'Name');
 
             $list->items->add ($name);
         }
@@ -117,57 +56,169 @@ class VoidStudioAPI
 
 class VoidStudioBuilder
 {
-    static function constructVLF (array $objects = null)
+    static function parseObjectsProperties (VoidDesigner $designer)
     {
-        $return = '';
+        $code = $designer->getSharpCode ();
 
-        if ($objects === null)
-            foreach ($GLOBALS['forms'] as $form => $components)
-                foreach ($components as $id => $component)
-                    $objects[] = substr ($component, 1, strpos ($component, ']') - 1);
+        $lines              = explode ("\n", $code);
+        $current_object     = null;
+        $current_object_len = 0;
+        $objects            = [];
 
-        if (is_array ($objects))
-            foreach ($objects as $id => $selector)
+        foreach ($lines as $id => $line)
+        {
+            $line = trim ($line);
+
+            if (substr ($line, 0, 3) == '// ')
             {
-                $object = Components::getComponent ($selector);
-                $name   = $object->name;
-                $parent = $object->parent;
+                $current_object     = substr ($line, 3);
+                $current_object_len = strlen ($current_object) + 5;
 
-                if (!Components::getComponent ($parent))
-                    $parent = null;
-
-                else $parent = Components::getComponent ($parent)->name;
-
-                $class = get_class ($object);
-                $class = substr ($class, ($pos = strrpos ($class, '\\')) !== false ? $pos + 1 : 0);
-
-                $return .= "$class $name". ($parent !== null ?
-                    " ($parent)" : ''
-                ) ."\n\tcaption: base64_decode ('". base64_encode ($object->caption) ."')\n\tbounds: [". $object->x .', '. $object->y .', '. $object->w .', '. $object->h ."]\n";
-
-                if (isset ($GLOBALS['AvailableObjects'][$selector]))
-                {
-                    $properties = array_diff ($GLOBALS['AvailableObjects'][$selector], [
-                        'caption', 'bounds'
-                    ]);
-
-                    foreach ($properties as $propertyName => $property)
-                        $return .= "\t$propertyName: base64_decode ('". base64_encode ($property['value']) ."')\n";
-                }
-
-                if (isset (Components::$events[$selector]))
-                {
-                    $return .= "\n";
-
-                    foreach (Components::$events[$selector] as $name => $event)
-                        $return .= "\t{$name}Event:^ function (\$self, \$args)\n\t\t{\n\t\t\t". implode ("\n\t\t\t", explode ("\n", $event)) ."\n\t\t}\n";
-                }
-
-                $return .= "\n";
+                if (substr ($current_object, 0, 4) == 'Form')
+                    $current_object_len = 4;
             }
+            
+            elseif (substr ($line, 0, $current_object_len) == substr ('this.'. $current_object, 0, $current_object_len) && $current_object !== null)
+            {
+                $property = str_replace ('.', '->', substr (current (explode (' ', $line)), $current_object_len + 1));
+                $value    = array_slice (explode (' = ', $line), 1);
 
-        return $return;
+                if (sizeof ($value) == 0) // Методы объектов
+                    continue;
+
+                $value = join (' = ', $value);
+
+                if (substr ($value, 0, 4) == 'new ')
+                {
+                    $object = substr ($value, 4);
+                    $args   = [];
+
+                    if (($pos = strpos ($object, '(')) !== false)
+                    {
+                        $args   = explode (', ', substr ($object, $pos + 1, strrpos ($object, ');') - $pos - 1));
+                        $object = substr ($object, 0, $pos);
+
+                        switch ($object)
+                        {
+                            case 'System.Drawing.Point':
+                            case 'System.Drawing.Size':
+                                $value = '['. join (', ', $args) .']';
+                            break;
+
+                            default:
+                                pre ('Unknown object "'. $object .'" with arguments "'. json_encode ($args) .'"');
+                            break;
+                        }
+                    }
+                }
+
+                if (is_string ($value))
+                {
+                    if (substr ($value, strlen ($value) - 1) == ';')
+                        $value = substr ($value, 0, -1);
+
+                    // ((System.Drawing.Icon)(resources.GetObject("$this.Icon")))
+
+                    if (strpos ($value, ')(resources.GetObject("') !== false)
+                    {
+                        $object = VoidEngine::getProperty ($designer->getComponentByName ($current_object), $property);
+                        $value  = new WFExportedData (gzdeflate (VoidEngine::exportObject ($object), 9));
+                    }
+
+                    elseif ($value[0] != '"')
+                        try
+                        {
+                            $value = VoidEngine::getProperty ($designer->getComponentByName ($current_object), [$property, 'int']);
+                        }
+
+                        catch (\Throwable $e) {}
+                }
+
+                $objects[$current_object][$property] = $value;
+            }
+        }
+
+        return $objects;
+    }
+
+    static function constructVLF (array $objects, VoidDesigner $designer)
+    {
+        $objectsNames = array_keys ($objects);
+
+        $form     = end ($objects);
+        $formName = end ($objectsNames);
+        $objects  = array_slice ($objects, 0, -1);
+
+        $vlf = 'Form '. $formName ."\n";
+
+        foreach ($form as $propertyName => $propertyValue)
+            if ($propertyValue instanceof WFExportedData)
+                $vlf .= "\t$propertyName: VoidEngine::importObject ('". gzinflate ($propertyValue->data) ."')\n";
+
+            else $vlf .= "\t$propertyName: $propertyValue\n";
+
+        $vlf .= "\n";
+
+        foreach ($objects as $object => $properties)
+        {
+            $path = explode ('.', $designer->getComponentClass ($object)->className);
+            $vlf .= "\t". end ($path) ." $object\n";
+
+            foreach ($properties as $propertyName => $propertyValue)
+                if ($propertyValue instanceof WFExportedData)
+                    $vlf .= "\t\t$propertyName: VoidEngine::importObject ('". gzinflate ($propertyValue->data) ."')\n";
+
+                else $vlf .= "\t\t$propertyName: $propertyValue\n";
+
+            $vlf .= "\n";
+        }
+
+        return $vlf;
     }
 }
+
+final class WFExportedData
+{
+    public $data;
+
+    public function __construct (string $data)
+    {
+        $this->data = $data;
+    }
+}
+
+/*
+
+public class Form_WF_PHP : System.Windows.Forms.Form
+{
+    private System.Windows.Forms.Button Button1549124598227599;
+    private Form_WF_PHP()
+    {
+        this.InitializeComponent();
+    }
+    private void InitializeComponent()
+    {
+        this.Button1549124598227599 = new System.Windows.Forms.Button();
+        this.SuspendLayout();
+        // 
+        // Button1549124598227599
+        // 
+        this.Button1549124598227599.Location = new System.Drawing.Point(0, 0);
+        this.Button1549124598227599.Name = "Button1549124598227599";
+        this.Button1549124598227599.Size = new System.Drawing.Size(75, 23);
+        this.Button1549124598227599.TabIndex = 0;
+        // 
+        // Form1
+        // 
+        this.ClientSize = new System.Drawing.Size(284, 261);
+        this.Controls.Add(this.Button1549124598227599);
+        this.Name = "Form1";
+        this.Text = "Form1";
+        this.ResumeLayout(false);
+    }
+}
+
+
+*/
 
 ?>

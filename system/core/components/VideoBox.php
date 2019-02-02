@@ -15,7 +15,7 @@ class VideoBox extends NoVisual
 	
     public function open (string $file)
     {
-        $this->callMethod ('Open', [$file, 'string']);
+        $this->callMethod ('Open', $file);
     }
 
     public function play ()
@@ -35,27 +35,27 @@ class VideoBox extends NoVisual
 	
     public function get_volume ()
     {
-        return $this->getProperty (['Volume', 'int']);
+        return $this->getProperty ('Volume');
     }
 	
     public function set_volume (int $volume)
     {
-        $this->setProperty ('Volume', [$volume, 'int']);
+        $this->setProperty ('Volume', $volume);
     }
 	
     public function get_duration ()
     {
-        return $this->getProperty (['Duration', 'double']);
+        return $this->getProperty ('Duration');
     }
 	
     public function get_position ()
     {
-        return $this->getProperty (['CurrentPosition', 'double']);
+        return $this->getProperty ('CurrentPosition');
     }
 	
     public function set_position ($position) // float
     {
-        $this->setProperty ('CurrentPosition', [(float) $position, 'double']);
+        $this->setProperty ('CurrentPosition', (float) $position);
     }
 }
 
