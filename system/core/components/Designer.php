@@ -41,15 +41,15 @@ class VoidDesigner extends Component
          * 
          */
 
-        /*VoidEngine::setObjectEvent ($this->control, 'KeyDown', '
+        /*VoidEngine::setObjectEvent ($this->componentSelector, 'KeyDown', '
             namespace VoidEngine;
 
             $args = new KeyEventArgs ($args);
 
             if ($args->keycode == 46)
             {
-                $objects     = VoidEngine::callMethod ('. $this->componentSelector .', ["GetSelectedComponents", "object"]);
-                $firstObject = VoidEngine::getArrayValue ($objects, [0, "object"]);
+                $objects     = VoidEngine::callMethod ('. $this->componentSelector .', "GetSelectedComponents");
+                $firstObject = VoidEngine::getArrayValue ($objects, 0);
                 $content     = VoidEngine::callMethod ($firstObject, ["ToString", "string"]);
                 $className   = substr (explode (".", explode (",", $content)[0])[3], 0, -1);
                 $component   = Components::getComponent ($firstObject);
@@ -122,13 +122,9 @@ class VoidDesigner extends Component
                 $objects = VoidEngine::callMethod ('. $this->componentSelector .', "GetSelectedComponents");
 
                 $firstObject = VoidEngine::getArrayValue ($objects, 0);
-                $content     = VoidEngine::callMethod ($firstObject, "ToString");
-                $className   = substr (explode (".", explode (",", $content)[0])[3], 0, -1);
                 
-                VoidEngine::setProperty ('. $propertyGrid->selector .', "SelectedObject", $firstObject);
-
-                /*VoidStudioAPI::getObjects ("main")["Objects"]->selectedItem = "[$firstObject] ". VoidEngine::getProperty ([$firstObject, "Name");
-                VoidStudioAPI::loadObjectEvents (Components::getComponent ($firstObject), VoidStudioAPI::getObjects ("main")["LeftMenu__EventsList"]);*/
+                _c('. $propertyGrid->selector .')->SelectedObject = $firstObject;
+                c("PropertiesPanel__SelectedComponent")->selectedItem = VoidEngine::getProperty ($firstObject, "Name");
             ');
     }
 
@@ -152,6 +148,11 @@ class VoidDesigner extends Component
         $this->objects[$componentName] = $component;
 
         return $this->callMethod ('CreateComponent', VoidEngine::objectType ($component), $componentName);
+    }
+
+    public function addComponent (int $selector, string $componentName): void
+    {
+        $this->callMethod ('AddComponent', $selector, $componentName);
     }
 
     public function removeComponent (int $component): void
@@ -180,7 +181,7 @@ class VoidDesigner extends Component
         return $this->callMethod ('GetComponentByName', $name);
     }
 
-    public function getComponentClass (string $name): WFObject
+    public function getComponentClass (string $name)
     {
         return isset ($this->objects[$name]) ?
             $this->objects[$name] : false;

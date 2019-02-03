@@ -153,6 +153,8 @@ function pre (...$args): void
 	message (print_r ($args, true));
 }
 
+function nothing (): void {}
+
 function setTimer (int $interval, $function): Timer
 {
 	$timer           = new Timer;
@@ -350,8 +352,18 @@ class Items extends \ArrayObject
                 
 				for ($i = 0; $i < $size; ++$i)
                     $list[] = VoidEngine::getArrayValue ($this->selector, $i);
-                    
+                     
                 return $list;
+            break;
+
+            case 'names':
+                $size = VoidEngine::getProperty ($this->selector, 'Count');
+                $names = [];
+                
+                for ($i = 0; $i < $size; ++$i)
+                    $names[] = VoidEngine::getProperty (VoidEngine::getArrayValue ($this->selector, [$i, 'object']), 'Text');
+                
+                return $names;
             break;
 		}
     }
@@ -485,7 +497,7 @@ function get_cursor_pos (int $handle = null): array
 set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '', $errcontext = '')
 {
     file_put_contents (dirname (__DIR__) .'/debug/error_'. (++$GLOBALS['__debug']['error_count']) .'.log', implode ("\n", [
-        'Time lapsed before engine start: '. (string)(round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 2)) .' seconds',
+        'Time lapsed before engine start: '. (string)(round (microtime (true) - $GLOBALS['__debug']['start_time'], 4)) .' seconds',
         'Error at string: '. $errstr,
         'Error in file: '. $errfile,
         'Error at line: '. $errline,
@@ -501,13 +513,13 @@ set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '',
 set_exception_handler (function ($exception)
 {
     file_put_contents (dirname (__DIR__) .'/debug/exception_'. (++$GLOBALS['__debug']['error_count']) .'.log', implode ("\n", [
-        'Time lapsed before engine start: '. (string)(round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 2)) .' seconds',
+        'Time lapsed before engine start: '. (string)(round (microtime (true) - $GLOBALS['__debug']['start_time'], 4)) .' seconds',
         'Exception comment: '. $exception,
         'Created components: '. print_r (Components::$components, true)
     ]));
 
     $log = text ('Поймано исключение и сохранено как "exception_'. $GLOBALS['__debug']['error_count'] .'.log"');
-        
+    
     pre ($log);
 });
 

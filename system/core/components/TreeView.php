@@ -30,7 +30,7 @@ class TreeView extends Control
             $node = $this->get_selectedNode ();
         }
 
-        catch (\Exception $error)
+        catch (\Throwable $e)
         {
             return false;
         }
@@ -88,6 +88,16 @@ class TreeViewNodes extends Items
                     $list[] = VoidEngine::getArrayValue ($this->selector, $i);
                     
                 return $list;
+            break;
+
+            case 'names':
+                $size = VoidEngine::getProperty ($this->selector, 'Count');
+                $names = [];
+                
+                for ($i = 0; $i < $size; ++$i)
+                    $names[] = VoidEngine::getProperty (VoidEngine::getArrayValue ($this->selector, [$i, 'object']), 'Text');
+                
+                return $names;
             break;
 		}
 	}

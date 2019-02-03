@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     build-2019/02/02
+ * @version     build-2019/02/03 (state-y/m/d)
  * 
  * Contacts:
  *
@@ -42,7 +42,7 @@ $GLOBALS['__debug'] = [
     'error_count' => 0
 ];
 
-if (is_array ($files = scandir ('debug')))
+if (is_dir ('debug') && is_array ($files = scandir ('debug')))
     foreach ($files as $id => $file)
         if (is_file ('debug/'. $file))
             unlink ('debug/'. $file);
@@ -54,7 +54,7 @@ require 'common/Globals.php';
 require 'common/Constants.php';
 // require 'common/LanguageFiles.php'; // Признан устаревшим
 
-if (is_array ($exts = scandir ('extensions')))
+if (is_dir ('extensions') && is_array ($exts = scandir ('extensions')))
     foreach ($exts as $id => $ext)
         if (is_dir ('extensions/'. $ext) && file_exists ($ext = 'extensions/'. $ext .'/main.php'))
             require $ext;

@@ -286,7 +286,7 @@ class VoidEngine
 
     static function importObject (string $data): int
     {
-        return winforms_dataimport ($data);
+        return winforms_dataimport (gzinflate (base64_decode ($data)));
     }
 
     /**
@@ -300,7 +300,7 @@ class VoidEngine
 
     static function exportObject (int $selector): string
     {
-        return winforms_dataexport ($selector);
+        return base64_encode (gzdeflate (winforms_dataexport ($selector), 9));
     }
 
     /**
@@ -355,7 +355,7 @@ class EngineAdditions
 
         try
         {
-            $propertyType = VoidEngine::getProperty ($property, 'PropertyType');
+            $propertyType = VoidEngine::getProperty ($property, ['PropertyType', 'string']);
 
             switch ($propertyType)
             {

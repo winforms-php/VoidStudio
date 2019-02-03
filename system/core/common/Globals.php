@@ -27,6 +27,8 @@ $APPLICATION = new class
     public function restart (): void
     {
         VoidEngine::callMethod ($this->selector, 'Restart');
+
+        $this->close ();
     }
     
     public function close (): void

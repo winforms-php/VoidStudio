@@ -6,7 +6,7 @@ Form MainForm
 
     caption: 'VoidStudio'
 
-    ->icon->loadFromFile (STUDIO_DIR .'/Icon.ico')
+    ->icon->loadFromFile (APP_DIR .'/Icon.ico')
 
     SplitContainer ToolsPanel__Container
         dock: dsFill
@@ -76,6 +76,27 @@ Form MainForm
 
             ->items->addRange ([PropertiesList__Page, EventsList__Page])
 
+        ComboBox PropertiesPanel__SelectedComponent
+            dock: dsTop
+            dropDownStyle: ddDropDownList
+
+            ->items->add ('Form1')
+            selectedItem: 'Form1'
+
+            SelectedIndexChangedEvent:^ function ($self) use (PropertiesList__List $propertyGrid)
+                {
+                    $item = $self->selectedItem;
+
+                    $propertyGrid->selectedObject = VoidStudioAPI::getObjects ('main')['Designer__'. _c(c('Designer__FormsList')->selectedTab)->text .'Designer']->getComponentByName ($item);
+                }
+
+            SelectionChangeCommittedEvent:^ function ($self)
+                {
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. _c(c('Designer__FormsList')->selectedTab)->text .'Designer'];
+                    
+                    $designer->setSelectedComponents ($designer->getComponentByName ($self->selectedItem));
+                }
+
     TabPage Designer__Form1 (text ('Form1'))
         VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List)
 
@@ -84,12 +105,16 @@ Form MainForm
 
         ->items->add (Designer__Form1)
 
-        SelectedIndexChangedEvent:^ function ($self)
+        SelectedIndexChangedEvent:^ function ($self) use (PropertiesPanel__SelectedComponent $components)
             {
-                $designer = VoidStudioAPI::getObjects ('main')['Designer__'. _c($self->selectedTab)->text .'Designer'];
+                $designer = VoidStudioAPI::getObjects ('main')['Designer__'. ($tab = _c($self->selectedTab)->text) .'Designer'];
                 $designer->focus ();
 
-                PropertiesList__List->selectedObject = $designer->form;
+                $components->items->clear ();
+                $components->items->addRange (array_keys ($designer->objects));
+
+                $components->selectedItem = $tab;
+                $designer->setSelectedComponents ($designer->form);
             }
 
     ListView ComponentsList
@@ -116,15 +141,20 @@ Form MainForm
 
                     $formsList->items->add ($page);
                     $formsList->selectedTab = $page->selector;
+
+                    $name     = $page->text;
+                    $selector = $designer->form;
                 }
 
-                else
-                {
-                    $designer->createComponent (new WFObject ("System.Windows.Forms.$component"), $component . time () . rand (100000, 999999));
+                else $selector = $designer->createComponent (new WFObject ("System.Windows.Forms.$component"), ($name = $component . time () . rand (100000, 999999)));
 
-                    pre ($objects = VoidStudioBuilder::parseObjectsProperties ($designer));
-                    pre (VoidStudioBuilder::constructVLF ($objects, $designer));
-                }
+                $components = c('PropertiesPanel__SelectedComponent');
+
+                $components->items->clear ();
+                $components->items->addRange (array_keys ($designer->objects));
+
+                $components->selectedItem = $name;
+                $designer->setSelectedComponents ($selector);
             }
 
     MenuItem Menu__studio (text ('Среда'))
@@ -141,7 +171,7 @@ Form MainForm
 
                     $msg->show
                     (
-                        text ("Авторы сие произведения:\n\nАндрей Кусов (vk.com/postmessage) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms"),
+                        text ("Авторы сие произведения:\n\nАндрей Кусов (vk.com/postmessagea) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms"),
 
                         text ('О программе')
                     );
@@ -157,9 +187,7 @@ Form MainForm
         MenuItem Menu__project_build (text ('Собрать'))
             ClickEvent:^ function ($self)
                 {
-                    $form = VoidStudioAPI::$objects['builder']['MainForm'];
-
-                    $form->show ();
+                    VoidStudioAPI::getObjects ('build')['MainForm']->showDialog ();
                 }
 
     MenuItem Menu__project
@@ -181,7 +209,7 @@ Form MainForm
 
             PropertiesList__List->selectedObject = Designer__Form1Designer->form;
 
-            $time = round ((microtime (true) - $GLOBALS['__debug']['start_time']) / 1000, 4);
+            $time = round (microtime (true) - $GLOBALS['__debug']['start_time'], 4);
 
-            ToolsPanel__LogList->items->add (text ('VoidStudio запущен за '. ($time > 0 ? $time : '[мало]') .' секунд'));
+            ToolsPanel__LogList->items->add (text ('VoidStudio запущен за '. ($time > 0.5 ? $time : '[мало]') .' секунд'));
         }

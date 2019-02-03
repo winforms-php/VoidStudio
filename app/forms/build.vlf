@@ -1,0 +1,150 @@
+Form MainForm
+    size: [340, 262]
+    startPosition: fspCenterScreen
+    backgroundColor: clWhite
+    formBorderStyle: fbsToolWindow
+
+    caption: text ('Сборка проекта')
+
+    ->icon->loadFromFile (APP_DIR .'/Icon.ico')
+
+    ShownEvent:^ function ($self)
+        {
+            $forms = c('FormSelection');
+
+            $forms->items->clear ();
+            $forms->items->addRange (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names);
+
+            $forms->selectedItem = current (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names);
+        }
+
+    Label EntryPoint
+        location: [16, 16]
+        font: ['Segoe UI', 12]
+
+        caption: text ('Точка входа')
+
+    ComboBox FormSelection
+        dropDownStyle: ddDropDownList
+        bounds: [16, 48, 220, 16]
+
+    Label BuildConfigs
+        location: [16, 96]
+        font: ['Segoe UI', 12]
+
+        caption: text ('Настройки сборки проекта')
+
+    CheckBox UseCaching
+        bounds: [16, 128, 220, 24]
+        caption: text ('Использовать кэширование')
+
+        checked: true
+
+    CheckBox ResourcesExporting
+        bounds: [16, 152, 220, 24]
+        caption: text ('Экспортировать ресурсы')
+
+        checked: true
+
+    Button BuildProject
+        bounds: [16, 184, 104, 32]
+
+        caption: text ('Собрать')
+
+        ClickEvent:^ function ($self)
+            {
+                $dir = new FolderBrowserDialog;
+
+                if (file_exists ('system/build_path') && is_dir ($path = file_get_contents ('system/build_path')))
+                    $dir->selectedPath = $path;
+                
+                if ($dir->execute () && is_dir ($dir = $dir->path))
+                {
+                    file_put_contents ('system/build_path', $dir);
+
+                    dir_clean ($dir .'/system');
+                    dir_clean ($dir .'/app');
+
+                    dir_copy (dirname (ENGINE_DIR), $dir .'/system');
+
+                    $resourcesDir = null;
+
+                    if (ResourcesExporting->checked)
+                    {
+                        $resourcesDir = $dir .'/app/resources';
+
+                        dir_create ($resourcesDir);
+                    }
+
+                    foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
+                    {
+                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
+
+                        if ($item == FormSelection->selectedItem)
+                            $item = 'main';
+
+                        file_put_contents ($dir .'/app/'. $item .'.vlf', VoidStudioBuilder::constructVLF (VoidStudioBuilder::parseObjectsProperties ($designer), $designer, $resourcesDir));
+                    }
+
+                    file_put_contents ($dir .'/app/start.php', "<?php\n\nnamespace VoidEngine;\n\nVLFInterpreter::\$throw_errors = false;\n\nconst APP_DIR = __DIR__;\nchdir (APP_DIR);\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (__DIR__ .'/main.vlf', [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => ". UseCaching->checked ."\n]), ". ($resourcesDir !== null ? 'APP_DIR .\'/resources\'' : 'null') .")['". FormSelection->selectedItem ."']);\n\n?>\n");
+
+                    dir_clean ($dir .'/system/core/debug');
+                    dir_clean ($dir .'/system/core/extensions/VLF/cache');
+
+                    pre (text ('Проект успешно собран'));
+                    MainForm->hide ();
+                }
+
+                else pre (text ('Выбран неверный путь для сборки проекта'));
+            }
+
+    Button CompileProject
+        bounds: [128, 184, 144, 32]
+
+        caption: text ('Компилировать')
+
+        ClickEvent:^ function ($self)
+            {
+                $save = new SaveFileDialog;
+                $save->filter = 'EXE file (*.exe)|*.exe';
+
+                if (file_exists ('system/compile_path') && is_dir ($path = file_get_contents ('system/compile_path')))
+                    $save->selectedPath = $path;
+                
+                if ($save->execute () && strlen ($save = $save->fileName) > 0)
+                {
+                    file_put_contents ('system/compile_path', $save);
+
+                    $vlfImports = '';
+
+                    foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
+                    {
+                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
+
+                        $vlfImports .= VoidStudioBuilder::constructVLF (VoidStudioBuilder::parseObjectsProperties ($designer), $designer);
+                    }
+
+                    $vlfImports = "\$vlf = <<<'VLF'\n\n$vlfImports\n\nVLF;";
+
+                    VoidEngine::compile ($save, APP_DIR .'/Icon.ico', $code = str_replace (
+                        [
+                            'namespace VoidEngine;',
+                            'VoidEngine\\'
+                        ],
+                        
+                        [
+                            'nothing ();',
+                            ''
+                        ],
+                        
+                        "\$code = <<<'CODE'\n\n". VoidStudioBuilder::generateCode () ."\n\nCODE;\n\n@eval (\$code);\n\nset_error_handler (function (...\$args) {pre (\$args);});\set_exception_handler (function (...\$args) {pre (\$args);});\n\n$vlfImports\n\nVLFInterpreter::\$throw_errors = false;\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (\$vlf, [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => false\n]))['". FormSelection->selectedItem ."']);"
+                    ));
+
+                    // file_put_contents (dirname ($save) .'/tmp.php', $code);
+
+                    pre (text ('Проект успешно скомпилирован'));
+                    MainForm->hide ();
+                }
+
+                else pre (text ('Выбран неверный путь сохранения проекта'));
+            }

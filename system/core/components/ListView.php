@@ -134,6 +134,16 @@ class ListViewItems extends Items
                     
                 return $list;
             break;
+
+            case 'names':
+                $size = VoidEngine::getProperty ($this->selector, 'Count');
+                $names = [];
+                
+                for ($i = 0; $i < $size; ++$i)
+                    $names[] = VoidEngine::getProperty (VoidEngine::getArrayValue ($this->selector, [$i, 'object']), 'Text');
+                
+                return $names;
+            break;
 		}
 	}
 	

@@ -6,6 +6,7 @@ class VLFInterpreter
 {
     static $objects = []; // Массив созданных объектов (название => объект)
 
+    static $throw_errors = true; // Выводить ли ошибки интерпретации
     static $allow_multimethods_calls = true; // Можно ли использовать многоуровневые вызовы методов (->method1->method2)
 
     /**
@@ -18,12 +19,12 @@ class VLFInterpreter
      * @return array objects - возвращает список созданных объектов
      */
 
-    static function run ($syntaxTree, array $parent = null): array
+    static function run ($syntaxTree, string $resourcesDir = null, array $parent = null): array
     {
         if ($syntaxTree instanceof VLFParser)
             $syntaxTree = $syntaxTree->tree;
 
-        elseif (!is_array ($syntaxTree))
+        elseif (!is_array ($syntaxTree) && self::$throw_errors)
             throw new \Exception ('$syntaxTree argument must be instance of VoidEngine\VLFParser or contains Abstract Syntax Tree - multi-dimensional array');
 
         foreach ($syntaxTree as $id => $syntaxInfo)
@@ -61,12 +62,13 @@ class VLFInterpreter
 
                         catch (\Throwable $e)
                         {
-                            throw new \Exception ('Interpeter couldn\'t create object "'. $class .'" with name "'. $name .'" at line "'. $syntaxInfo['line'] .'"');
+                            if (self::$throw_errors)
+                                throw new \Exception ('Interpeter couldn\'t create object "'. $class .'" with name "'. $name .'" at line "'. $syntaxInfo['line'] .'"');
                         }
                     break;
 
                     case VLF_SUBOBJECT_DEFINITION:
-                        self::$objects = self::run ((new VLFParser ($syntaxInfo['info']['object_vlf_info']))->tree, $syntaxInfo);
+                        self::$objects = self::run ((new VLFParser ($syntaxInfo['info']['object_vlf_info']))->tree, null, $syntaxInfo);
                     break;
 
                     case VLF_PROPERTY_SET:
@@ -121,12 +123,14 @@ class VLFInterpreter
 
                                 catch (\Throwable $e)
                                 {
-                                    throw new \Exception ('Interpeter couldn\'t set property "'. $propertyName .'" with value "'. $propertyValue .'" at line "'. $syntaxInfo['line'] .'"');
+                                    if (self::$throw_errors)
+                                        throw new \Exception ('Interpeter couldn\'t set property "'. $propertyName .'" with value "'. $propertyValue .'" at line "'. $syntaxInfo['line'] .'"');
                                 }
                             }
                         }
 
-                        else throw new \Exception ('Setting property to an non-object at line "'. $syntaxInfo['line'] .'"');
+                        elseif (self::$throw_errors)
+                            throw new \Exception ('Setting property to an non-object at line "'. $syntaxInfo['line'] .'"');
                     break;
 
                     case VLF_METHOD_CALL:
@@ -152,11 +156,13 @@ class VLFInterpreter
 
                             catch (\Throwable $e)
                             {
-                                throw new \Exception ('Interpeter couldn\'t call method "'. $methodName .'" with arguments '. json_encode ($methodArgs) .' at line "'. $syntaxInfo['line'] .'"');
+                                if (self::$throw_errors)
+                                    throw new \Exception ('Interpeter couldn\'t call method "'. $methodName .'" with arguments '. json_encode ($methodArgs) .' at line "'. $syntaxInfo['line'] .'"');
                             }
                         }
 
-                        else throw new \Exception ('Calling method to an non-object at line "'. $syntaxInfo['line'] .'"');
+                        elseif (self::$throw_errors)
+                            throw new \Exception ('Calling method to an non-object at line "'. $syntaxInfo['line'] .'"');
                     break;
 
                     case VLF_RUNTIME_EXECUTABLE:
@@ -165,10 +171,29 @@ class VLFInterpreter
                 }
 
                 if (isset ($syntaxInfo['syntax_nodes']) && sizeof ($syntaxInfo['syntax_nodes']) > 0)
-                    self::$objects = self::run ($syntaxInfo['syntax_nodes'], $syntaxInfo);
+                    self::$objects = self::run ($syntaxInfo['syntax_nodes'], null, $syntaxInfo);
             }
 
             else throw new \Exception ('Catched unknown syntax node: '. json_encode ($syntaxInfo));
+
+        if (is_dir ($resourcesDir))
+            foreach (glob ($resourcesDir .'/*.vrsf') as $id => $dir)
+            {
+                $baseName = basenameNoExt ($dir);
+                $info     = explode ('.', $baseName);
+
+                if (isset (self::$objects[$info[0]]))
+                {
+                    if (isset ($info[2]))
+                    {
+                        $collection = VoidEngine::getProperty (self::$objects[$info[0]]->selector, $info[1]);
+                        
+                        VoidEngine::callMethod ($collection, 'Add', [VoidEngine::importObject (base64_encode (file_get_contents ($dir))), 'object']);
+                    }
+                    
+                    else VoidEngine::setProperty (self::$objects[$info[0]]->selector, $info[1], VoidEngine::importObject (base64_encode (file_get_contents ($dir))));
+                }
+            }
 
         return self::$objects;
     }
