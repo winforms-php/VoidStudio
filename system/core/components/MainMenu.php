@@ -6,7 +6,7 @@ class MainMenu extends Component
 {
     protected $items;
 
-    public function __construct (Control $parent = null)
+    public function __construct ()
     {
         parent::__construct (self::class);
 
@@ -21,9 +21,9 @@ class MainMenu extends Component
 
 class ContextMenu extends Component
 {
-    protected $items;
+    public $items;
 
-    public function __construct (Control $parent = null)
+    public function __construct ()
     {
         parent::__construct (self::class);
 
@@ -38,7 +38,7 @@ class ContextMenu extends Component
 
 class MenuItem extends Control
 {
-    protected $items;
+    public $items;
 
     public function __construct (string $text = '')
     {
@@ -46,6 +46,11 @@ class MenuItem extends Control
 
         $this->text  = $text;
         $this->items = new MenuItems ($this->getProperty ('MenuItems'));
+    }
+
+    public function get_items ()
+    {
+        return $this->items;
     }
 
     public function get_index ()
@@ -72,6 +77,16 @@ class MenuItems extends Items
                     $list[] = VoidEngine::getArrayValue ($this->selector, $i);
                     
                 return $list;
+            break;
+
+            case 'names':
+                $size = VoidEngine::getProperty ($this->selector, 'Count');
+                $names = [];
+                
+                for ($i = 0; $i < $size; ++$i)
+                    $names[] = VoidEngine::getProperty (VoidEngine::getArrayValue ($this->selector, [$i, 'object']), 'Text');
+                
+                return $names;
             break;
 		}
 	}

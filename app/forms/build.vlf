@@ -95,7 +95,7 @@ Form MainForm
                     MainForm->hide ();
                 }
 
-                else pre (text ('Выбран неверный путь для сборки проекта'));
+                // else pre (text ('Выбран неверный путь для сборки проекта'));
             }
 
     Button CompileProject
@@ -146,5 +146,5 @@ Form MainForm
                     MainForm->hide ();
                 }
 
-                else pre (text ('Выбран неверный путь сохранения проекта'));
+                // else pre (text ('Выбран неверный путь сохранения проекта'));
             }

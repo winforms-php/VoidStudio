@@ -1,36 +1,6 @@
 namespace VoidEngine;
 
-$tmp = <<<'VLF'
-
-Form Form1
-	ClientSize: [738, 423]
-	Name: "Form1"
-	Text: "Form1"
-
-	Label Label1549179448249445
-		Anchor: 15
-		BorderStyle: 1
-		Font: ["Segoe UI", 48]
-		Location: [12, 9]
-		Name: "Label1549179448249445"
-		Size: [714, 405]
-		TabIndex: 0
-		Text: "ְבדהûך"
-		TextAlign: 32
-
-Form Form1
-    ->show
-
-VLF;
-
-VLFInterpreter::run (new VLFParser ($tmp, [
-    'strong_line_parser' => false,
-    'ignore_postobject_info' => true,
-    'ignore_unexpected_method_args' => true,
-
-    'use_caching' => false,
-    'debug_mode' => false
-]));
+pre (get_cursor_x ());
 
 /*$vlf = <<<'VLF'
 

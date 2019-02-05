@@ -74,18 +74,74 @@ function _c (int $selector)
     return Components::getComponent ($selector);
 }
 
-function c ($name)
+function c ($name, bool $returnAllSimilarObjects = false)
 {
     if (is_int ($name) && is_object ($object = _c ($name)))
         return $object;
 
     else
     {
-        foreach (Components::$components as $selector => $object)
-            if (($object instanceof Control || method_exists ($object, 'get_name') || property_exists ($object, 'name')) && $object->name == $name)
-                return $object;
+        $path    = explode ('->', $name);
+        $similar = [];
 
-        return false;
+        foreach (Components::$components as $selector => $object)
+            if (($object instanceof Control || method_exists ($object, 'get_name') || property_exists ($object, 'name')) && $object->name == end ($path))
+            {
+                if (sizeof ($path) > 1)
+                {
+                    if ((method_exists ($object, 'get_parent') || property_exists ($object, 'parent')) && is_object ($parent = _c($object->parent)))
+                    {
+                        if (c(join ('->', array_slice ($path, 0, -1))) == $parent)
+                        {
+                            if ($returnAllSimilarObjects)
+                                $similar[] = $object;
+
+                            else return $object;
+                        }
+
+                        else continue;
+                    }
+
+                    else continue;
+                }
+
+                else
+                {
+                    if ($returnAllSimilarObjects)
+                        $similar[] = $object;
+
+                    else return $object;
+                }
+            }
+
+        if (sizeof ($path) == 2)
+        {
+            $objects = c($path[1], true);
+
+            if (is_array ($objects))
+            {
+                foreach ($objects as $id => $object)
+                    while ((method_exists ($object, 'get_parent') || property_exists ($object, 'parent')) && is_object ($parent = _c($object->parent)))
+                    {
+                        if ($parent instanceof Form && $parent->name == $path[0])
+                            return $objects[$id];
+
+                        else $object = $parent;
+                    }
+
+                return false;
+            }
+
+            else return false;
+        }
+
+        else
+        {
+            if ($returnAllSimilarObjects && sizeof ($similar) > 0)
+                return $similar;
+            
+            else return false;
+        }
     }
 }
 
@@ -455,7 +511,7 @@ class Cursor
 
     public function __construct (int $handle = null)
     {
-        $cursor = new WFObject ('System.Windows.Forms.Cursor', 'System.Windows.Forms');
+        $cursor = new WFObject ('System.Windows.Forms.Cursor');
 
         $this->cursor = $handle === null ?
             VoidEngine::buildObject ($cursor) :

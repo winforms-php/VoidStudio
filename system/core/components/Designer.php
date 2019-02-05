@@ -119,8 +119,7 @@ class VoidDesigner extends Component
             VoidEngine::setObjectEvent ($this->componentSelector, 'SelectionChanged', '
                 namespace VoidEngine;
 
-                $objects = VoidEngine::callMethod ('. $this->componentSelector .', "GetSelectedComponents");
-
+                $objects     = VoidEngine::callMethod ('. $this->componentSelector .', "GetSelectedComponents");
                 $firstObject = VoidEngine::getArrayValue ($objects, 0);
                 
                 _c('. $propertyGrid->selector .')->SelectedObject = $firstObject;
@@ -162,14 +161,17 @@ class VoidDesigner extends Component
         $this->callMethod ('RemoveComponent', $component);
     }
 
-    /*public function renameComponent (int $component, string $name): void
+    public function renameComponent (int $component, string $name, string $fromName = null): void
     {
-        $info = $this->objects[$this->getComponentName ($component)];
-        unset ($this->objects[$this->getComponentName ($component)]);
+        if ($fromName === null)
+            $fromName = $this->getComponentName ($component);
+
+        $info = $this->objects[$fromName];
+        unset ($this->objects[$fromName]);
         $this->objects[$name] = $info;
 
         $this->callMethod ('RenameComponent', $component, $name);
-    }*/
+    }
 
     public function getComponentName (int $component): string
     {

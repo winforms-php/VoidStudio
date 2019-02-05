@@ -51,25 +51,74 @@ Form MainForm
         TabPage PropertiesList__Page (text ('Свойства'))
             PropertyGrid PropertiesList__List
                 dock: dsFill
-
-                #^ В общем, тут прикол в том, что можно заранее создать компонент с именем какой-то формы, и будет пи%да
                 
-                    PropertyValueChangedEvent:^ function ($self, $args)
+                PropertyValueChangedEvent:^ function ($self, $args)
                     {
-                        $args = new PropertyValueChangedEventArgs ($args);
+                        $args        = new PropertyValueChangedEventArgs ($args);
+                        $designer    = VoidStudioAPI::getObjects ('main')['Designer__'. _c(c('Designer__FormsList')->selectedTab)->text .'Designer'];
+                        $objectClass = VoidEngine::callMethod (VoidEngine::callMethod ($self->selectedObject, 'GetType'), 'ToString');
+                        $newValue    = VoidEngine::getProperty ($args->changedItem, 'Value');
 
                         if (VoidEngine::getProperty ($args->changedItem, 'Label') == '(Name)')
-                            if (substr (VoidEngine::getProperty ($args->changedItem, 'Value'), 0, 4) == 'Form')
+                        {
+                            if ($objectClass == 'System.Windows.Forms.Form')
                             {
-                                VoidStudioAPI::getObjects ('main')['Designer__'. _c(Designer__FormsList->selectedTab)->text .'Designer']->renameComponent ($self->selectedObject, $args->oldValue);
+                                $designer->renameComponent ($self->selectedObject, $args->oldValue, $args->oldValue);
+                                VoidEngine::setProperty ($self->selectedObject, 'Name', $args->oldValue);
 
-                                pre ('123');
+                                pre (text ('Нельзя переименовывать формы проекта'));
                             }
+                            
+                            elseif (substr ($newValue, 0, 4) == 'Form')
+                                {
+                                    $designer->renameComponent ($self->selectedObject, $args->oldValue, $args->oldValue);
+                                    VoidEngine::setProperty ($self->selectedObject, 'Name', $args->oldValue);
+
+                                    pre (text ('Объекту нельзя задать название, начинающееся на "Form"'));
+                                }
+
+                            else try
+                            {
+                                $designer->renameComponent ($self->selectedObject, $newValue, $args->oldValue);
+                                VoidEngine::setProperty ($self->selectedObject, 'Name', $newValue);
+                            }
+
+                            catch (\Throwable $e)
+                            {
+                                $designer->renameComponent ($self->selectedObject, $args->oldValue, $args->oldValue);
+                                VoidEngine::setProperty ($self->selectedObject, 'Name', $args->oldValue);
+
+                                pre (text ('Произошла ошибка при попытке переименования объекта'));
+                            }
+
+                            $components = c('PropertiesPanel__SelectedComponent');
+
+                            $components->items->clear ();
+                            $components->items->addRange (array_keys ($designer->objects));
+
+                            $components->selectedItem = VoidEngine::getProperty ($self->selectedObject, 'Name');
+                        }
                     }
 
         TabPage EventsList__Page (text ('События'))
-            ListBox EventsList__Events
+            ListBox EventsList__ActiveEvents
                 dock: dsFill
+
+            Button EventsList__AddEvent
+                dock: dsTop
+
+                caption: text ('Добавить')
+                
+                ClickEvent:^ function ($self)
+                    {
+                        $menu = new ContextMenu;
+                        $menu->items = [
+                            new MenuItem ('123'),
+                            new MenuItem ('3231231231232')
+                        ];
+
+                        $menu->show ([$self->selector, 'object'], [(new WFClass ('System.Windows.Forms.Cursor'))->position, 'object']);
+                    }
 
         TabControl Properties__Items
             dock: dsFill
@@ -146,7 +195,14 @@ Form MainForm
                     $selector = $designer->form;
                 }
 
-                else $selector = $designer->createComponent (new WFObject ("System.Windows.Forms.$component"), ($name = $component . time () . rand (100000, 999999)));
+                else
+                {
+                    $i = 1;
+                    while (isset ($designer->objects[$name = $component . $i]))
+                        ++$i;
+
+                    $selector = $designer->createComponent (new WFObject ("System.Windows.Forms.$component"), $name);
+                }
 
                 $components = c('PropertiesPanel__SelectedComponent');
 
@@ -171,7 +227,7 @@ Form MainForm
 
                     $msg->show
                     (
-                        text ("Авторы сие произведения:\n\nАндрей Кусов (vk.com/postmessagea) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms"),
+                        text ("Авторы сие произведения:\n\nАндрей Кусов (vk.com/postmessagea) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms\n\n-----------------------\n\n". file_get_contents (APP_DIR .'/license.txt')),
 
                         text ('О программе')
                     );

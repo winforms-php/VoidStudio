@@ -389,7 +389,20 @@ class EngineAdditions
                 break;
 
                 default:
-                    $property = 'int';
+                    try
+                    {
+                        VoidEngine::getProperty ($selector, [$name, 'int']);
+
+                        $property = 'int';
+                    }
+
+                    catch (\WinFormsException $e)
+                    {
+                        return [
+                            'type'  => 'vrsf',
+                            'value' => VoidEngine::exportObject (VoidEngine::getProperty ($selector, [$name, 'object']))
+                        ];
+                    }
                 break;
             }
         }

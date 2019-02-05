@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     build-2019/02/03 (state-y/m/d)
+ * @version     build-2019/02/05 (state-y/m/d)
  * 
  * Contacts:
  *

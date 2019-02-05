@@ -181,32 +181,23 @@ class VoidStudioBuilder
                     }
 
                     elseif ($value[0] != '"')
-                        try
-                        {
-                            $value = VoidEngine::getProperty ($designer->getComponentByName ($current_object), [$property, 'int']);
-                        }
+                    {
+                        $component = $designer->getComponentByName ($current_object);
+                        $value     = EngineAdditions::getProperty ($component, $property);
 
-                        catch (\Throwable $e)
-                        {
-                            try
-                            {
-                                $value = VoidEngine::getProperty ($designer->getComponentByName ($current_object), [$property, 'color']);
-
-                                $property = str_replace_assoc ($property, [
-                                    'ForeColor' => 'foregroundColor',
-                                    'BackColor' => 'backgroundColor'
-                                ]);
-                            }
-
-                            catch (\Throwable $e)
-                            {
-                                pre ('Unknown constant "'. $value .'" (property "'. $property .'")');
-                            }
-                        }
+                        $value = $value['type'] == 'vrsf' ?
+                            new WFExportedData ($value['value']) :
+                            $value['value'];
+                    }
                 }
 
                 if ($property == 'Name' && $value == '""')
                     $value = '"'. $current_object .'"';
+
+                $property = str_replace_assoc ($property, [
+                    'ForeColor' => 'foregroundColor',
+                    'BackColor' => 'backgroundColor'
+                ]);
 
                 $objects[$current_object][$property] = $value;
             }
@@ -306,7 +297,7 @@ class VoidStudioBuilder
 
     // TODO (+ collections)
 
-    static function constructPHP (array $objects, VoidDesigner $designer, string $exportResourcesDir = null)
+    /*static function constructPHP (array $objects, VoidDesigner $designer, string $exportResourcesDir = null)
     {
         $objectsNames = array_keys ($objects);
 
@@ -375,7 +366,7 @@ class VoidStudioBuilder
         }
 
         return $php;
-    }
+    }*/
 
     static function generateCode (): string
     {
@@ -405,7 +396,7 @@ class VoidStudioBuilder
                     $references = array_merge ($references, self::getReferences (dirname ($file) .'/'. eval ('namespace VoidEngine; return '. substr ($line, $begin, $end) .';'), false));
                 }
 
-                catch (\Exception $e) {}
+                catch (\Throwable $e) {}
 
         if ($parseExtensions)
             if (is_dir (ENGINE_DIR .'/extensions') && is_array ($exts = scandir (ENGINE_DIR .'/extensions')))
