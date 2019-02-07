@@ -10,28 +10,37 @@ class Events
 {
     static $events = [];
 
-    static function setObjectEvent (Control $object, string $eventName, $function)
+    static function setObjectEvent (int $object, string $eventName, $function)
     {
-        $selector = $object->selector;
+        self::$events[$object][$eventName] = $function;
 
-        self::$events[$selector][$eventName] = $function;
-
-        VoidEngine::setObjectEvent ($selector, $eventName, "if (isset (VoidEngine\Events::\$events['$selector']['$eventName'])) VoidEngine\Events::\$events['$selector']['$eventName'] (VoidEngine\Components::getComponent ('$selector'), isset (\$args) ? \$args : false);");
+        VoidEngine::setObjectEvent ($object, $eventName, "if (VoidEngine\Events::getObjectEvent ('$object', '$eventName') !== false) VoidEngine\Events::getObjectEvent ('$object', '$eventName') (VoidEngine\Components::getComponent ('$object'), isset (\$args) ? \$args : false);");
     }
 
-    static function removeObjectEvent (Control $object, string $eventName)
+    static function reserveObjectEvent (int $object, string $eventName)
     {
-        $selector = $object->selector;
+        self::$events[$object][$eventName] = function ($self) {};
 
-        VoidEngine::removeObjectEvent ($selector, $eventName);
-        unset (self::$events[$selector][$eventName]);
+        VoidEngine::setObjectEvent ($object, $eventName, '');
     }
 
-    static function getObjectEvent (Control $object, string $eventName)
+    static function removeObjectEvent (int $object, string $eventName)
     {
-        $selector = $object->selector;
+        VoidEngine::removeObjectEvent ($object, $eventName);
 
-        return self::$events[$selector][$eventName];
+        unset (self::$events[$object][$eventName]);
+    }
+
+    static function getObjectEvent (int $object, string $eventName)
+    {
+        return isset (self::$events[$object][$eventName]) ?
+            self::$events[$object][$eventName] : false;
+    }
+
+    static function getObjectEvents (int $object)
+    {
+        return isset (self::$events[$object]) ?
+            self::$events[$object] : false;
     }
 }
 

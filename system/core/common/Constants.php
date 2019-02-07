@@ -6,16 +6,24 @@
 
 namespace VoidEngine;
 
-$env   = VoidEngine::buildObject (new WFObject ('System.Environment', 'mscorlib'));
-$array = VoidEngine::callMethod ($env, 'GetCommandLineArgs');
+$env   = new WFClass ('System.Environment', 'mscorlib');
+$array = $env->getCommandLineArgs ();
 $size  = VoidEngine::getProperty ($array, 'Length');
 
 for ($i = 0; $i < $size; ++$i)
     $params[] = VoidEngine::getArrayValue ($array, $i);
 
-VoidEngine::removeObject ($env, $array);
+VoidEngine::removeObject ($array);
 
 $constants = [
+	# Информация о программе
+	
+	'EXE_NAME'     => $APPLICATION->executablePath,
+	'DOC_ROOT'     => dirname ($APPLICATION->executablePath),
+	'IS_ADMIN'     => is_writable (getenv ('SystemRoot')),
+	'START_PARAMS' => $params,
+	'USERNAME'	   => $env->username,
+
 	# Константы MessageBox'а
 	
 	'MB_YESNO' 			  => 4,
@@ -126,13 +134,6 @@ $constants = [
 	'fcrFormOwnerClosing'    => 5,
 	'fcrApplicationExitCall' => 6,
 	
-	# Информация о программе
-	
-	'EXE_NAME'     => $APPLICATION->executablePath,
-	'DOC_ROOT'     => dirname ($APPLICATION->executablePath),
-	'IS_ADMIN'     => is_writable (getenv ('SystemRoot')),
-	'START_PARAMS' => $params,
-	
 	# Константы дока
 	
 	'dsBottom' => 2,
@@ -179,6 +180,12 @@ $constants = [
 	'flPopup'	 => 1,
 	'flStandard' => 2,
 	'flSystem'   => 3,
+
+	# Константы свойства DrawMode
+
+	'dwNormal'			  => 0,
+	'dwOwnerDrawFixed'	  => 1,
+	'dwOwnerDrawVariable' => 2,
 
 	# Цветовые константы
 	

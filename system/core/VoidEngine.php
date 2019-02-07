@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     build-2019/02/05 (state-y/m/d)
+ * @version     build-2019/02/07 (state-y/m/d)
  * 
  * Contacts:
  *
@@ -103,10 +103,5 @@ require 'components/ColorDialog.php';
 require 'components/FolderBrowserDialog.php';
 require 'components/Designer.php';
 require 'components/MainMenu.php';
-
-$app = dirname (dirname (ENGINE_DIR)) .'/app/start.php';
-
-if (file_exists ($app))
-    require $app;
 
 ?>

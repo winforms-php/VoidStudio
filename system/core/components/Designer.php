@@ -18,7 +18,7 @@ class VoidDesigner extends Component
     protected $control;
     protected $objects;
 
-    public function __construct (Control $parent, string $formName = 'form', PropertyGrid $propertyGrid = null)
+    public function __construct (Control $parent, string $formName = 'form', PropertyGrid $propertyGrid = null, ListBox $eventsList = null)
     {
         $this->componentSelector = VoidEngine::createObject (new WFObject ('WinForms_PHP.FormDesigner', false, true), $parent->selector, $formName);
         Components::addComponent ($this->componentSelector, $this);
@@ -122,9 +122,17 @@ class VoidDesigner extends Component
                 $objects     = VoidEngine::callMethod ('. $this->componentSelector .', "GetSelectedComponents");
                 $firstObject = VoidEngine::getArrayValue ($objects, 0);
                 
-                _c('. $propertyGrid->selector .')->SelectedObject = $firstObject;
+                _c('. $propertyGrid->selector .')->selectedObject = $firstObject;
                 c("PropertiesPanel__SelectedComponent")->selectedItem = VoidEngine::getProperty ($firstObject, "Name");
-            ');
+            '. ($eventsList !== null ?
+            '
+                $events = Events::getObjectEvents ($firstObject);
+                _c('. $eventsList->selector .')->items->clear ();
+
+                if (is_array ($events))
+                    _c('. $eventsList->selector .')->items->addRange (array_keys ($events));
+            '
+        : ''));
     }
 
     public function updateHost (): void

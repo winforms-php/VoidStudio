@@ -34,6 +34,11 @@ class ContextMenu extends Component
     {
         return $this->items;
     }
+
+    public function show ($parent, $point)
+    {
+        $this->callMethod ('Show', $parent, $point);
+    }
 }
 
 class MenuItem extends Control

@@ -247,6 +247,29 @@ function setTimeout (int $interval, $function): Timer
 	return $timer;
 }
 
+function php_syntax_check (string $code)
+{
+    try
+    {
+        eval ('return; '. $code);
+
+        return;
+    }
+
+    catch (\ParseError $e)
+    {
+        return [
+            'text' => $e->getMessage (),
+            'line' => $e->getLine ()
+        ];
+    }
+
+    catch (\Throwable $e)
+    {
+        return $e;
+    }
+}
+
 function includeComponent (string $componentName): void
 {
     if (!class_exists ($componentName) && file_exists (ENGINE_DIR ."/components/$componentName.php"))
@@ -417,7 +440,15 @@ class Items extends \ArrayObject
                 $names = [];
                 
                 for ($i = 0; $i < $size; ++$i)
-                    $names[] = VoidEngine::getProperty (VoidEngine::getArrayValue ($this->selector, [$i, 'object']), 'Text');
+                    try
+                    {
+                        $names[] = VoidEngine::getProperty (VoidEngine::getArrayValue ($this->selector, [$i, 'object']), 'Text');
+                    }
+
+                    catch (\WinFormsException $e)
+                    {
+                        $names[] = VoidEngine::getArrayValue ($this->selector, [$i, 'string']);
+                    }
                 
                 return $names;
             break;

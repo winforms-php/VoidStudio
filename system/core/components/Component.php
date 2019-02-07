@@ -24,7 +24,7 @@ abstract class Component
             return $this->$method ();
             
         elseif (substr ($name, strlen ($name) - 5) == 'Event')
-            return Events::getObjectEvent ($this, substr ($name, 0, -5));
+            return Events::getObjectEvent ($this->selector, substr ($name, 0, -5));
 
         elseif (property_exists ($this, $name))
             return $this->$name;
@@ -38,7 +38,7 @@ abstract class Component
             return $this->$method ($value);
             
         elseif (substr ($name, strlen ($name) - 5) == 'Event')
-            Events::setObjectEvent ($this, substr ($name, 0, -5), $value);
+            Events::setObjectEvent ($this->selector, substr ($name, 0, -5), $value);
         
         else $this->setProperty ($name, $value);
 	}

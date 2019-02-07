@@ -1,4 +1,4 @@
-VoidEngine
+VoidFramework
 Copyright © 2018 - 2019 Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
 
 This program is free software: you can redistribute it and/or modify

@@ -1,7 +1,5 @@
 namespace VoidEngine;
 
-pre (get_cursor_x ());
-
 /*$vlf = <<<'VLF'
 
 Form MainForm

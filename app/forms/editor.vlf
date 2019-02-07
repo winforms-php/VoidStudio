@@ -1,0 +1,24 @@
+Form MainForm
+    size: [$SCREEN->width / 1.4, $SCREEN->height / 1.4]
+    startPosition: fspCenterScreen
+    backgroundColor: clWhite
+
+    caption: text ('Редактор событий')
+
+    ->icon->loadFromFile (APP_DIR .'/Icon.ico')
+
+    Scintilla Editor
+        dock: dsFill
+
+        syntax: 'syntax.json'
+
+    Button SaveButton
+        dock: dsBottom
+        caption: text ('Сохранить')
+
+        ClickEvent:^ function ($self) use (Editor $editor, MainForm $form)
+            {
+                VoidEngine::setObjectEvent ($editor->helpStorage[0], $editor->helpStorage[1], $editor->text);
+
+                $form->hide ();
+            }

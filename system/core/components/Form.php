@@ -192,23 +192,6 @@ class Form extends Control
     }
 }
 
-class PseudoForm extends Form
-{
-    public function __construct (Control $parent = null)
-	{
-        $this->componentSelector = VoidEngine::createObject (new WFObject ('WinForms_PHP.PseudoForm', false, true));
-		$this->componentClass    = self::class;
-        
-        Components::addComponent ($this->componentSelector, $this);
-        
-		if ($parent instanceof Control)
-		{
-			$this->set_topLevel (false);
-			$this->set_parent ($parent);
-		}
-	}
-}
-
 class FormIcon extends Icon
 {
     protected $formSelector;

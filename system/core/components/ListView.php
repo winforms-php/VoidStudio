@@ -15,11 +15,12 @@ class ListView extends Control
 
         $this->items           = new ListViewItems ($this->getProperty ('Items'));
         $this->columns         = new ListViewColumns ($this->getProperty ('Columns'));
+
         $this->smallImagesList = new ImageList;
         $this->largeImagesList = new ImageList;
 
-        // $this->setProperty ('SmallImageList', $this->smallImagesList->selector, 'object');
-        // $this->setProperty ('LargeImageList', $this->largeImagesList->selector, 'object');
+        // $this->setProperty ('SmallImageList', [$this->smallImagesList->selector, 'object']);
+        // $this->setProperty ('LargeImageList', [$this->largeImagesList->selector, 'object']);
     }
 
     public function get_items ()
@@ -210,7 +211,7 @@ class ImageList extends Component
     }
 }
 
-class ImageListImages extends ListViewItems
+class ImageListImages extends Items
 {
     public function add ($value)
 	{

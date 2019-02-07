@@ -23,32 +23,16 @@ class VoidStudioAPI
             self::$objects[$group] : false;
     }
 
-    static function loadObjectEvents (Control $object, ListBox $list)
+    static function openEventEditor (int $component, string $event)
     {
-        $list->items->clear ();
+        $objects = self::getObjects ('editor');
+        $form    = $objects['MainForm'];
+        $editor  = $objects['Editor'];
 
-        $type  = VoidEngine::callMethod ($object->selector, 'GetType');
-        $props = VoidEngine::callMethod ($type, 'GetEvents');
-        $len   = VoidEngine::getProperty ($props, 'Length');
+        $editor->helpStorage = [$component, $event];
+        $editor->text = Components::getComponentEvent ($component, $event);
 
-        for ($i = 0; $i < $len; ++$i)
-        {
-            $index = VoidEngine::getArrayValue ($props, $i);
-            $name  = VoidEngine::getProperty ($index, 'Name');
-
-            $list->items->add ($name);
-        }
-    }
-
-    static function openEventEditor (Component $component, string $event)
-    {
-        $form   = self::$objects['editor']['MainForm'];
-        $editor = self::$objects['editor']['Editor'];
-
-        $editor->helpStorage = [$component->selector, $event];
-        $editor->text = Components::getComponentEvent ($component->selector, $event);
-
-        $form->caption = text ('Событие "'. $event .'", ['. $component->selector .'] '. $component->caption);
+        $form->caption = text ('Событие "'. $event .'", объект "'. VoidEngine::getProperty ($component, 'Name') .'"');
 
         $form->show ();
     }
@@ -147,11 +131,6 @@ class VoidStudioBuilder
 
                         switch ($object)
                         {
-                            case 'System.Drawing.Point':
-                            case 'System.Drawing.Size':
-                                $value = $args;
-                            break;
-
                             case 'System.Drawing.Font':
                                 $value = '['. $args[0] .', '. preg_replace ('/[^0-9\.]/i', '', $args[1]) .']';
                             break;
@@ -161,13 +140,15 @@ class VoidStudioBuilder
                             break;
 
                             default:
-                                pre ('Unknown object "'. $object .'" with arguments "'. json_encode ($args) .'"');
+                                $value = $args;
                             break;
                         }
                     }
+
+                    else $value = 'new VoidEngine::createObject (WFObject (\''. $object .'\', \''. join ('.', array_slice (explode ('.', $object), 0, -1)) .'\'))';
                 }
 
-                if (is_string ($value))
+                elseif (is_string ($value))
                 {
                     if (substr ($value, strlen ($value) - 1) == ';')
                         $value = substr ($value, 0, -1);
@@ -202,6 +183,11 @@ class VoidStudioBuilder
                 $objects[$current_object][$property] = $value;
             }
         }
+
+        foreach ($objects as $name => $properties)
+            if (is_array ($events = Events::getObjectEvents ($object = $designer->getComponentByName ($name))))
+                foreach ($events as $eventName => $event)
+                    $objects[$name][$eventName .'Event'] = "function (\$self, \$args)\n\t\t\t{\n\t\t\t\t". join ("\n\t\t\t\t", explode ("\n", Components::getComponentEvent ($object, $eventName))) ."\n\t\t\t}";
 
         return $objects;
     }
@@ -248,7 +234,8 @@ class VoidStudioBuilder
                     else $propertyValue = '['. join (', ', $propertyValue) .']';
                 }
 
-                $vlf .= "\t$propertyName: $propertyValue\n";
+                $vlf .= sizeof (explode ("\n", trim ($propertyValue))) > 1 ?
+                    "\t$propertyName:^ $propertyValue\n" : "\t$propertyName: $propertyValue\n";
             }
 
         $vlf .= "\n";
@@ -286,7 +273,8 @@ class VoidStudioBuilder
                         else $propertyValue = '['. join (', ', $propertyValue) .']';
                     }
 
-                    $vlf .= "\t\t$propertyName: $propertyValue\n";
+                    $vlf .= sizeof (explode ("\n", trim ($propertyValue))) > 1 ?
+                        "\t\t$propertyName:^ $propertyValue\n" : "\t\t$propertyName: $propertyValue\n";
                 }
 
             $vlf .= "\n";

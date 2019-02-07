@@ -41,9 +41,6 @@ Form MainForm
 
         ->items->addRange ([ToolsPanel__Log, ToolsPanel__Eval])
 
-    ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
-        width: 268
-
     Panel PropertiesPanel
         dock: dsLeft
         width: 280
@@ -104,20 +101,40 @@ Form MainForm
             ListBox EventsList__ActiveEvents
                 dock: dsFill
 
+                font: ['Microsoft Sans Serif', 10]
+
+                DoubleClickEvent:^ function ($self)
+                    {
+                        if ($event = $self->selected)
+                            VoidStudioAPI::openEventEditor (PropertiesList__List->selectedObject, $event);
+                    }
+
             Button EventsList__AddEvent
                 dock: dsTop
+                flatStyle: flSystem
 
                 caption: text ('Добавить')
                 
-                ClickEvent:^ function ($self)
+                ClickEvent:^ function ($self) use (EventsList__ActiveEvents $eventsList)
                     {
-                        $menu = new ContextMenu;
-                        $menu->items = [
-                            new MenuItem ('123'),
-                            new MenuItem ('3231231231232')
-                        ];
+                        $events = array_diff (EngineAdditions::getObjectEvents ($object = PropertiesList__List->selectedObject), $eventsList->items->names);
 
-                        $menu->show ([$self->selector, 'object'], [(new WFClass ('System.Windows.Forms.Cursor'))->position, 'object']);
+                        $menu = new ContextMenu;
+                        $menu->items->addRange (array_map (function ($name) use ($object, $eventsList)
+                        {
+                            $item = new MenuItem ($name);
+
+                            $item->clickEvent = function ($self) use ($name, $object, $eventsList)
+                            {
+                                $eventsList->items->add ($name);
+
+                                Events::reserveObjectEvent ($object, $name);
+                            };
+
+                            return $item;
+                        }, $events));
+
+                        $menu->show (MainForm->selector, (new WFClass ('System.Windows.Forms.Cursor'))->position);
                     }
 
         TabControl Properties__Items
@@ -147,7 +164,7 @@ Form MainForm
                 }
 
     TabPage Designer__Form1 (text ('Form1'))
-        VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List)
+        VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents)
 
     TabControl Designer__FormsList (ToolsPanel__Container->panel1)
         dock: dsFill
@@ -166,9 +183,12 @@ Form MainForm
                 $designer->setSelectedComponents ($designer->form);
             }
 
+    ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
+        width: 216
+
     ListView ComponentsList
         dock: dsRight
-        width: 280
+        width: 220
 
         fullRowSelect: true
         view: vwDetails
@@ -184,7 +204,7 @@ Form MainForm
                 if ($component == 'Form')
                 {
                     $page     = new TabPage ($form = 'Form'. (substr ($form, 4) + 1));
-                    $designer = new VoidDesigner ($page, $form, PropertiesList__List);
+                    $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents);
 
                     VoidStudioAPI::addObjects ('main', ['Designer__'. $form .'Designer' => $designer]);
 
@@ -202,6 +222,8 @@ Form MainForm
                         ++$i;
 
                     $selector = $designer->createComponent (new WFObject ("System.Windows.Forms.$component"), $name);
+
+                    VoidEngine::setProperty ($selector, 'Text', $component);
                 }
 
                 $components = c('PropertiesPanel__SelectedComponent');

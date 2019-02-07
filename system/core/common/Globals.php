@@ -9,41 +9,41 @@ namespace VoidEngine;
 $APPLICATION = new class
 {
     public $executablePath;
-    protected $selector;
+    public $application;
     
     public function __construct ()
     {
-        $this->selector       = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Application'));
-        $this->executablePath = VoidEngine::getProperty ($this->selector, 'ExecutablePath');
+        $this->application    = new WFClass ('System.Windows.Forms.Application');
+        $this->executablePath = $this->application->executablePath;
     }
     
     public function run (Form $form = null): void
     {
-        $form ?
-            VoidEngine::callMethod ($this->selector, 'Run', $form->selector) :
-            VoidEngine::callMethod ($this->selector, 'Run');
+        $form !== null ?
+            $this->application->run ($form->selector) :
+            $this->application->run ();
     }
     
     public function restart (): void
     {
-        VoidEngine::callMethod ($this->selector, 'Restart');
+        $this->application->restart ();
 
         $this->close ();
     }
     
     public function close (): void
     {
-        VoidEngine::callMethod ($this->selector, 'Exit');
+        $this->application->exit ();
     }
 };
 
 $SCREEN = new class
 {
-    protected $selector;
+    public $screen;
     
     public function __construct ()
     {
-        $this->selector = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Screen'));
+        $this->screen = new WFClass ('System.Windows.Forms.Screen');
     }
     
     public function __get ($name)
@@ -52,7 +52,7 @@ $SCREEN = new class
         {
             case 'width':
             case 'w':
-                $screen = VoidEngine::getProperty ($this->selector, 'PrimaryScreen');
+                $screen = $this->screen->primaryScreen;
                 $bounds = VoidEngine::getProperty ($screen, 'Bounds');
                 $width  = VoidEngine::getProperty ($bounds, 'Width');
 
@@ -63,7 +63,7 @@ $SCREEN = new class
             
             case 'height':
             case 'h':
-                $screen = VoidEngine::getProperty ($this->selector, 'PrimaryScreen');
+                $screen = $this->screen->primaryScreen;
                 $bounds = VoidEngine::getProperty ($screen, 'Bounds');
                 $height = VoidEngine::getProperty ($bounds, 'Height');
 
@@ -73,7 +73,7 @@ $SCREEN = new class
             break;
 
             default:
-                return VoidEngine::getProperty ($this->selector, $name);
+                return $this->screen->$name;
             break;
         }
     }

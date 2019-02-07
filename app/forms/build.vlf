@@ -126,7 +126,7 @@ Form MainForm
 
                     $vlfImports = "\$vlf = <<<'VLF'\n\n$vlfImports\n\nVLF;";
 
-                    VoidEngine::compile ($save, APP_DIR .'/Icon.ico', $code = str_replace (
+                    VoidEngine::compile ($save, text (APP_DIR) .'/Icon.ico', $code = str_replace (
                         [
                             'namespace VoidEngine;',
                             'VoidEngine\\'

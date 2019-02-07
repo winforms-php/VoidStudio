@@ -310,11 +310,32 @@ class VoidEngine
      * @param string iconPath - путь до иконки
      * @param string phpCode - код для компиляции без тэгов
      * 
+     * [@param string productDescription = ''] - описание приложения
+     * [@param string productName = '']        - название приложения
+     * [@param string productVersion = '']     - версия приложения
+     * [@param string companyName = '']        - компания-производителя
+     * [@param string copyright = '']          - копирайт
+     * 
      */
 
-    static function compile (string $savePath, string $iconPath, string $phpCode): void
+    static function compile (string $savePath, string $iconPath, string $phpCode, string $productDescription = null, string $productName = null, string $productVersion = null, string $companyName = null, string $copyright = null): void
     {
-        winforms_compile ($savePath, $iconPath, $phpCode);
+        if ($productName === null)
+            $productName = basenameNoExt ($savePath);
+
+        if ($productDescription === null)
+            $productDescription = $productName;
+
+        if ($productVersion === null)
+            $productVersion = '1.0';
+
+        if ($companyName === null)
+            $companyName = 'Company N';
+
+        if ($copyright === null)
+            $copyright = $companyName .' copyright (c) '. date ('Y');
+
+        winforms_compile ($savePath, $iconPath, $phpCode, $productDescription, $productName, $productVersion, $companyName, $copyright);
     }
 }
 
@@ -416,6 +437,25 @@ class EngineAdditions
             'type'  => $property,
             'value' => VoidEngine::getProperty ($selector, [$name, $property])
         ];
+    }
+
+    static function getObjectEvents (int $object)
+    {
+        $events = [];
+
+        $type  = VoidEngine::callMethod ($object, 'GetType');
+        $props = VoidEngine::callMethod ($type, 'GetEvents');
+        $len   = VoidEngine::getProperty ($props, 'Length');
+
+        for ($i = 0; $i < $len; ++$i)
+        {
+            $index = VoidEngine::getArrayValue ($props, $i);
+            $name  = VoidEngine::getProperty ($index, 'Name');
+
+            $events[] = $name;
+        }
+
+        return $events;
     }
 }
 
