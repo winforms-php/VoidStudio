@@ -1,5 +1,5 @@
 Form MainForm
-    size: [340, 262]
+    size: [340, 286]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
     formBorderStyle: fbsToolWindow
@@ -46,8 +46,15 @@ Form MainForm
 
         checked: true
 
+    CheckBox UsingVoidFramework
+        bounds: [16, 176, 220, 24]
+        caption: text ('Сборка под VoidFramework')
+
+        checked: false
+
     Button BuildProject
-        bounds: [16, 184, 104, 32]
+        bounds: [16, 208, 104, 32]
+        flatStyle: flSystem
 
         caption: text ('Собрать')
 
@@ -62,34 +69,7 @@ Form MainForm
                 {
                     file_put_contents ('system/build_path', $dir);
 
-                    dir_clean ($dir .'/system');
-                    dir_clean ($dir .'/app');
-
-                    dir_copy (dirname (ENGINE_DIR), $dir .'/system');
-
-                    $resourcesDir = null;
-
-                    if (ResourcesExporting->checked)
-                    {
-                        $resourcesDir = $dir .'/app/resources';
-
-                        dir_create ($resourcesDir);
-                    }
-
-                    foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
-                    {
-                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
-
-                        if ($item == FormSelection->selectedItem)
-                            $item = 'main';
-
-                        file_put_contents ($dir .'/app/'. $item .'.vlf', VoidStudioBuilder::constructVLF (VoidStudioBuilder::parseObjectsProperties ($designer), $designer, $resourcesDir));
-                    }
-
-                    file_put_contents ($dir .'/app/start.php', "<?php\n\nnamespace VoidEngine;\n\nVLFInterpreter::\$throw_errors = false;\n\nconst APP_DIR = __DIR__;\nchdir (APP_DIR);\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (__DIR__ .'/main.vlf', [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => ". UseCaching->checked ."\n]), ". ($resourcesDir !== null ? 'APP_DIR .\'/resources\'' : 'null') .")['". FormSelection->selectedItem ."']);\n\n?>\n");
-
-                    dir_clean ($dir .'/system/core/debug');
-                    dir_clean ($dir .'/system/core/extensions/VLF/cache');
+                    VoidStudioBuilder::buildProject ($dir, FormSelection->selectedItem, UsingVoidFramework->checked, ResourcesExporting->checked, UseCaching->checked);
 
                     pre (text ('Проект успешно собран'));
                     MainForm->hide ();
@@ -99,7 +79,8 @@ Form MainForm
             }
 
     Button CompileProject
-        bounds: [128, 184, 144, 32]
+        bounds: [128, 208, 144, 32]
+        flatStyle: flSystem
 
         caption: text ('Компилировать')
 
@@ -115,32 +96,7 @@ Form MainForm
                 {
                     file_put_contents ('system/compile_path', $save);
 
-                    $vlfImports = '';
-
-                    foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
-                    {
-                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
-
-                        $vlfImports .= VoidStudioBuilder::constructVLF (VoidStudioBuilder::parseObjectsProperties ($designer), $designer);
-                    }
-
-                    $vlfImports = "\$vlf = <<<'VLF'\n\n$vlfImports\n\nVLF;";
-
-                    VoidEngine::compile ($save, text (APP_DIR) .'/Icon.ico', $code = str_replace (
-                        [
-                            'namespace VoidEngine;',
-                            'VoidEngine\\'
-                        ],
-                        
-                        [
-                            'nothing ();',
-                            ''
-                        ],
-                        
-                        "\$code = <<<'CODE'\n\n". VoidStudioBuilder::generateCode () ."\n\nCODE;\n\n@eval (\$code);\n\nset_error_handler (function (...\$args) {pre (\$args);});\set_exception_handler (function (...\$args) {pre (\$args);});\n\n$vlfImports\n\nVLFInterpreter::\$throw_errors = false;\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (\$vlf, [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => false\n]))['". FormSelection->selectedItem ."']);"
-                    ));
-
-                    // file_put_contents (dirname ($save) .'/tmp.php', $code);
+                    VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, UsingVoidFramework->checked);
 
                     pre (text ('Проект успешно скомпилирован'));
                     MainForm->hide ();

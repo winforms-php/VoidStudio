@@ -31,12 +31,18 @@ function dir_delete (string $path): bool
 
     $files = array_slice (scandir ($path), 2);
 
-    if (is_array ($files))
-        foreach ($files as $id => $file)
-            if (is_dir ("$path/$file"))
-                dir_delete ("$path/$file");
+    foreach ($files as $id => $file)
+        if (is_dir ($file = "$path/$file"))
+        {
+            dir_delete ($file);
 
-            else unlink ("$path/$file");
+            if (is_dir ($file))
+                rmdir ($file);
+        }
+
+        else unlink ($file);
+
+    rmdir ($path);
 
     return true;
 }
@@ -150,7 +156,7 @@ function run (string $file, int $windowStyle, bool $wait = false)
     static $COM;
 	
 	if (!isset ($COM))
-		$COM = new COM ('WScript.Shell');
+		$COM = new \COM ('WScript.Shell');
 	
 	return $COM->run ($file, $windowStyle, (int) $wait);
 }

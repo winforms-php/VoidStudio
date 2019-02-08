@@ -40,6 +40,71 @@ class VoidStudioAPI
 
 class VoidStudioBuilder
 {
+    static function buildProject (string $dir, string $enteringPoint, bool $withVoidFramework = false, bool $exportResources = false, bool $useCaching = false)
+    {
+        dir_clean ($dir .'/system');
+        dir_clean ($dir .'/app');
+
+        dir_copy (dirname (ENGINE_DIR), $dir .'/system');
+
+        if ($withVoidFramework)
+            dir_delete ($dir .'/system/core');
+
+        $resourcesDir = null;
+
+        if ($exportResources)
+        {
+            $resourcesDir = $dir .'/app/resources';
+
+            dir_create ($resourcesDir);
+        }
+
+        foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
+        {
+            $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
+
+            if ($item == $enteringPoint)
+                $item = 'main';
+
+            file_put_contents ($dir .'/app/'. $item .'.vlf', VoidStudioBuilder::constructVLF (VoidStudioBuilder::parseObjectsProperties ($designer), $designer, $resourcesDir));
+        }
+
+        file_put_contents ($dir .'/app/start.php', "<?php\n\nnamespace VoidEngine;\n\nVLFInterpreter::\$throw_errors = false;\n\nconst APP_DIR = __DIR__;\nchdir (APP_DIR);\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (__DIR__ .'/main.vlf', [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => ". ($useCaching ? 'true' : 'false') ."\n]), ". ($resourcesDir !== null ? 'APP_DIR .\'/resources\'' : 'null') .")['$enteringPoint']);\n\n?>\n");
+
+        dir_clean ($dir .'/system/core/debug');
+        dir_clean ($dir .'/system/core/extensions/VLF/cache');
+    }
+
+    static function compileProject (string $save, string $enteringPoint, bool $withVoidFramework = false)
+    {
+        $vlfImports = '';
+
+        foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
+        {
+            $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
+
+            $vlfImports .= VoidStudioBuilder::constructVLF (VoidStudioBuilder::parseObjectsProperties ($designer), $designer);
+        }
+
+        $vlfImports = "\$vlf = <<<'VLF'\n\n$vlfImports\n\nVLF;";
+
+        VoidEngine::compile ($save, text (APP_DIR) .'/Icon.ico', $code = str_replace (
+            [
+                'namespace VoidEngine;',
+                'VoidEngine\\'
+            ],
+            
+            [
+                'nothing ();',
+                ''
+            ],
+            
+            "\$code = <<<'CODE'\n\n". ($withVoidFramework ? "define ('FRAMEWORK_DIR', getenv ('AppData') .'\VoidFramework');\n\nif (file_exists (FRAMEWORK_DIR .'/core/VoidEngine.php'))\n\trequire FRAMEWORK_DIR .'/core/VoidEngine.php';\n\nelse message ('VoidEngine not founded');" : VoidStudioBuilder::generateCode ()) ."\n\nCODE;\n\n@eval (\$code);\n\nset_error_handler (function (...\$args) {pre (\$args);});\set_exception_handler (function (...\$args) {pre (\$args);});\n\n$vlfImports\n\nVLFInterpreter::\$throw_errors = false;\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (\$vlf, [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => false\n]))['$enteringPoint']);"
+        ));
+
+        // file_put_contents (dirname ($save) .'/tmp.php', $code);
+    }
+
     static function parseObjectsProperties (VoidDesigner $designer)
     {
         $code = $designer->getSharpCode ();

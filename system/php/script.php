@@ -2,7 +2,7 @@
 
 namespace VoidEngine;
 
-define ('FRAMEWORK_DIR', getenv ('AppData') .'/VoidFramework/');
+define ('FRAMEWORK_DIR', getenv ('AppData') .'\VoidFramework');
 
 const CORE_DIR = __DIR__;
 
