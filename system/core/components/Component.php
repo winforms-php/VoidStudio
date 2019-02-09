@@ -91,23 +91,38 @@ abstract class Component
     {
         return [
             'description' => $this->callMethod ('ToString'),
-            'selector'    => $this->componentSelector
+            'objectInfo'  => (array)($this)
         ];
     }
 	
 	public function dispose ()
 	{
-        if (is_int ($this->componentSelector))
+        if (isset ($this->componentSelector) && is_int ($this->componentSelector))
         {
             $this->callMethod ('Dispose');
 
             Components::removeComponent ($this->componentSelector);
             VoidEngine::removeObject ($this->componentSelector);
-            
-            unset ($this->componentSelector, $this->componentClass, $this->helpStorage);
         }
 
-        else throw new \Exception ('Object already disposed');
+        foreach ((array)($this) as $param => $value)
+            if (isset ($this->$param))
+            {
+                if (is_int ($value) && VoidEngine::objectExists ($value))
+                    VoidEngine::removeObject ($value);
+
+                elseif ($value instanceof Items)
+                {
+                    VoidEngine::removeObject (...$value->list);
+
+                    $item->dispose ();
+                }
+
+                elseif ($value instanceof Component)
+                    $value->dispose ();
+
+                unset ($this->$param);
+            }
     }
 }
 

@@ -231,6 +231,9 @@ class VoidStudioBuilder
                         $component = $designer->getComponentByName ($current_object);
                         $value     = EngineAdditions::getProperty ($component, $property);
 
+                        if ($value === false)
+                            continue;
+
                         $value = $value['type'] == 'vrsf' ?
                             new WFExportedData ($value['value']) :
                             $value['value'];

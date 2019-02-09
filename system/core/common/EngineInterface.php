@@ -369,10 +369,13 @@ class EngineAdditions
         return $properties;
     }
 
-    static function getProperty (int $selector, string $name): array
+    static function getProperty (int $selector, string $name)
     {
         $type     = VoidEngine::callMethod ($selector, 'GetType');
         $property = VoidEngine::callMethod ($type, 'GetProperty', $name);
+
+        if (!is_int ($property))
+            return false;
 
         try
         {

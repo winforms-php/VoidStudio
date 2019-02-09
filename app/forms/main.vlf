@@ -117,24 +117,33 @@ Form MainForm
                 
                 ClickEvent:^ function ($self) use (EventsList__ActiveEvents $eventsList)
                     {
-                        $events = array_diff (EngineAdditions::getObjectEvents ($object = PropertiesList__List->selectedObject), $eventsList->items->names);
+                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. _c(c('Designer__FormsList')->selectedTab)->text .'Designer'];
+                        $selected = VoidEngine::callMethod ($designer->selector, 'GetSelectedComponents');
 
-                        $menu = new ContextMenu;
-                        $menu->items->addRange (array_map (function ($name) use ($object, $eventsList)
+                        if ($selected !== null && VoidEngine::getProperty ($selected, 'Length') > 1)
+                            pre (text ('Вы не можете добавить событие нескольким объектам'));
+
+                        else
                         {
-                            $item = new MenuItem ($name);
+                            $events = array_diff (EngineAdditions::getObjectEvents ($object = PropertiesList__List->selectedObject), $eventsList->items->names);
 
-                            $item->clickEvent = function ($self) use ($name, $object, $eventsList)
+                            $menu = new ContextMenu;
+                            $menu->items->addRange (array_map (function ($name) use ($object, $eventsList)
                             {
-                                $eventsList->items->add ($name);
+                                $item = new MenuItem ($name);
 
-                                Events::reserveObjectEvent ($object, $name);
-                            };
+                                $item->clickEvent = function ($self) use ($name, $object, $eventsList)
+                                {
+                                    $eventsList->items->add ($name);
 
-                            return $item;
-                        }, $events));
+                                    Events::reserveObjectEvent ($object, $name);
+                                };
 
-                        $menu->show (MainForm->selector, (new WFClass ('System.Windows.Forms.Cursor'))->position);
+                                return $item;
+                            }, $events));
+
+                            $menu->show (MainForm->selector, (new WFClass ('System.Windows.Forms.Cursor'))->position);
+                        }
                     }
 
         TabControl Properties__Items
@@ -180,8 +189,11 @@ Form MainForm
                 $components->items->addRange (array_keys ($designer->objects));
 
                 $components->selectedItem = $tab;
+                # $designer->setSelectedComponents ($designer->form->selector);
                 $designer->setSelectedComponents ($designer->form);
             }
+
+    # VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
 
     ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
         width: 216
@@ -203,7 +215,12 @@ Form MainForm
 
                 if ($component == 'Form')
                 {
-                    $page     = new TabPage ($form = 'Form'. (substr ($form, 4) + 1));
+                    $i = substr ($form, 4) + 1;
+                    while (isset (VoidStudioAPI::getObjects ('main')['Designer__'. ($form = 'Form'. $i) .'Designer']))
+                        ++$i;
+
+                    $page     = new TabPage ($form);
+                    # $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, $formsList);
                     $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents);
 
                     VoidStudioAPI::addObjects ('main', ['Designer__'. $form .'Designer' => $designer]);
@@ -212,6 +229,7 @@ Form MainForm
                     $formsList->selectedTab = $page->selector;
 
                     $name     = $page->text;
+                    # $selector = $designer->form->selector;
                     $selector = $designer->form;
                 }
 
@@ -223,7 +241,12 @@ Form MainForm
 
                     $selector = $designer->createComponent (new WFObject ("System.Windows.Forms.$component"), $name);
 
-                    VoidEngine::setProperty ($selector, 'Text', $component);
+                    try
+                    {
+                        VoidEngine::setProperty ($selector, 'Text', $component);
+                    }
+
+                    catch (\Throwable $e) {}
                 }
 
                 $components = c('PropertiesPanel__SelectedComponent');
@@ -255,11 +278,17 @@ Form MainForm
                     );
                 }
 
+        MenuItem Menu__studio_vk (text ('Группа вк'))
+            ClickEvent:^ function ($self)
+                {
+                    run ('https://vk.com/winforms');
+                }
+
     #^ Здесь тупая ошибка: я не могу обратиться к ->items->addRange... т.к. этот метод вызывается от имени
        Menu__studio_about. Типо, опять фиксить и всё такое, но мне влом пока что
 
     MenuItem Menu__studio
-        ->items->addRange ([Menu__studio_restart, Menu__studio_about])
+        ->items->addRange ([Menu__studio_restart, Menu__studio_about, Menu__studio_vk])
 
     MenuItem Menu__project (text ('Проект'))
         MenuItem Menu__project_run (text ('Запустить'))
@@ -267,11 +296,7 @@ Form MainForm
                 {
                     VoidStudioBuilder::buildProject (getenv ('Temp') .'/vstmpprj', Designer__FormsList->items->names[0]);
 
-                    $process = new WFObject ('System.Diagnostics.Process', 'System');
-                    $process->token = 'b77a5c561934e089';
-
-                    $process = new WFClass ($process);
-                    $process->start (getenv ('Temp') .'/vstmpprj/system/php/WinForms PHP.exe');
+                    run (getenv ('Temp') .'/vstmpprj/system/php/WinForms PHP.exe');
                 }
 
         MenuItem Menu__project_build (text ('Собрать'))
@@ -297,6 +322,7 @@ Form MainForm
             if (file_exists ('system/last_eval.php'))
                 ToolsPanel__EvalEditor->text = file_get_contents ('system/last_eval.php');
 
+            # PropertiesList__List->selectedObject = Designer__Form1Designer->form->selector;
             PropertiesList__List->selectedObject = Designer__Form1Designer->form;
 
             $time = round (microtime (true) - $GLOBALS['__debug']['start_time'], 4);

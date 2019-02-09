@@ -376,13 +376,6 @@ abstract class Control extends Component
     {
         return $this->callMethod ('Focus');
     }
-	
-	public function dispose ()
-	{
-        VoidEngine::removeObject ($this->getProperty ('Controls'));
-
-		parent::dispose ();
-	}
 }
 
 abstract class NoVisual extends Control {}

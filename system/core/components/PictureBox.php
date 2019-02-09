@@ -76,9 +76,9 @@ class PictureBoxImage
 	public function loadFromClipboard ()
 	{
 		if (!isset (self::$clipboard))
-            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
+            self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
 
-        $image = VoidEngine::callMethod (self::$clipboard, 'GetImage');
+        $image = self::$clipboard->getImage ();
         
         VoidEngine::getProperty ($this->pictureBoxSelector, 'Image', $image);
         
@@ -89,11 +89,11 @@ class PictureBoxImage
 	public function saveToClipboard ()
 	{
 		if (!isset (self::$clipboard))
-            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
+            self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
 
         $image = VoidEngine::getProperty ($this->pictureBoxSelector, 'Image');
         
-		VoidEngine::callMethod (self::$clipboard, 'SetImage', $image);
+		self::$clipboard->setImage ($image);
 	}
 }
 

@@ -151,7 +151,7 @@ function c ($name, bool $returnAllSimilarObjects = false)
     }
 }
 
-function run (string $file, int $windowStyle, bool $wait = false)
+/*function run (string $file, int $windowStyle, bool $wait = false)
 {
     static $COM;
 	
@@ -159,6 +159,21 @@ function run (string $file, int $windowStyle, bool $wait = false)
 		$COM = new \COM ('WScript.Shell');
 	
 	return $COM->run ($file, $windowStyle, (int) $wait);
+}*/
+
+function run (string $path)
+{
+    static $process;
+
+    if (!isset ($process))
+    {
+        $process = new WFObject ('System.Diagnostics.Process', 'System');
+        $process->token = 'b77a5c561934e089';
+
+        $process = new WFClass ($process);
+    }
+
+    $process->start ($path);
 }
 
 function replaceSl (string $string): string
@@ -282,8 +297,11 @@ function includeComponent (string $componentName): void
         require_once ENGINE_DIR ."/components/$componentName.php";
 }
 
+// Признано устаревшим
 function getLogicalVarType ($data): string
 {
+    trigger_error ('Function "getLogicalVarType" is deprecated');
+
     if (is_object ($data))
         return 'object';
 
@@ -369,25 +387,25 @@ class Clipboard
     public static function getText (): string
     {
         if (!isset (self::$clipboard))
-            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
+            self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
 
-        return VoidEngine::callMethod (self::$clipboard, 'GetText');
+        return self::$clipboard->getText ();
     }
     
     public static function setText (string $text): void
     {
         if (!isset (self::$clipboard))
-            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
+            self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
 
-        VoidEngine::callMethod (self::$clipboard, 'SetText', $text);
+        self::$clipboard->setText ($text);
     }
     
     public static function getFiles (): array
     {
         if (!isset (self::$clipboard))
-            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
+            self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
 
-        $array = VoidEngine::callMethod (self::$clipboard, 'GetFileDropList');
+        $array = self::$clipboard->getFileDropList ();
         $size  = VoidEngine::getProperty ($arr, 'Count');
         $files = [];
 
@@ -402,14 +420,14 @@ class Clipboard
     public static function setFiles (array $files): void
     {
         if (!isset (self::$clipboard))
-            self::$clipboard = VoidEngine::buildObject (new WFObject ('System.Windows.Forms.Clipboard'));
+            self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
 
-        $collection = VoidEngine::buildObject (new WFObject ('System.Collections.Specialized.StringCollection', 'System'));
+        $collection = VoidEngine::createObject (new WFObject ('System.Collections.Specialized.StringCollection', 'System'));
 
         foreach ($files as $file)
             VoidEngine::callMethod ($collection, 'Add', (string) $file);
 
-        VoidEngine::callMethod (self::$clipboard, 'SetFileDropList', $collection);
+        self::$clipboard->setFileDropList ($collection);
         VoidEngine::removeObject ($collection);
     }
 }
@@ -516,7 +534,12 @@ class Items extends \ArrayObject
 	public function contains (string $value): bool
 	{
 		return VoidEngine::callMethod ($this->selector, 'Contains', $value);
-	}
+    }
+    
+    public function dispose ()
+    {
+        VoidEngine::callMethod ($this->selector, 'Dispose');
+    }
 }
 
 class Icon
@@ -587,33 +610,27 @@ function get_cursor_pos (int $handle = null): array
     return $cursor->getPosition ();
 }
 
-set_error_handler (function ($errno, $errstr = '', $errfile = '', $errline = '', $errcontext = '')
+set_error_handler (function (...$args)
 {
-    file_put_contents (dirname (__DIR__) .'/debug/error_'. (++$GLOBALS['__debug']['error_count']) .'.log', implode ("\n", [
-        'Time lapsed before engine start: '. (string)(round (microtime (true) - $GLOBALS['__debug']['start_time'], 4)) .' seconds',
-        'Error at string: '. $errstr,
-        'Error in file: '. $errfile,
-        'Error at line: '. $errline,
-        'Error context: '. json_encode ($errcontext),
-        'Created components: '. print_r (Components::$components, true)
-    ]));
+    pre ($args);
 
-    $log = text ('Поймана ошибка и сохранена как "error_'. $GLOBALS['__debug']['error_count'] .'.log"');
-    
-    pre ($log);
+    file_put_contents (ENGINE_DIR .'/debug/error_'. (++$GLOBALS['__debug']['error_count']) .'.log', join ("\n", [
+        'Time lapsed before engine start: '. (string)(round (microtime (true) - $GLOBALS['__debug']['start_time'], 4)) .' seconds',
+        'Error at string: '. (isset ($args[1]) ? $args[1] : 'unk'),
+        'Error in file: '. (isset ($args[3]) ? $args[3] : 'unk'),
+        'Error at line: '. (isset ($args[2]) ? $args[2] : 'unk'),
+        'Error context: '. (isset ($args[4]) ? json_encode ($args[4]) : 'unk')
+    ]));
 });
 
-set_exception_handler (function ($exception)
+set_exception_handler (function (...$args)
 {
-    file_put_contents (dirname (__DIR__) .'/debug/exception_'. (++$GLOBALS['__debug']['error_count']) .'.log', implode ("\n", [
-        'Time lapsed before engine start: '. (string)(round (microtime (true) - $GLOBALS['__debug']['start_time'], 4)) .' seconds',
-        'Exception comment: '. $exception,
-        'Created components: '. print_r (Components::$components, true)
-    ]));
+    pre ($args);
 
-    $log = text ('Поймано исключение и сохранено как "exception_'. $GLOBALS['__debug']['error_count'] .'.log"');
-    
-    pre ($log);
+    file_put_contents (ENGINE_DIR .'/debug/exception_'. (++$GLOBALS['__debug']['error_count']) .'.log', join ("\n", [
+        'Time lapsed before engine start: '. (string)(round (microtime (true) - $GLOBALS['__debug']['start_time'], 4)) .' seconds',
+        'Exception comment: '. (isset ($args[0]) ? $args[0] : 'unk')
+    ]));
 });
 
 ?>

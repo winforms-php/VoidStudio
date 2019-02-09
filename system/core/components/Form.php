@@ -17,7 +17,7 @@ class Form extends Control
 	
 	public function get_owner ()
 	{
-		return Components::getComponent ($this->getProperty ('Owner'));
+		return _с($this->getProperty ('Owner'));
 	}
 	
 	public function set_owner (Form $form)
@@ -142,7 +142,7 @@ class Form extends Control
 	
 	public function get_acceptButton ()
 	{
-		return Components::getComponent ($this->getProperty ('AcceptButton'));
+		return _с($this->getProperty ('AcceptButton'));
 	}
 	
 	public function set_acceptButton (Button $button)
@@ -152,7 +152,7 @@ class Form extends Control
 	
 	public function get_cancelButton ()
 	{
-		return Components::getComponent ($this->getProperty ('CancelButton'));
+		return _с($this->getProperty ('CancelButton'));
 	}
 	
 	public function set_cancelButton (Button $button)
@@ -183,13 +183,6 @@ class Form extends Control
 
 		VoidEngine::removeObject ($obj);
 	}
-	
-	public function dispose ()
-	{
-		VoidEngine::removeObject ($this->getProperty ('Icon'));
-
-		parent::dispose ();
-    }
 }
 
 class FormIcon extends Icon
