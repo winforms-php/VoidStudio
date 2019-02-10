@@ -34,7 +34,7 @@ class VoidStudioAPI
 
         $form->caption = text ('Событие "'. $event .'", объект "'. VoidEngine::getProperty ($component, 'Name') .'"');
 
-        $form->show ();
+        $form->showDialog ();
     }
 }
 
@@ -48,7 +48,7 @@ class VoidStudioBuilder
         dir_copy (dirname (ENGINE_DIR), $dir .'/system');
 
         if ($withVoidFramework)
-            dir_delete ($dir .'/system/core');
+            dir_delete ($dir .'/system/engine');
 
         $resourcesDir = null;
 
@@ -69,7 +69,7 @@ class VoidStudioBuilder
             file_put_contents ($dir .'/app/'. $item .'.vlf', VoidStudioBuilder::constructVLF (VoidStudioBuilder::parseObjectsProperties ($designer), $designer, $resourcesDir));
         }
 
-        file_put_contents ($dir .'/app/start.php', "<?php\n\nnamespace VoidEngine;\n\nVLFInterpreter::\$throw_errors = false;\n\nconst APP_DIR = __DIR__;\nchdir (APP_DIR);\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (__DIR__ .'/main.vlf', [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => ". ($useCaching ? 'true' : 'false') ."\n]), ". ($resourcesDir !== null ? 'APP_DIR .\'/resources\'' : 'null') .")['$enteringPoint']);\n\n?>\n");
+        file_put_contents ($dir .'/app/start.php', "<?php\n\nnamespace VoidEngine;\n\nVLFInterpreter::\$throw_errors = false;\n\nconst APP_DIR = __DIR__;\nchdir (APP_DIR);\n\nforeach (glob ('*.vlf') as \$id => \$path)\n\tif ((\$path = basename (\$path)) != 'main.vlf')\n\t\tVLFInterpreter::run (new VLFParser (__DIR__ .'/'. \$path, [\n\t\t\t\t'strong_line_parser'            => false,\n\t\t\t\t'ignore_postobject_info'        => true,\n\t\t\t\t'ignore_unexpected_method_args' => true,\n\n\t\t\t\t'use_caching' => ". ($useCaching ? 'true' : 'false') ."\n\t\t\t]), ". ($resourcesDir !== null ? 'APP_DIR .\'/resources\'' : 'null') .");\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (__DIR__ .'/main.vlf', [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => ". ($useCaching ? 'true' : 'false') ."\n]), ". ($resourcesDir !== null ? 'APP_DIR .\'/resources\'' : 'null') .")['$enteringPoint']);\n\n?>\n");
 
         dir_clean ($dir .'/system/core/debug');
         dir_clean ($dir .'/system/core/extensions/VLF/cache');
@@ -475,99 +475,5 @@ final class WFExportedData
         $this->data = $data;
     }
 }
-
-/*
-
-public class Form_WF_PHP : System.Windows.Forms.Form
-{
-    private System.Windows.Forms.Button Button1549124598227599;
-    private Form_WF_PHP()
-    {
-        this.InitializeComponent();
-    }
-    private void InitializeComponent()
-    {
-        this.Button1549124598227599 = new System.Windows.Forms.Button();
-        this.SuspendLayout();
-        // 
-        // Button1549124598227599
-        // 
-        this.Button1549124598227599.Location = new System.Drawing.Point(0, 0);
-        this.Button1549124598227599.Name = "Button1549124598227599";
-        this.Button1549124598227599.Size = new System.Drawing.Size(75, 23);
-        this.Button1549124598227599.TabIndex = 0;
-        // 
-        // Form1
-        // 
-        this.ClientSize = new System.Drawing.Size(284, 261);
-        this.Controls.Add(this.Button1549124598227599);
-        this.Name = "Form1";
-        this.Text = "Form1";
-        this.ResumeLayout(false);
-    }
-}
-
-this.ListBox1549187752284736.Items.AddRange(new object[] {
-    "1",
-    "2",
-    "3"});
-
-public class Form_WF_PHP : System.Windows.Forms.Form
-{
-    private System.Windows.Forms.TabControl TabControl1549197084431037;
-    private System.Windows.Forms.TabPage ;
-    private System.Windows.Forms.TabPage ;
-    private Form_WF_PHP()
-    {
-        this.InitializeComponent();
-    }
-    private void InitializeComponent()
-    {
-        this.TabControl1549197084431037 = new System.Windows.Forms.TabControl();
-        this. = new System.Windows.Forms.TabPage();
-        this. = new System.Windows.Forms.TabPage();
-        this.TabControl1549197084431037.SuspendLayout();
-        this.SuspendLayout();
-        // 
-        // TabControl1549197084431037
-        // 
-        this.TabControl1549197084431037.Controls.Add(this.);
-        this.TabControl1549197084431037.Controls.Add(this.);
-        this.TabControl1549197084431037.Location = new System.Drawing.Point(0, 0);
-        this.TabControl1549197084431037.Name = "TabControl1549197084431037";
-        this.TabControl1549197084431037.SelectedIndex = 0;
-        this.TabControl1549197084431037.Size = new System.Drawing.Size(200, 100);
-        this.TabControl1549197084431037.TabIndex = 0;
-        // 
-        // 
-        // 
-        this..Location = new System.Drawing.Point(4, 22);
-        this..Name = "";
-        this..Padding = new System.Windows.Forms.Padding(3);
-        this..Size = new System.Drawing.Size(192, 74);
-        this..TabIndex = 0;
-        this..UseVisualStyleBackColor = true;
-        // 
-        // 
-        // 
-        this..Location = new System.Drawing.Point(4, 22);
-        this..Name = "";
-        this..Padding = new System.Windows.Forms.Padding(3);
-        this..Size = new System.Drawing.Size(192, 74);
-        this..TabIndex = 1;
-        this..UseVisualStyleBackColor = true;
-        // 
-        // Form1
-        // 
-        this.ClientSize = new System.Drawing.Size(284, 261);
-        this.Controls.Add(this.TabControl1549197084431037);
-        this.Name = "Form1";
-        this.Text = "Form1";
-        this.TabControl1549197084431037.ResumeLayout(false);
-        this.ResumeLayout(false);
-    }
-}
-
-*/
 
 ?>

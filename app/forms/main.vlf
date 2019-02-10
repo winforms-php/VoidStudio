@@ -19,10 +19,13 @@ Form MainForm
             dock: dsFill
 
     TabPage ToolsPanel__Eval (text ('Выполнение кода'))
-        Scintilla ToolsPanel__EvalEditor
+        FastColoredTextBox ToolsPanel__EvalEditor
             dock: dsFill
 
-            syntax: 'syntax.json'
+            language: langPHP
+            wordWrap: true
+
+            # syntax: 'syntax.json'
 
         Button ToolsPanel__EvalButton
             dock: dsBottom
@@ -51,39 +54,39 @@ Form MainForm
                 
                 PropertyValueChangedEvent:^ function ($self, $args)
                     {
-                        $args        = new PropertyValueChangedEventArgs ($args);
-                        $designer    = VoidStudioAPI::getObjects ('main')['Designer__'. _c(c('Designer__FormsList')->selectedTab)->text .'Designer'];
-                        $objectClass = VoidEngine::callMethod (VoidEngine::callMethod ($self->selectedObject, 'GetType'), 'ToString');
-                        $newValue    = VoidEngine::getProperty ($args->changedItem, 'Value');
+                        // $args        = new PropertyValueChangedEventArgs ($args);
+                        $designer    = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+                        $objectClass = $self->selectedObject->getType ()->toString ();
+                        $newValue    = $args->changedItem->value;
 
-                        if (VoidEngine::getProperty ($args->changedItem, 'Label') == '(Name)')
+                        if ($args->changedItem->label == '(Name)')
                         {
                             if ($objectClass == 'System.Windows.Forms.Form')
                             {
-                                $designer->renameComponent ($self->selectedObject, $args->oldValue, $args->oldValue);
-                                VoidEngine::setProperty ($self->selectedObject, 'Name', $args->oldValue);
+                                $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
+                                $self->selectedObject->name = $args->oldValue;
 
                                 pre (text ('Нельзя переименовывать формы проекта'));
                             }
                             
                             elseif (substr ($newValue, 0, 4) == 'Form')
                                 {
-                                    $designer->renameComponent ($self->selectedObject, $args->oldValue, $args->oldValue);
-                                    VoidEngine::setProperty ($self->selectedObject, 'Name', $args->oldValue);
+                                    $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
+                                    $self->selectedObject->name = $args->oldValue;
 
                                     pre (text ('Объекту нельзя задать название, начинающееся на "Form"'));
                                 }
 
                             else try
                             {
-                                $designer->renameComponent ($self->selectedObject, $newValue, $args->oldValue);
-                                VoidEngine::setProperty ($self->selectedObject, 'Name', $newValue);
+                                $designer->renameComponent ($self->selectedObject->selector, $newValue, $args->oldValue);
+                                $self->selectedObject->name = $newValue;
                             }
 
                             catch (\Throwable $e)
                             {
-                                $designer->renameComponent ($self->selectedObject, $args->oldValue, $args->oldValue);
-                                VoidEngine::setProperty ($self->selectedObject, 'Name', $args->oldValue);
+                                $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
+                                $self->selectedObject->name = $args->oldValue;
 
                                 pre (text ('Произошла ошибка при попытке переименования объекта'));
                             }
@@ -93,7 +96,7 @@ Form MainForm
                             $components->items->clear ();
                             $components->items->addRange (array_keys ($designer->objects));
 
-                            $components->selectedItem = VoidEngine::getProperty ($self->selectedObject, 'Name');
+                            $components->selectedItem = $self->selectedObject->name;
                         }
                     }
 
@@ -105,8 +108,8 @@ Form MainForm
 
                 DoubleClickEvent:^ function ($self)
                     {
-                        if ($event = $self->selected)
-                            VoidStudioAPI::openEventEditor (PropertiesList__List->selectedObject, $event);
+                        if ($event = $self->selectedItem)
+                            VoidStudioAPI::openEventEditor (PropertiesList__List->selectedObject->selector, $event);
                     }
 
             Button EventsList__AddEvent
@@ -117,7 +120,7 @@ Form MainForm
                 
                 ClickEvent:^ function ($self) use (EventsList__ActiveEvents $eventsList)
                     {
-                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. _c(c('Designer__FormsList')->selectedTab)->text .'Designer'];
+                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
                         $selected = VoidEngine::callMethod ($designer->selector, 'GetSelectedComponents');
 
                         if ($selected !== null && VoidEngine::getProperty ($selected, 'Length') > 1)
@@ -125,7 +128,8 @@ Form MainForm
 
                         else
                         {
-                            $events = array_diff (EngineAdditions::getObjectEvents ($object = PropertiesList__List->selectedObject), $eventsList->items->names);
+                            $events = array_diff (EngineAdditions::getObjectEvents ($object = PropertiesList__List->selectedObject->selector), $eventsList->items->names);
+                            sort ($events);
 
                             $menu = new ContextMenu;
                             $menu->items->addRange (array_map (function ($name) use ($object, $eventsList)
@@ -142,7 +146,7 @@ Form MainForm
                                 return $item;
                             }, $events));
 
-                            $menu->show (MainForm->selector, (new WFClass ('System.Windows.Forms.Cursor'))->position);
+                            $menu->show (MainForm->selector, (new WFClass ('System.Windows.Forms.Cursor'))->position->selector);
                         }
                     }
 
@@ -162,18 +166,18 @@ Form MainForm
                 {
                     $item = $self->selectedItem;
 
-                    $propertyGrid->selectedObject = VoidStudioAPI::getObjects ('main')['Designer__'. _c(c('Designer__FormsList')->selectedTab)->text .'Designer']->getComponentByName ($item);
+                    $propertyGrid->selectedObject = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer']->getComponentByName ($item);
                 }
 
             SelectionChangeCommittedEvent:^ function ($self)
                 {
-                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. _c(c('Designer__FormsList')->selectedTab)->text .'Designer'];
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
                     
                     $designer->setSelectedComponents ($designer->getComponentByName ($self->selectedItem));
                 }
 
     TabPage Designer__Form1 (text ('Form1'))
-        VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents)
+        # VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents)
 
     TabControl Designer__FormsList (ToolsPanel__Container->panel1)
         dock: dsFill
@@ -182,18 +186,18 @@ Form MainForm
 
         SelectedIndexChangedEvent:^ function ($self) use (PropertiesPanel__SelectedComponent $components)
             {
-                $designer = VoidStudioAPI::getObjects ('main')['Designer__'. ($tab = _c($self->selectedTab)->text) .'Designer'];
+                $designer = VoidStudioAPI::getObjects ('main')['Designer__'. ($tab = $self->selectedTab->text) .'Designer'];
                 $designer->focus ();
 
                 $components->items->clear ();
                 $components->items->addRange (array_keys ($designer->objects));
 
                 $components->selectedItem = $tab;
-                # $designer->setSelectedComponents ($designer->form->selector);
-                $designer->setSelectedComponents ($designer->form);
+                $designer->setSelectedComponents ($designer->form->selector);
+                # $designer->setSelectedComponents ($designer->form);
             }
 
-    # VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
+    VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
 
     ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
         width: 216
@@ -209,7 +213,7 @@ Form MainForm
 
         DoubleClickEvent:^ function ($self) use (Designer__FormsList $formsList)
             {
-                $form      = _c($formsList->selectedTab)->text;
+                $form      = $formsList->selectedTab->text;
                 $component = _c($self->selectedItems[0])->text;
                 $designer  = VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer'];
 
@@ -220,8 +224,8 @@ Form MainForm
                         ++$i;
 
                     $page     = new TabPage ($form);
-                    # $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, $formsList);
-                    $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents);
+                    $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, $formsList);
+                    # $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents);
 
                     VoidStudioAPI::addObjects ('main', ['Designer__'. $form .'Designer' => $designer]);
 
@@ -229,8 +233,8 @@ Form MainForm
                     $formsList->selectedTab = $page->selector;
 
                     $name     = $page->text;
-                    # $selector = $designer->form->selector;
-                    $selector = $designer->form;
+                    $selector = $designer->form->selector;
+                    # $selector = $designer->form;
                 }
 
                 else
@@ -239,7 +243,7 @@ Form MainForm
                     while (isset ($designer->objects[$name = $component . $i]))
                         ++$i;
 
-                    $selector = $designer->createComponent (new WFObject ("System.Windows.Forms.$component"), $name);
+                    $selector = $designer->createComponent (new ObjectType ("System.Windows.Forms.$component"), $name);
 
                     try
                     {
@@ -296,7 +300,7 @@ Form MainForm
                 {
                     VoidStudioBuilder::buildProject (getenv ('Temp') .'/vstmpprj', Designer__FormsList->items->names[0]);
 
-                    run (getenv ('Temp') .'/vstmpprj/system/php/WinForms PHP.exe');
+                    run (getenv ('Temp') .'/vstmpprj/system/core/WinForms PHP.exe');
                 }
 
         MenuItem Menu__project_build (text ('Собрать'))
@@ -322,8 +326,8 @@ Form MainForm
             if (file_exists ('system/last_eval.php'))
                 ToolsPanel__EvalEditor->text = file_get_contents ('system/last_eval.php');
 
-            # PropertiesList__List->selectedObject = Designer__Form1Designer->form->selector;
-            PropertiesList__List->selectedObject = Designer__Form1Designer->form;
+            PropertiesList__List->selectedObject = Designer__Form1Designer->form->selector;
+            # PropertiesList__List->selectedObject = Designer__Form1Designer->form;
 
             $time = round (microtime (true) - $GLOBALS['__debug']['start_time'], 4);
 

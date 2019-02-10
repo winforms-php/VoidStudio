@@ -7,10 +7,13 @@ Form MainForm
 
     ->icon->loadFromFile (APP_DIR .'/Icon.ico')
 
-    Scintilla Editor
+    FastColoredTextBox Editor
         dock: dsFill
 
-        syntax: 'syntax.json'
+        language: langPHP
+        wordWrap: true
+
+        # syntax: 'syntax.json'
 
     Button SaveButton
         dock: dsBottom
