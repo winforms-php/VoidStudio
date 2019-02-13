@@ -40,7 +40,7 @@ class VoidStudioAPI
 
 class VoidStudioBuilder
 {
-    static function buildProject (string $dir, string $enteringPoint, bool $withVoidFramework = false, bool $exportResources = false, bool $useCaching = false)
+    static function buildProject (string $dir, string $enteringPoint, bool $withVoidFramework = false, bool $exportResources = false, bool $useCaching = false, bool $precompileVLF = false)
     {
         dir_clean ($dir .'/system');
         dir_clean ($dir .'/app');
@@ -75,7 +75,7 @@ class VoidStudioBuilder
         dir_clean ($dir .'/system/core/extensions/VLF/cache');
     }
 
-    static function compileProject (string $save, string $enteringPoint, bool $withVoidFramework = false)
+    static function compileProject (string $save, string $enteringPoint, bool $withVoidFramework = false, bool $precompileVLF = false)
     {
         $vlfImports = '';
 
@@ -99,7 +99,7 @@ class VoidStudioBuilder
                 ''
             ],
             
-            "\$code = <<<'CODE'\n\n". ($withVoidFramework ? "define ('FRAMEWORK_DIR', getenv ('AppData') .'\VoidFramework');\n\nif (file_exists (FRAMEWORK_DIR .'/core/VoidEngine.php'))\n\trequire FRAMEWORK_DIR .'/core/VoidEngine.php';\n\nelse message ('VoidEngine not founded');" : VoidStudioBuilder::generateCode ()) ."\n\nCODE;\n\n@eval (\$code);\n\nset_error_handler (function (...\$args) {pre (\$args);});\set_exception_handler (function (...\$args) {pre (\$args);});\n\n$vlfImports\n\nVLFInterpreter::\$throw_errors = false;\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (\$vlf, [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => false\n]))['$enteringPoint']);"
+            "\$code = <<<'CODE'\n\n". ($withVoidFramework ? "define ('FRAMEWORK_DIR', getenv ('AppData') .'\VoidFramework');\n\nif (file_exists (FRAMEWORK_DIR .'/core/VoidEngine.php'))\n\trequire FRAMEWORK_DIR .'/core/VoidEngine.php';\n\nelse message ('VoidEngine not founded');" : VoidStudioBuilder::generateCode ()) ."\n\nCODE;\n\n@eval (\$code);\n\n$vlfImports\n\nVLFInterpreter::\$throw_errors = false;\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (\$vlf, [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => false\n]))['$enteringPoint']);"
         ));
 
         // file_put_contents (dirname ($save) .'/tmp.php', $code);
@@ -197,7 +197,7 @@ class VoidStudioBuilder
                         switch ($object)
                         {
                             case 'System.Drawing.Font':
-                                $value = '['. $args[0] .', '. preg_replace ('/[^0-9\.]/i', '', $args[1]) .']';
+                                $value = '['. $args[0] .', '. preg_replace ('/[^0-9\.]/i', '', $args[1]) . (isset ($args[2]) ? (', \''. preg_replace ('/[^a-z]/i', '', substr ($args[2], strrpos ($args[2], '.') + 1)) .'\'') : '') .']';
                             break;
 
                             case 'System.Windows.Forms.Padding':

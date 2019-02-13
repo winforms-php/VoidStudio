@@ -23,20 +23,27 @@ class Component extends WFObject
     {
         return [
             'description' => $this->callMethod ('ToString'),
-            'objectInfo'  => json_encode ((array)($this), JSON_PRETTY_PRINT)
+            'objectInfo'  => json_encode ($this, JSON_PRETTY_PRINT)
         ];
     }
-	
-	public function dispose (): void
-	{
-        if (isset ($this->selector) && is_int ($this->selector))
-        {
-            $this->callMethod ('Dispose');
 
-            VoidEngine::removeObject ($this->selector);
+    public function __unset ($name)
+    {
+        if (isset ($this->$name))
+        {
+            if (is_int ($this->$name) && VoidEngine::objectExists ($this->$name))
+                VoidEngine::removeObject ($this->$name);
+
+            elseif ($this->$name instanceof Component)
+                $this->$name->dispose ();
         }
 
-        foreach ((array)($this) as $param => $value)
+        unset ($this->$name);
+    }
+
+    public function dispose (): void
+	{
+        foreach (get_object_vars ($this) as $param => $value)
             if (isset ($this->$param))
             {
                 if (is_int ($value) && VoidEngine::objectExists ($value))
@@ -44,9 +51,9 @@ class Component extends WFObject
 
                 elseif ($value instanceof Items)
                 {
-                    VoidEngine::removeObject (...$value->list);
-
-                    $item->dispose ();
+                    $value->clear ();
+                    
+                    VoidEngine::removeObject ($value->selector);
                 }
 
                 elseif ($value instanceof Component)
@@ -54,6 +61,8 @@ class Component extends WFObject
 
                 unset ($this->$param);
             }
+
+        Components::cleanJunk ();
     }
 }
 

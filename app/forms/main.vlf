@@ -106,6 +106,16 @@ Form MainForm
 
                 font: ['Microsoft Sans Serif', 10]
 
+                KeyDownEvent:^ function ($self, $args)
+                    {
+                        if ($args->keycode == 46 && ($event = $self->selectedItem))
+                        {
+                            Events::removeObjectEvent (PropertiesList__List->selectedObject->selector, $event);
+
+                            $self->items->remove ($self->items->indexOf ($event));    
+                        }
+                    }
+
                 DoubleClickEvent:^ function ($self)
                     {
                         if ($event = $self->selectedItem)
@@ -198,6 +208,18 @@ Form MainForm
             }
 
     VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
+        #^ ComponentAddedEvent:^ function ($self, $args)
+            {
+                $components = c('PropertiesPanel__SelectedComponent');
+
+                $components->items->clear ();
+                $components->items->addRange (array_keys ($self->objects));
+
+                $components->selectedItem = $GLOBALS['new_component'];
+                $self->setSelectedComponents ($args->component);
+
+                unset ($GLOBALS['new_component']);
+            }
 
     ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
         width: 216
@@ -210,6 +232,24 @@ Form MainForm
         view: vwDetails
 
         ->columns->add (ComponentsNamesColumn)
+
+        #^ ClickEvent:^ function ($self) use (Designer__FormsList $formsList)
+            {
+                $component = _c($self->selectedItems[0])->text;
+
+                if ($component != 'Form')
+                {
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $formsList->selectedTab->text .'Designer'];
+
+                    $designer->setTypeForCreationOnClick (VoidEngine::objectType (new ObjectType ("System.Windows.Forms.$component")));
+
+                    $i = 1;
+                    while (isset ($designer->objects[$name = $component . $i]))
+                        ++$i;
+
+                    $GLOBALS['new_component'] = $name;
+                }
+            }
 
         DoubleClickEvent:^ function ($self) use (Designer__FormsList $formsList)
             {

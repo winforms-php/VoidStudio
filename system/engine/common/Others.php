@@ -410,6 +410,10 @@ class Items extends \ArrayObject
                 
                 return $names;
             break;
+
+            case 'selector':
+                return $this->selector;
+            break;
 		}
     }
 	
@@ -468,11 +472,6 @@ class Items extends \ArrayObject
 	public function contains ($value): bool
 	{
 		return VoidEngine::callMethod ($this->selector, 'Contains', $value instanceof WFObject ? $value->selector : $value);
-    }
-    
-    public function dispose ()
-    {
-        VoidEngine::callMethod ($this->selector, 'Dispose');
     }
 }
 

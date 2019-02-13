@@ -39,7 +39,9 @@ class Control extends Component
         $obj = new ObjectType ('System.Drawing.Font');
         $obj->token = 'b03f5f7f11d50a3a';
 
-        $obj = VoidEngine::createObject ($obj, $font[0], [$font[1], 'float']);
+        $obj = isset ($font[2]) ?
+            VoidEngine::createObject ($obj, $font[0], [$font[1], 'float'], [$font[2], 'System.Drawing.FontStyle, System.Drawing']) :
+            VoidEngine::createObject ($obj, $font[0], [$font[1], 'float']);
         
 		$this->setProperty ('Font', $obj);
     }

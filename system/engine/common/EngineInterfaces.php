@@ -18,7 +18,9 @@ class VoidEngine
 
     static function createObject (ObjectType $object, ...$args): int
     {
-        return winforms_objectcreate ($object->getResourceLine (), ...$args);
+        return $object->extended ?
+            winforms_objectcreate ($object->getResourceLine (), null, ...$args) :
+            winforms_objectcreate (...$object->getResourceLine (), ...$args);
     }
 
     /**
@@ -51,7 +53,9 @@ class VoidEngine
 
     static function createClass (ObjectType $object): int
     {
-        return winforms_objectget ($object->getResourceLine ());
+        return $object->extended ?
+            winforms_objectget ($object->getResourceLine (), null) :
+            winforms_objectget (...$object->getResourceLine ());
     }
 
     /**
@@ -90,7 +94,9 @@ class VoidEngine
         elseif (!is_string ($object))
             return false;
 
-        return winforms_typeof ($object);
+        return is_array ($object) ?
+            winforms_typeof (...$object) :
+            winforms_typeof ($object);
     }
 
     /**
@@ -216,7 +222,7 @@ class VoidEngine
     static function setObjectEvent (int $selector, string $eventName, string $code = ''): void
     {
         if (self::eventExists ($selector, $eventName))
-            self::removeEvent ($selector, $eventName);
+            self::removeObjectEvent ($selector, $eventName);
 
         try
         {
@@ -257,13 +263,13 @@ class VoidEngine
      * 
      * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
-     * VoidEngine::removeEvent ($selector, 'Click');
+     * VoidEngine::removeObjectEvent ($selector, 'Click');
      * 
      * var_dump ($selector, 'Click'); // false
      * 
      */
 
-    static function removeEvent (int $selector, string $eventName): void
+    static function removeObjectEvent (int $selector, string $eventName): void
     {
         winforms_delevent ($selector, $eventName);
 
@@ -344,6 +350,8 @@ class EngineAdditions
 
     static function getObjectProperties (int $selector, bool $extended = false): array
     {
+        trigger_error ('Function "EngineAdditions::getObjectProperties" is depricated');
+
         $properties = [];
 
         $type  = VoidEngine::callMethod ($selector, 'GetType');
@@ -352,10 +360,8 @@ class EngineAdditions
 
         for ($i = 0; $i < $len; ++$i)
         {
-            $index = VoidEngine::getArrayValue ($props, $i);
-            $name  = VoidEngine::getProperty ($index, 'Name');
-
-            $property = self::getProperty ($selector, $name);
+            $name     = VoidEngine::getProperty (VoidEngine::getArrayValue ($props, $i), 'Name');
+            $property = VoidEngine::getProperty ($selector, $name);
 
             $properties[$name] = $extended ?
                 $property : $property['value'];
@@ -364,7 +370,7 @@ class EngineAdditions
         return $properties;
     }
 
-    static function getProperty (int $selector, string $name)
+    static function getProperty (int $selector, string $name): array
     {
         $type     = VoidEngine::callMethod ($selector, 'GetType');
         $property = VoidEngine::callMethod ($type, 'GetProperty', $name);
@@ -437,7 +443,7 @@ class EngineAdditions
         ];
     }
 
-    static function getObjectEvents (int $object)
+    static function getObjectEvents (int $object): array
     {
         $events = [];
 
@@ -446,12 +452,7 @@ class EngineAdditions
         $len   = VoidEngine::getProperty ($props, 'Length');
 
         for ($i = 0; $i < $len; ++$i)
-        {
-            $index = VoidEngine::getArrayValue ($props, $i);
-            $name  = VoidEngine::getProperty ($index, 'Name');
-
-            $events[] = $name;
-        }
+            $events[] = VoidEngine::getProperty (VoidEngine::getArrayValue ($props, $i), 'Name');
 
         return $events;
     }
@@ -459,6 +460,8 @@ class EngineAdditions
 
 class ObjectType
 {
+    public $extended = false;
+
     public $version  = '4.0.0.0';
     public $culture  = 'neutral';
     public $token    = 'b77a5c561934e089';
@@ -479,24 +482,29 @@ class ObjectType
             $this->classGroup = substr ($this->className, 0, strrpos ($this->className, '.'));
     }
 
-    public function getResourceLine (): string
+    public function getResourceLine ()
     {
-        if ($this->onlyClassInfo)
-            return $this->classGroup ?
-                $this->className .', '. $this->classGroup :
-                $this->className;
+        if ($this->extended)
+        {
+            if ($this->onlyClassInfo)
+                return $this->classGroup ?
+                    $this->className .', '. $this->classGroup :
+                    $this->className;
 
-        $postArgs = '';
-        $line     = $this->className;
+            $postArgs = '';
+            $line     = $this->className;
 
-        if (isset ($this->postArgs) && is_array ($this->postArgs))
-            foreach ($this->postArgs as $name => $value)    
-                $postArgs .= ", $name=$value";
+            if (isset ($this->postArgs) && is_array ($this->postArgs))
+                foreach ($this->postArgs as $name => $value)    
+                    $postArgs .= ", $name=$value";
 
-        if ($this->classGroup)
-            $line .= ', '. $this->classGroup;
+            if ($this->classGroup)
+                $line .= ', '. $this->classGroup;
 
-        return $line .', Version='. $this->version .', Culture='. $this->culture .', PublicKeyToken='. $this->token .$postArgs;
+            return $line .', Version='. $this->version .', Culture='. $this->culture .', PublicKeyToken='. $this->token .$postArgs;
+        }
+
+        else return [$this->className, $this->classGroup];
     }
 }
 
@@ -523,7 +531,7 @@ class WFObject
         if (method_exists ($this, $method = "get_$name"))
             $value = $this->$method ();
             
-        elseif (substr ($name, strlen ($name) - 5) == 'Event')
+        elseif (substr ($name, -5) == 'Event')
             $value = Events::getObjectEvent ($this->selector, substr ($name, 0, -5));
 
         elseif (property_exists ($this, $name))
@@ -531,10 +539,8 @@ class WFObject
         
         else $value = $this->getProperty ($name);
 
-        if (is_int ($value) && VoidEngine::objectExists ($value) && $value != $this->selector)
-            $value = new WFObject ($value);
-
-        return $value;
+        return is_int ($value) && VoidEngine::objectExists ($value) && $value != $this->selector ?
+            new WFObject ($value) : $value;
 	}
 	
 	public function __set ($name, $value)
@@ -551,30 +557,24 @@ class WFObject
                     $this->$method ($value->selector) : null;
             }
 
-        elseif (substr ($name, strlen ($name) - 5) == 'Event')
+        elseif (substr ($name, -5) == 'Event')
             Events::setObjectEvent ($this->selector, substr ($name, 0, -5), $value);
         
-        else try
-        {
-            $this->setProperty ($name, $value);
-        }
-
-        catch (\Throwable $e)
-        {
-            $value instanceof WFObject ?
-                $this->setProperty ($name, $value->selector) :
-                $this->setProperty ($name, (string) $value);
-        }
+        else $this->setProperty ($name, $value instanceof WFObject ? $value->selector : $value);
 	}
 	
 	public function __call ($method, $args)
 	{
+        array_map (function ($arg)
+        {
+            return $arg instanceof WFObject ?
+                $arg->selector : $arg;
+        }, $args);
+
         $value = $this->callMethod ($method, ...$args);
 
-        if (is_int ($value) && VoidEngine::objectExists ($value))
-            $value = new WFObject ($value);
-
-        return $value;
+        return is_int ($value) && VoidEngine::objectExists ($value) ?
+            new WFObject ($value) : $value;
 	}
 	
     protected function getProperty ($name)
@@ -619,7 +619,10 @@ class WFClass extends WFObject
         elseif (is_string ($class))
             $this->selector = VoidEngine::createClass (new ObjectType ($class, $classGroup, $onlyClassInfo));
 
-        else throw new \Exception ('$class parameter must be instance of "VoidEngine\ObjectType" or be string');
+        elseif (is_int ($object) && VoidEngine::objectExists ($object))
+            $this->selector = $object;
+
+        else throw new \Exception ('$class parameter must be instance of "VoidEngine\ObjectType", be string or class selector');
     }
 }
 

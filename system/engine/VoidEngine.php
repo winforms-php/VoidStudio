@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     build-2019/02/10 (state-y/m/d)
+ * @version     build-2019/02/13 (state-y/m/d)
  * 
  * Contacts:
  *
@@ -35,6 +35,11 @@ chdir (ENGINE_DIR);
 $GLOBALS['__debug'] = [
     'start_time' => microtime (true)
 ];
+
+$GLOBALS['__message_handler'] = function (...$args)
+{
+    throw new \Exception ($args);
+};
 
 require 'common/EngineInterfaces.php';
 require 'common/Globals.php';

@@ -1,5 +1,5 @@
 Form MainForm
-    size: [340, 286]
+    size: [340, 316]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
     formBorderStyle: fbsToolWindow
@@ -40,20 +40,28 @@ Form MainForm
 
         checked: true
 
-    CheckBox ResourcesExporting
+    CheckBox PrecompileVLF
         bounds: [16, 152, 220, 24]
+        caption: text ('Прекомпилировать VLF')
+
+        checked: false
+
+        ClickEvent: function ($self) {pre ('Work In Progress');}
+
+    CheckBox ResourcesExporting
+        bounds: [16, 176, 220, 24]
         caption: text ('Экспортировать ресурсы')
 
         checked: true
 
     CheckBox UsingVoidFramework
-        bounds: [16, 176, 220, 24]
+        bounds: [16, 200, 220, 24]
         caption: text ('Сборка под VoidFramework')
 
         checked: false
 
     Button BuildProject
-        bounds: [16, 208, 104, 32]
+        bounds: [16, 240, 104, 32]
         flatStyle: flSystem
 
         caption: text ('Собрать')
@@ -69,7 +77,7 @@ Form MainForm
                 {
                     file_put_contents ('system/build_path', $dir);
 
-                    VoidStudioBuilder::buildProject ($dir, FormSelection->selectedItem, UsingVoidFramework->checked, ResourcesExporting->checked, UseCaching->checked);
+                    VoidStudioBuilder::buildProject ($dir, FormSelection->selectedItem, UsingVoidFramework->checked, ResourcesExporting->checked, UseCaching->checked, PrecompileVLF->checked);
 
                     pre (text ('Проект успешно собран'));
                     MainForm->hide ();
@@ -79,7 +87,7 @@ Form MainForm
             }
 
     Button CompileProject
-        bounds: [128, 208, 144, 32]
+        bounds: [128, 240, 144, 32]
         flatStyle: flSystem
 
         caption: text ('Компилировать')
@@ -96,7 +104,7 @@ Form MainForm
                 {
                     file_put_contents ('system/compile_path', $save);
 
-                    VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, UsingVoidFramework->checked);
+                    VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, UsingVoidFramework->checked, PrecompileVLF->checked);
 
                     pre (text ('Проект успешно скомпилирован'));
                     MainForm->hide ();
