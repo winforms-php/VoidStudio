@@ -10,7 +10,7 @@ class VoidEngine
      * @param object - объект конфигурации
      * [@param args - список аргументов создания]
      * 
-     * @return selector - возвращает указатель на созданный объект
+     * @return int - возвращает указатель на созданный объект
      * 
      * VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * 
@@ -45,7 +45,7 @@ class VoidEngine
      * 
      * @param object - объект конфигурации класса
      * 
-     * @return selector - возвращает указатель на созданный объект
+     * @return int - возвращает указатель на созданный объект
      * 
      * VoidEngine::createClass (new ObjectType ('System.Windows.Forms.MessageBox'));
      * 
@@ -63,7 +63,7 @@ class VoidEngine
      * 
      * @param selector - указатель на проверяемый объект
      * 
-     * @return exists - возвращает true, если объект существует, и false в противном случае
+     * @return bool - возвращает true, если объект существует, и false в противном случае
      * 
      * $button = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * VoidEngine::removeObject ($button);
@@ -82,7 +82,7 @@ class VoidEngine
      * 
      * @param object - объект конфигурации или полное название объекта
      * 
-     * @return type - возвращает указатель на объект типа объекта или false в случае ошибки
+     * @return mixed - возвращает указатель на объект типа объекта или false в случае ошибки
      * 
      */
 
@@ -108,7 +108,7 @@ class VoidEngine
      * @param propertyName может быть передан с указанием на тип возвращаемого значения через структуру вида
      * [название свойства, возвращаемый им тип]
      * 
-     * @return property - возвращает свойство объекта
+     * @return mixed - возвращает свойство объекта
      * 
      * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * 
@@ -153,7 +153,7 @@ class VoidEngine
      * @param methodName так же может быть передан с указанием на тип возвращаемого методом значения через структуру вида
      * [название метода, возвращаемый им тип]
      * 
-     * @return result - возвращает результат выполнения метода
+     * @return mixed - возвращает результат выполнения метода
      * 
      * $selector = VoidEngine::createClass (new ObjectType ('System.Windows.Forms.MessageBox'));
      * 
@@ -178,7 +178,7 @@ class VoidEngine
      * @param index так же может быть передан с указанием на тип возвращаемого значения через структуру вида
      * [индекс, возвращаемый тип]
      * 
-     * @return value - возвращает значение массива
+     * @return mixed - возвращает значение массива
      * 
      */
 
@@ -243,6 +243,8 @@ class VoidEngine
      * @param selector - указатель на объект
      * @param eventName - название события
      * 
+     * @return bool - возвращает true в случае существования события
+     * 
      * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
      * 
@@ -281,7 +283,7 @@ class VoidEngine
      * 
      * @param data - сериализированные данные ядра
      * 
-     * @return selector - возвращает указатель на импортированный объект
+     * @return int - возвращает указатель на импортированный объект
      * 
      */
 
@@ -295,7 +297,7 @@ class VoidEngine
      * 
      * @param selector - указатель на объект
      * 
-     * @return data - возвращает сериализованные данные объекта
+     * @return string - возвращает сериализованные данные объекта
      * 
      */
 
