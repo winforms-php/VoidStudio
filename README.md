@@ -3,8 +3,9 @@
 <p align="center">Графическая оболочка для <b>PHP</b> на <b>.NET Framework</b> - <b>Windows Forms</b></p>
 
 <p align="center">
-  <img src="https://travis-ci.org/KRypt0nn/WinForms-PHP.svg?branch=master">
-  <img src="https://coveralls.io/repos/github/KRypt0nn/WinForms-PHP/badge.svg?branch=master">
+  <a href="https://scrutinizer-ci.com/g/KRypt0nn/WinForms-PHP/?branch=master"><img src="https://scrutinizer-ci.com/g/KRypt0nn/WinForms-PHP/badges/quality-score.png?b=master"></a>
+  <a href="https://scrutinizer-ci.com/g/KRypt0nn/WinForms-PHP/build-status/master"><img src="https://scrutinizer-ci.com/g/KRypt0nn/WinForms-PHP/badges/build.png?b=master"></a>
+  <a href="https://scrutinizer-ci.com/code-intelligence"><img src="https://scrutinizer-ci.com/g/KRypt0nn/WinForms-PHP/badges/code-intelligence.svg?b=master"></a>
   <a href="license.txt"><img src="https://badges.frapsoft.com/os/gpl/gpl.png?v=103"></a>
 </p><br><br>
 
