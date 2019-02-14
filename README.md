@@ -1,7 +1,7 @@
 <h1><img align="center" src="https://i.postimg.cc/vmzzn9PX/e-Iqnn3-Zx-Ptw.jpg">WinForms PHP</h1>
 <p align="center">Графическая оболочка для <b>PHP</b> на <b>.NET Framework</b> - <b>Windows Forms</b></p>
 
-[![Build Status](https://travis-ci.org/KRypt0nn/WinForms-PHP.svg?branch=master)](https://travis-ci.org/KRypt0nn/WinForms-PHP)
+<p align="center"><img src="https://travis-ci.org/KRypt0nn/WinForms-PHP.svg?branch=master"></p><br><br>
 
 ## Установка
 
