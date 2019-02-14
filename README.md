@@ -1,7 +1,12 @@
-<h1><img align="center" src="https://i.postimg.cc/vmzzn9PX/e-Iqnn3-Zx-Ptw.jpg">WinForms PHP</h1>
+<h1 align="center"><img align="center" src="https://pp.userapi.com/c846219/v846219787/15f9a8/eIqnn3ZxPtw.jpg" height="300px">WinForms PHP</h1>
+
 <p align="center">Графическая оболочка для <b>PHP</b> на <b>.NET Framework</b> - <b>Windows Forms</b></p>
 
-<p align="center"><img src="https://travis-ci.org/KRypt0nn/WinForms-PHP.svg?branch=master"></p><br><br>
+<p align="center">
+  <img src="https://travis-ci.org/KRypt0nn/WinForms-PHP.svg?branch=master">
+  <img src="https://coveralls.io/repos/github/KRypt0nn/WinForms-PHP/badge.svg?branch=master">
+  <a href="license.txt"><img src="https://badges.frapsoft.com/os/gpl/gpl.png?v=103"></a>
+</p><br><br>
 
 ## Установка
 
