@@ -69,17 +69,16 @@ function dir_copy (string $from, string $to): bool
 
     $files = array_slice (scandir ($from), 2);
 
-    if (is_array ($files))
-        foreach ($files as $id => $file)
-            if (is_dir ("$from/$file"))
-            {
-                if (!is_dir ("$to/$file"))
-                    mkdir ("$to/$file");
+    foreach ($files as $id => $file)
+        if (is_dir ("$from/$file"))
+        {
+            if (!is_dir ("$to/$file"))
+                mkdir ("$to/$file");
 
-                dir_copy ("$from/$file", "$to/$file");
-            }
+            dir_copy ("$from/$file", "$to/$file");
+        }
 
-            else copy ("$from/$file", "$to/$file");
+        else copy ("$from/$file", "$to/$file");
 
     return true;
 }
@@ -280,7 +279,7 @@ function c ($name, bool $returnAllSimilarObjects = false)
 
 function setTimer (int $interval, $function): Timer
 {
-	$timer = new Timer;
+    $timer = new Timer;
     $timer->interval = $interval;
     
     $timer->tickEvent = function ($self) use ($function)
@@ -297,7 +296,7 @@ function setTimer (int $interval, $function): Timer
 
 function setTimeout (int $interval, $function): Timer
 {
-	$timer = new Timer;
+    $timer = new Timer;
     $timer->interval = $interval;
     
     $timer->tickEvent = function ($self) use ($function)
@@ -340,11 +339,11 @@ class Clipboard
             self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
 
         $array = self::$clipboard->getFileDropList ();
-        $size  = VoidEngine::getProperty ($arr, 'Count');
+        $size  = VoidEngine::getProperty ($array, 'Count');
         $files = [];
 
         for ($i = 0; $i < $size; ++$i)
-            $files[] = VoidEngine::getArrayValue ($arr, $i);
+            $files[] = VoidEngine::getArrayValue ($array, $i);
 
         VoidEngine::removeObject ($array);
 
@@ -419,12 +418,12 @@ class Items extends \ArrayObject
 	
 	public function add ($value)
 	{
-		return $this->offsetSet (null, $value);
+		$this->offsetSet (null, $value);
 	}
 	
 	public function append ($value)
 	{
-		return $this->offsetSet (null, $value);
+		$this->offsetSet (null, $value);
 	}
 	
 	public function offsetSet ($index, $value)
@@ -466,7 +465,7 @@ class Items extends \ArrayObject
 	
 	public function insert ($index, $value)
 	{
-		return $this->offsetSet ($index, $value);
+		$this->offsetSet ($index, $value);
 	}
 	
 	public function contains ($value): bool

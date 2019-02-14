@@ -40,6 +40,8 @@ class VoidStudioAPI
 
 class VoidStudioBuilder
 {
+    // TODO: настроить использование $precompileVLF
+    
     static function buildProject (string $dir, string $enteringPoint, bool $withVoidFramework = false, bool $exportResources = false, bool $useCaching = false, bool $precompileVLF = false)
     {
         dir_clean ($dir .'/system');
@@ -110,7 +112,6 @@ class VoidStudioBuilder
         $code = $designer->getSharpCode ();
 
         $lines              = explode ("\n", $code);
-        $size               = sizeof ($lines);
         $current_object     = null;
         $current_object_len = 0;
         $objects            = [];
@@ -165,19 +166,6 @@ class VoidStudioBuilder
 
                         $objects[$current_object][$property] = $collect;
                     }
-
-                    /*{
-                        $collect = [];
-
-                        for ($i = $id + 1; $i < $size && substr ($lines[$i] = trim ($lines[$i]), strlen ($lines[$i]) - 3) != '});'; ++$i)
-                            $collect[] = substr ($lines[$i], 0, -1);
-
-                        if (strlen ($tmp = substr ($lines[$i], 0, -3)) > 0)
-                            $collect[] = $tmp;
-
-                        $id = $i;
-                        $objects[$current_object][$property] = $value;
-                    }*/
                 
                     continue;
                 }
@@ -217,8 +205,6 @@ class VoidStudioBuilder
                 {
                     if (substr ($value, strlen ($value) - 1) == ';')
                         $value = substr ($value, 0, -1);
-
-                    // ((System.Drawing.Icon)(resources.GetObject("$this.Icon")))
 
                     if (strpos ($value, ')(resources.GetObject("') !== false)
                     {

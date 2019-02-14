@@ -7,8 +7,8 @@ class VoidEngine
     /**
      * * Создание объекта
      * 
-     * @param object - объект конфигурации
-     * [@param args - список аргументов создания]
+     * @param ObjectType object - объект конфигурации
+     * [@param mixed args = []] - список аргументов создания
      * 
      * @return int - возвращает указатель на созданный объект
      * 
@@ -26,7 +26,7 @@ class VoidEngine
     /**
      * * Удаление объекта
      * 
-     * @param selectors - список указателей для удаления
+     * @param int selectors - список указателей для удаления
      * 
      * $button_1 = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * $button_2 = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
@@ -61,7 +61,7 @@ class VoidEngine
     /**
      * * Проверка объекта на существование
      * 
-     * @param selector - указатель на проверяемый объект
+     * @param int selector - указатель на проверяемый объект
      * 
      * @return bool - возвращает true, если объект существует, и false в противном случае
      * 
@@ -80,7 +80,7 @@ class VoidEngine
     /**
      * * Создание экземпляра типа объекта
      * 
-     * @param object - объект конфигурации или полное название объекта
+     * @param mixed object - объект конфигурации или полное название объекта
      * 
      * @return mixed - возвращает указатель на объект типа объекта или false в случае ошибки
      * 
@@ -96,16 +96,16 @@ class VoidEngine
 
         return is_array ($object) ?
             winforms_typeof (...$object) :
-            winforms_typeof ($object);
+            winforms_typeof ($object, null);
     }
 
     /**
      * * Получение свойства объекта
      * 
-     * @param selector - указатель на объект
-     * @param propertyName - название свойства
+     * @param int selector - указатель на объект
+     * @param mixed propertyName - название свойства
      * 
-     * @param propertyName может быть передан с указанием на тип возвращаемого значения через структуру вида
+     * @param mixed propertyName может быть передан с указанием на тип возвращаемого значения через структуру вида
      * [название свойства, возвращаемый им тип]
      * 
      * @return mixed - возвращает свойство объекта
@@ -125,11 +125,11 @@ class VoidEngine
     /**
      * * Установка свойства объекта
      * 
-     * @param selector - указатель на объект
-     * @param propertyName - название свойства
-     * @param value - значение свойства
+     * @param int selector - указатель на объект
+     * @param string propertyName - название свойства
+     * @param mixed value - значение свойства
      * 
-     * @param value может быть передан в качестве определённого типа через структуру вида
+     * @param mixed value может быть передан в качестве определённого типа через структуру вида
      * [значение, тип]
      * 
      * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
@@ -147,10 +147,11 @@ class VoidEngine
     /**
      * * Вызов метода объекта
      * 
-     * @param selector - указатель на объект
-     * @param methodName - название метода
+     * @param int selector - указатель на объект
+     * @param mixed methodName - название метода
+     * [@param mixed args = []] - аргументы вызова метода
      * 
-     * @param methodName так же может быть передан с указанием на тип возвращаемого методом значения через структуру вида
+     * @param mixed methodName так же может быть передан с указанием на тип возвращаемого методом значения через структуру вида
      * [название метода, возвращаемый им тип]
      * 
      * @return mixed - возвращает результат выполнения метода
@@ -172,10 +173,10 @@ class VoidEngine
     /**
      * * Получение значения массива
      * 
-     * @param selector - указатель на объект массива
-     * @param index - индекс массива
+     * @param int selector - указатель на объект массива
+     * @param mixed index - индекс массива
      * 
-     * @param index так же может быть передан с указанием на тип возвращаемого значения через структуру вида
+     * @param mixed index так же может быть передан с указанием на тип возвращаемого значения через структуру вида
      * [индекс, возвращаемый тип]
      * 
      * @return mixed - возвращает значение массива
@@ -190,14 +191,14 @@ class VoidEngine
     /**
      * * Установка значения массива
      * 
-     * @param selector - указатель на объект массива
-     * @param index - индекс массива
-     * @param value - значение для установки
+     * @param int selector - указатель на объект массива
+     * @param mixed index - индекс массива
+     * @param mixed value - значение для установки
      * 
-     * @param indexможет быть передан с указанием на его тип через структуру вида
+     * @param mixed index может быть передан с указанием на его тип через структуру вида
      * [индекс, тип]
      * 
-     * @param value так же может быть передан с указанием на тип значения через структуру вида
+     * @param mixed value так же может быть передан с указанием на тип значения через структуру вида
      * [значение, тип]
      * 
      */
@@ -210,9 +211,9 @@ class VoidEngine
     /**
      * * Установка события объекту
      * 
-     * @param selector - указатель на объект
-     * @param eventName - название события
-     * @param code - PHP код без тэгов
+     * @param int selector - указатель на объект
+     * @param string eventName - название события
+     * [@param string code - PHP код без тэгов]
      * 
      * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
@@ -240,8 +241,8 @@ class VoidEngine
     /**
      * * Проверка события объекта на существование
      * 
-     * @param selector - указатель на объект
-     * @param eventName - название события
+     * @param int selector - указатель на объект
+     * @param string eventName - название события
      * 
      * @return bool - возвращает true в случае существования события
      * 
@@ -260,8 +261,8 @@ class VoidEngine
     /**
      * * Удаление события объекта
      * 
-     * @param selector - указатель на объект
-     * @param eventName - название события
+     * @param int selector - указатель на объект
+     * @param string eventName - название события
      * 
      * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
@@ -281,7 +282,7 @@ class VoidEngine
     /**
      * * Импортирование объекта в ядро
      * 
-     * @param data - сериализированные данные ядра
+     * @param string data - сериализированные данные ядра
      * 
      * @return int - возвращает указатель на импортированный объект
      * 
@@ -295,7 +296,7 @@ class VoidEngine
     /**
      * * Экспортирование объекта из ядра
      * 
-     * @param selector - указатель на объект
+     * @param int selector - указатель на объект
      * 
      * @return string - возвращает сериализованные данные объекта
      * 
@@ -309,15 +310,15 @@ class VoidEngine
     /**
      * * Компиляция PHP кода
      * 
-     * @param savePath - путь для компиляции
-     * @param iconPath - путь до иконки
-     * @param phpCode - код для компиляции без тэгов
+     * @param string savePath - путь для компиляции
+     * @param string iconPath - путь до иконки
+     * @param string phpCode - код для компиляции без тэгов
      * 
-     * [@param productDescription = ''] - описание приложения
-     * [@param productName = '']        - название приложения
-     * [@param productVersion = '']     - версия приложения
-     * [@param companyName = '']        - компания-производителя
-     * [@param copyright = '']          - копирайт
+     * [@param string productDescription = ''] - описание приложения
+     * [@param string productName = '']        - название приложения
+     * [@param string productVersion = '']     - версия приложения
+     * [@param string companyName = '']        - компания-производителя
+     * [@param string copyright = '']          - копирайт
      * 
      */
 

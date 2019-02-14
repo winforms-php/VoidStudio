@@ -13,10 +13,10 @@ class VLFInterpreter
      * * Интерпретирование синтаксического дерева
      * Выполняет то, что было сгенерировано парсером VLF кода
      * 
-     * @param mixed syntaxTree - Абстрактное Синтаксическое Дерево (АСД), сгенерированное VLFParser'ом, или сам VLFParser
-     * [@param array parent = null] - нода-родитель дерева (системная настройка)
+     * @param mixed syntaxTree - Абстрактное Синтаксическое Дерево (АСД), сгенерированное VLFParser'ом, или сам VLFParser
+     * [@param array parent = null] - нода-родитель дерева (системная настройка)
      * 
-     * @return array objects - возвращает список созданных объектов
+     * @return array - возвращает список созданных объектов
      */
 
     static function run ($syntaxTree, string $resourcesDir = null, array $parent = null): array
@@ -203,10 +203,10 @@ class VLFInterpreter
      * * Форматирование строки
      * Необходимо для замены ссылок на объекты из человекочитаемого вида на PHP код
      * 
-     * @param string line - строка для форматирования
-     * [@param array objects = []] - список объектов, которые будут участвовать в форматировании
+     * @param string line - строка для форматирования
+     * [@param array objects = []] - список объектов, которые будут участвовать в форматировании
      * 
-     * @return string line - возвращает форматированную строку
+     * @return string - возвращает форматированную строку
      */
 
     static function formatLine (string $line, array $objects = []): string
