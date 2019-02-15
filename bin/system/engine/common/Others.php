@@ -169,22 +169,21 @@ class Components
         unset (self::$components[$selector], self::$events[$selector]);
     }
 
-    static function cleanJunk (): array
+    static function cleanJunk (): void
     {
-        $junk = [];
-
         foreach (self::$components as $selector => $object)
+        {
+            // TODO: более строгие правила очистки мусорных объектов
+            VoidEngine::destructObjects ($selector);
+
             if (!VoidEngine::objectExists ($selector))
             {
-                $junk[$selector] = $object;
-
                 unset (self::$components[$selector]);
 
                 if (isset (self::$events[$selector]))
                     unset (self::$events[$selector]);
             }
-
-        return $junk;
+        }
     }
 }
 
@@ -502,7 +501,7 @@ class Cursor
     public function __construct (int $handle = null)
     {
         $handle !== null ?
-            $this->cursor = new WFObject (new ObjectType ('System.Windows.Forms.Cursor'), $handle) :
+            $this->cursor = new WFObject ('System.Windows.Forms.Cursor', null, false, $handle) :
             $this->cursor = new WFClass ('System.Windows.Forms.Cursor');
     }
 

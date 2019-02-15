@@ -10,7 +10,7 @@ $selector = $array->selector;
 for ($i = 0; $i < $size; ++$i)
     $params[] = VoidEngine::getArrayValue ($selector, $i);
 
-VoidEngine::removeObject ($selector);
+VoidEngine::removeObjects ($selector);
 
 $constants = [
 	# Информация о программе

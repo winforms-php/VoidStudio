@@ -24,20 +24,38 @@ class VoidEngine
     }
 
     /**
-     * * Удаление объекта
+     * * Удаление объектов
      * 
      * @param int selectors - список указателей для удаления
      * 
      * $button_1 = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * $button_2 = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * 
-     * VoidEngine::removeObject ($button_1, $button_2);
+     * VoidEngine::removeObjects ($button_1, $button_2);
      * 
      */
 
-    static function removeObject (int ...$selectors): void
+    static function removeObjects (int ...$selectors): void
     {
         winforms_objectdelete (...$selectors);
+    }
+
+    /**
+     * * Деструктор объектов
+     * Удаляет все указанные объекты, если они больше не используюся в коде
+     * 
+     * @param int selectors - список указателей для удаления
+     * 
+     * $button_1 = VoidEngine::createObject ('System.Windows.Forms.Button');
+     * $button_2 = VoidEngine::createObject ('System.Windows.Forms.Button');
+     * 
+     * VoidEngine::destructObjects ($button_1, $button_2);
+     * 
+     */
+
+    static function destructObjects (int ...$selectors): void
+    {
+        winforms_objectdestruct (...$selectors);
     }
 
     /**
@@ -66,7 +84,7 @@ class VoidEngine
      * @return bool - возвращает true, если объект существует, и false в противном случае
      * 
      * $button = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
-     * VoidEngine::removeObject ($button);
+     * VoidEngine::removeObjects ($button);
      * 
      * var_dump (VoidEngine::objectExists ($button)); // false
      * 
@@ -78,13 +96,13 @@ class VoidEngine
     }
 
     /**
-     * * Создание экземпляра типа объекта
-     * 
-     * @param mixed object - объект конфигурации или полное название объекта
-     * 
-     * @return mixed - возвращает указатель на объект типа объекта или false в случае ошибки
-     * 
-     */
+    * * Создание экземпляра типа объекта
+    * 
+    * @param mixed object - объект конфигурации или полное название объекта
+    * 
+    * @return mixed - возвращает указатель на объект типа объекта или false в случае ошибки
+    * 
+    */
 
     static function objectType ($object)
     {
@@ -223,7 +241,7 @@ class VoidEngine
     static function setObjectEvent (int $selector, string $eventName, string $code = ''): void
     {
         if (self::eventExists ($selector, $eventName))
-            self::removeObjectEvent ($selector, $eventName);
+            self::removeObjectsEvent ($selector, $eventName);
 
         try
         {
@@ -266,13 +284,13 @@ class VoidEngine
      * 
      * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
-     * VoidEngine::removeObjectEvent ($selector, 'Click');
+     * VoidEngine::removeObjectsEvent ($selector, 'Click');
      * 
      * var_dump ($selector, 'Click'); // false
      * 
      */
 
-    static function removeObjectEvent (int $selector, string $eventName): void
+    static function removeObjectsEvent (int $selector, string $eventName): void
     {
         winforms_delevent ($selector, $eventName);
 
@@ -345,38 +363,24 @@ class VoidEngine
 
 class EngineAdditions
 {
-    static function loadModule (string $path): void
+    static function loadModule (string $path): bool
     {
-        $assembly = new WFClass ('System.Reflection.Assembly', 'mscorlib');
-        $assembly->loadFrom ($path);
-    }
-
-    static function getObjectProperties (int $selector, bool $extended = false): array
-    {
-        trigger_error ('Function "EngineAdditions::getObjectProperties" is depricated');
-
-        $properties = [];
-
-        $type  = VoidEngine::callMethod ($selector, 'GetType');
-        $props = VoidEngine::callMethod ($type, 'GetProperties');
-        $len   = VoidEngine::getProperty ($props, 'Length');
-
-        for ($i = 0; $i < $len; ++$i)
+        try
         {
-            $name     = VoidEngine::getProperty (VoidEngine::getArrayValue ($props, $i), 'Name');
-            $property = VoidEngine::getProperty ($selector, $name);
+            (new WFClass ('System.Reflection.Assembly', 'mscorlib'))->loadFrom ($path);
 
-            $properties[$name] = $extended ?
-                $property : $property['value'];
+            return true;
         }
 
-        return $properties;
+        catch (\Throwable $e)
+        {
+            return false;
+        }
     }
 
     static function getProperty (int $selector, string $name): array
     {
-        $type     = VoidEngine::callMethod ($selector, 'GetType');
-        $property = VoidEngine::callMethod ($type, 'GetProperty', $name);
+        $property = VoidEngine::callMethod (VoidEngine::callMethod ($selector, 'GetType'), 'GetProperty', $name);
 
         if (!is_int ($property))
             return false;
@@ -450,8 +454,7 @@ class EngineAdditions
     {
         $events = [];
 
-        $type  = VoidEngine::callMethod ($object, 'GetType');
-        $props = VoidEngine::callMethod ($type, 'GetEvents');
+        $props = VoidEngine::callMethod (VoidEngine::callMethod ($object, 'GetType'), 'GetEvents');
         $len   = VoidEngine::getProperty ($props, 'Length');
 
         for ($i = 0; $i < $len; ++$i)
@@ -515,18 +518,18 @@ class WFObject
 {
     protected $selector;
 
-    public function __construct ($object, string $classGroup = null, bool $onlyClassInfo = false)
+    public function __construct ($object, string $classGroup = null, bool $onlyClassInfo = false, ...$args)
     {
         if ($object instanceof ObjectType)
-            $this->selector = VoidEngine::createObject ($object);
+            $this->selector = VoidEngine::createObject ($object, ...$args);
 
         elseif (is_string ($object))
-            $this->selector = VoidEngine::createObject (new ObjectType ($object, $classGroup, $onlyClassInfo));
+            $this->selector = VoidEngine::createObject (new ObjectType ($object, $classGroup, $onlyClassInfo), ...$args);
 
         elseif (is_int ($object) && VoidEngine::objectExists ($object))
             $this->selector = $object;
 
-        else throw new \Exception ('$object parameter must be instance of "VoidEngine\ObjectType" or be string');
+        else throw new \Exception ('$object parameter must be instance of "VoidEngine\ObjectType", be string or object selector');
     }
     
     public function __get ($name)
@@ -554,7 +557,10 @@ class WFObject
                 return $this->$method ($value);
             }
 
-            catch (\Throwable $e) // Хороший костыль, хороший.
+            # Метод "set_$name" может принимать в качестве параметра объект WFObject
+            # т.к. наверняка мы не уверены, какой тип ему нужен, то тут требуется дополнительная проверка
+
+            catch (\Throwable $e)
             {
                 return $value instanceof WFObject ?
                     $this->$method ($value->selector) : null;
@@ -604,7 +610,7 @@ class WFObject
 		for ($i = 0; $i < $size; ++$i)
             $return[] = VoidEngine::getArrayValue ($array, $type === null ? $i : [$i, $type]);
         
-        VoidEngine::removeObject ($array);
+        VoidEngine::removeObjects ($array);
         
 		return $return;
 	}
@@ -622,8 +628,8 @@ class WFClass extends WFObject
         elseif (is_string ($class))
             $this->selector = VoidEngine::createClass (new ObjectType ($class, $classGroup, $onlyClassInfo));
 
-        elseif (is_int ($object) && VoidEngine::objectExists ($object))
-            $this->selector = $object;
+        elseif (is_int ($class) && VoidEngine::objectExists ($class))
+            $this->selector = $class;
 
         else throw new \Exception ('$class parameter must be instance of "VoidEngine\ObjectType", be string or class selector');
     }

@@ -14,7 +14,7 @@ class WebBrowser extends Control
         return $this->callMethod ('Navigate', $url);
     }
 	
-	public function loadHTML (string $html)
+    public function loadHTML (string $html)
     {
         return $this->callMethod ('LoadHTML', $html);
     }

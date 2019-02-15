@@ -32,7 +32,7 @@ class Component extends WFObject
         if (isset ($this->$name))
         {
             if (is_int ($this->$name) && VoidEngine::objectExists ($this->$name))
-                VoidEngine::removeObject ($this->$name);
+                VoidEngine::removeObjects ($this->$name);
 
             elseif ($this->$name instanceof Component)
                 $this->$name->dispose ();
@@ -47,13 +47,13 @@ class Component extends WFObject
             if (isset ($this->$param))
             {
                 if (is_int ($value) && VoidEngine::objectExists ($value))
-                    VoidEngine::removeObject ($value);
+                    VoidEngine::removeObjects ($value);
 
                 elseif ($value instanceof Items)
                 {
                     $value->clear ();
                     
-                    VoidEngine::removeObject ($value->selector);
+                    VoidEngine::removeObjects ($value->selector);
                 }
 
                 elseif ($value instanceof Component)
@@ -63,6 +63,13 @@ class Component extends WFObject
             }
 
         Components::cleanJunk ();
+    }
+
+    // TODO: более строгие правила очистки мусорных объектов
+    public function __destruct ()
+    {
+        if (isset ($this->selector))
+            VoidEngine::destructObjects ($this->selector);
     }
 }
 
