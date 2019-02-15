@@ -554,7 +554,7 @@ class WFObject
                 return $this->$method ($value);
             }
 
-            catch (\Throwable $e)
+            catch (\Throwable $e) // Хороший костыль, хороший.
             {
                 return $value instanceof WFObject ?
                     $this->$method ($value->selector) : null;
