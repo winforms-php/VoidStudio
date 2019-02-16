@@ -13,9 +13,9 @@ if (!file_exists (dirname (APP_DIR) .'/VoidStudio.lnk'))
 
 class VoidStudioAPI
 {
-    static $objects = [];
+    public static $objects = [];
 
-    static function addObjects (string $group, array $objects)
+    public static function addObjects (string $group, array $objects)
     {
         self::$objects[$group] = array_merge
         (
@@ -26,13 +26,13 @@ class VoidStudioAPI
         );
     }
 
-    static function getObjects (string $group)
+    public static function getObjects (string $group)
     {
         return isset (self::$objects[$group]) ?
             self::$objects[$group] : false;
     }
 
-    static function openEventEditor (int $component, string $event)
+    public static function openEventEditor (int $component, string $event)
     {
         $objects = self::getObjects ('editor');
         $form    = $objects['MainForm'];
@@ -51,7 +51,7 @@ class VoidStudioBuilder
 {
     // TODO: настроить использование $precompileVLF
     
-    static function buildProject (string $dir, string $enteringPoint, bool $withVoidFramework = false, bool $exportResources = false, bool $useCaching = false, bool $precompileVLF = false)
+    public static function buildProject (string $dir, string $enteringPoint, bool $withVoidFramework = false, bool $exportResources = false, bool $useCaching = false, bool $precompileVLF = false)
     {
         dir_clean ($dir .'/system');
         dir_clean ($dir .'/app');
@@ -86,7 +86,7 @@ class VoidStudioBuilder
         dir_clean ($dir .'/system/core/extensions/VLF/cache');
     }
 
-    static function compileProject (string $save, string $enteringPoint, bool $withVoidFramework = false, bool $precompileVLF = false)
+    public static function compileProject (string $save, string $enteringPoint, bool $withVoidFramework = false, bool $precompileVLF = false)
     {
         $vlfImports = '';
 
@@ -99,7 +99,7 @@ class VoidStudioBuilder
 
         $vlfImports = "\$vlf = <<<'VLF'\n\n$vlfImports\n\nVLF;";
 
-        VoidEngine::compile ($save, text (APP_DIR) .'/Icon.ico', $code = str_replace (
+        VoidEngine::compile ($save, text (APP_DIR) .'/Icon.ico', str_replace (
             [
                 'namespace VoidEngine;',
                 'VoidEngine\\'
@@ -112,11 +112,9 @@ class VoidStudioBuilder
             
             "\$code = <<<'CODE'\n\n". ($withVoidFramework ? "define ('FRAMEWORK_DIR', getenv ('AppData') .'\VoidFramework');\n\nif (file_exists (FRAMEWORK_DIR .'/core/VoidEngine.php'))\n\trequire FRAMEWORK_DIR .'/core/VoidEngine.php';\n\nelse message ('VoidEngine not founded');" : VoidStudioBuilder::generateCode ()) ."\n\nCODE;\n\n@eval (\$code);\n\n$vlfImports\n\nVLFInterpreter::\$throw_errors = false;\n\n\$APPLICATION->run (VLFInterpreter::run (new VLFParser (\$vlf, [\n\t'strong_line_parser'            => false,\n\t'ignore_postobject_info'        => true,\n\t'ignore_unexpected_method_args' => true,\n\n\t'use_caching' => false\n]))['$enteringPoint']);"
         ));
-
-        // file_put_contents (dirname ($save) .'/tmp.php', $code);
     }
 
-    static function parseObjectsProperties (VoidDesigner $designer)
+    public static function parseObjectsProperties (VoidDesigner $designer)
     {
         $code = $designer->getSharpCode ();
 
@@ -255,7 +253,7 @@ class VoidStudioBuilder
         return $objects;
     }
 
-    static function constructVLF (array $objects, VoidDesigner $designer, string $exportResourcesDir = null)
+    public static function constructVLF (array $objects, VoidDesigner $designer, string $exportResourcesDir = null)
     {
         $objectsNames = array_keys ($objects);
 
@@ -348,7 +346,7 @@ class VoidStudioBuilder
 
     // TODO (+ collections)
 
-    /*static function constructPHP (array $objects, VoidDesigner $designer, string $exportResourcesDir = null)
+    /*public static function constructPHP (array $objects, VoidDesigner $designer, string $exportResourcesDir = null)
     {
         $objectsNames = array_keys ($objects);
 
@@ -419,11 +417,11 @@ class VoidStudioBuilder
         return $php;
     }*/
 
-    static function generateCode (): string
+    public static function generateCode (): string
     {
         $code = "/*\n\n\t". join ("\n\t", explode ("\n", file_get_contents (dirname (ENGINE_DIR) .'/license.txt'))) ."\n\n*/\n\n";
 
-        foreach (self::getReferences (ENGINE_DIR .'/VoidEngine.php') as $id => $path)
+        foreach (self::getReferences (ENGINE_DIR .'/VoidEngine.php') as $path)
             $code .= join (array_slice (array_map (function ($line)
             {
                 return substr ($line, 0, 7) != 'require' ?
@@ -433,7 +431,7 @@ class VoidStudioBuilder
         return $code;
     }
 
-    static function getReferences (string $file, bool $parseExtensions = true): array
+    public static function getReferences (string $file, bool $parseExtensions = true): array
     {
         $references = [];
 

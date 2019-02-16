@@ -144,7 +144,7 @@ class VoidDesigner extends Component
             }
         }
 
-        foreach ($toUnset as $id => $name)
+        foreach ($toUnset as $name)
             unset ($this->objects[$name]);
 
         $this->currentSelectedItem->items->clear ();

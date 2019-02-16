@@ -36,7 +36,7 @@ function dir_create (string $path): void
         $path = explode ('/', replaceSl ($path));
         $dir  = '';
 
-        foreach ($path as $id => $subdir)
+        foreach ($path as $subdir)
             if (!is_dir ($dir = ($dir ? "$dir/" : '') . $subdir))
                 mkdir ($dir);
     }
@@ -49,7 +49,7 @@ function dir_delete (string $path): bool
 
     $files = array_slice (scandir ($path), 2);
 
-    foreach ($files as $id => $file)
+    foreach ($files as $file)
         if (is_dir ($file = "$path/$file"))
         {
             dir_delete ($file);
@@ -211,7 +211,7 @@ function c ($name, bool $returnAllSimilarObjects = false)
         $path    = explode ('->', $name);
         $similar = [];
 
-        foreach (Components::$components as $selector => $object)
+        foreach (Components::$components as $object)
             if (($object instanceof Control || method_exists ($object, 'get_name') || property_exists ($object, 'name')) && $object->name == end ($path))
             {
                 if (sizeof ($path) > 1)

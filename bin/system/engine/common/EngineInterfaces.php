@@ -16,7 +16,7 @@ class VoidEngine
      * 
      */
 
-    static function createObject (ObjectType $object, ...$args): int
+    public static function createObject (ObjectType $object, ...$args): int
     {
         return $object->extended ?
             winforms_objectcreate ($object->getResourceLine (), null, ...$args) :
@@ -35,7 +35,7 @@ class VoidEngine
      * 
      */
 
-    static function removeObjects (int ...$selectors): void
+    public static function removeObjects (int ...$selectors): void
     {
         winforms_objectdelete (...$selectors);
     }
@@ -53,7 +53,7 @@ class VoidEngine
      * 
      */
 
-    static function destructObjects (int ...$selectors): void
+    public static function destructObjects (int ...$selectors): void
     {
         winforms_objectdestruct (...$selectors);
     }
@@ -69,7 +69,7 @@ class VoidEngine
      * 
      */
 
-    static function createClass (ObjectType $object): int
+    public static function createClass (ObjectType $object): int
     {
         return $object->extended ?
             winforms_objectget ($object->getResourceLine (), null) :
@@ -90,7 +90,7 @@ class VoidEngine
      * 
      */
 
-    static function objectExists (int $selector): bool
+    public static function objectExists (int $selector): bool
     {
         return winforms_objectexists ($selector);
     }
@@ -104,7 +104,7 @@ class VoidEngine
     * 
     */
 
-    static function objectType ($object)
+    public static function objectType ($object)
     {
         if ($object instanceof ObjectType)
             $object = $object->getResourceLine ();
@@ -135,7 +135,7 @@ class VoidEngine
      * 
      */
 
-    static function getProperty (int $selector, $propertyName)
+    public static function getProperty (int $selector, $propertyName)
     {
         return winforms_getprop ($selector, $propertyName);
     }
@@ -157,7 +157,7 @@ class VoidEngine
      * 
      */
 
-    static function setProperty (int $selector, string $propertyName, $value): void
+    public static function setProperty (int $selector, string $propertyName, $value): void
     {
         winforms_setprop ($selector, $propertyName, $value);
     }
@@ -183,7 +183,7 @@ class VoidEngine
      * 
      */
 
-    static function callMethod (int $selector, $methodName, ...$args)
+    public static function callMethod (int $selector, $methodName, ...$args)
     {
         return winforms_callmethod ($selector, $methodName, ...$args);
     }
@@ -201,7 +201,7 @@ class VoidEngine
      * 
      */
 
-    static function getArrayValue (int $selector, $index)
+    public static function getArrayValue (int $selector, $index)
     {
         return winforms_getindex ($selector, $index);
     }
@@ -221,7 +221,7 @@ class VoidEngine
      * 
      */
 
-    static function setArrayValue (int $selector, $index, $value): void
+    public static function setArrayValue (int $selector, $index, $value): void
     {
         winforms_setindex ($selector, $index, $value);
     }
@@ -238,7 +238,7 @@ class VoidEngine
      * 
      */
 
-    static function setObjectEvent (int $selector, string $eventName, string $code = ''): void
+    public static function setObjectEvent (int $selector, string $eventName, string $code = ''): void
     {
         if (self::eventExists ($selector, $eventName))
             self::removeObjectsEvent ($selector, $eventName);
@@ -271,7 +271,7 @@ class VoidEngine
      * 
      */
 
-    static function eventExists (int $selector, string $eventName): bool
+    public static function eventExists (int $selector, string $eventName): bool
     {
         return winforms_existsevent ($selector, $eventName);
     }
@@ -290,7 +290,7 @@ class VoidEngine
      * 
      */
 
-    static function removeObjectsEvent (int $selector, string $eventName): void
+    public static function removeObjectsEvent (int $selector, string $eventName): void
     {
         winforms_delevent ($selector, $eventName);
 
@@ -306,7 +306,7 @@ class VoidEngine
      * 
      */
 
-    static function importObject (string $data): int
+    public static function importObject (string $data): int
     {
         return winforms_dataimport (gzinflate (base64_decode ($data)));
     }
@@ -320,7 +320,7 @@ class VoidEngine
      * 
      */
 
-    static function exportObject (int $selector): string
+    public static function exportObject (int $selector): string
     {
         return base64_encode (gzdeflate (winforms_dataexport ($selector), 9));
     }
@@ -340,7 +340,7 @@ class VoidEngine
      * 
      */
 
-    static function compile (string $savePath, string $iconPath, string $phpCode, string $productDescription = null, string $productName = null, string $productVersion = null, string $companyName = null, string $copyright = null): void
+    public static function compile (string $savePath, string $iconPath, string $phpCode, string $productDescription = null, string $productName = null, string $productVersion = null, string $companyName = null, string $copyright = null): void
     {
         if ($productName === null)
             $productName = basenameNoExt ($savePath);
@@ -363,7 +363,7 @@ class VoidEngine
 
 class EngineAdditions
 {
-    static function loadModule (string $path): bool
+    public static function loadModule (string $path): bool
     {
         try
         {
@@ -378,7 +378,7 @@ class EngineAdditions
         }
     }
 
-    static function getProperty (int $selector, string $name): array
+    public static function getProperty (int $selector, string $name): array
     {
         $property = VoidEngine::callMethod (VoidEngine::callMethod ($selector, 'GetType'), 'GetProperty', $name);
 
@@ -450,7 +450,7 @@ class EngineAdditions
         ];
     }
 
-    static function getObjectEvents (int $object): array
+    public static function getObjectEvents (int $object): array
     {
         $events = [];
 
