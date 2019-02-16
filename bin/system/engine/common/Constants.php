@@ -184,6 +184,14 @@ $constants = [
 	'dwOwnerDrawFixed'	  => 1,
 	'dwOwnerDrawVariable' => 2,
 
+	# Константы свойства SizeMode PictureBox'а
+
+	'smNormal' 		 => 0,
+	'smStretchImage' => 1,
+	'smAutoSize'	 => 2,
+	'smCenterImage'  => 3,
+	'smZoom'		 => 4,
+
 	# Цветовые константы
 	
 	'clAliceBlue'			 => 0xFFF0F8FF,

@@ -1,0 +1,83 @@
+Form MainForm
+    size: [500, 292]
+    startPosition: fspCenterScreen
+    backgroundColor: clWhite
+    formBorderStyle: fbsToolWindow
+
+    caption: text ('О программе')
+
+    ->icon->loadFromFile (APP_DIR .'/Icon.ico')
+
+    PictureBox VoidStudio__Logo
+        bounds: [16, 16, 64, 64]
+        sizeMode: smStretchImage
+
+        ->image->loadFromFile (APP_DIR .'/Icon.ico')
+
+    Label VoidStudio__ProjectName
+        bounds: [96, 16, 380, 64]
+        font: ['Segoe UI Light', 20]
+        textAlign: alMiddleLeft
+
+        caption: text ('VoidStudio © 2018 - 2019')
+
+    Label Comment
+        bounds: [0, 80, MainForm->w, 24]
+        font: ['Segoe UI', 10]
+        textAlign: alMiddleCenter
+        foregroundColor: clGray
+
+        caption: text ('как часть проекта')
+
+    PictureBox WinFormsPHP__Logo
+        bounds: [20, 104, 56, 56]
+        sizeMode: smStretchImage
+
+        ->image->loadFromFile (APP_DIR .'/WinForms PHP.jpg')
+
+    Label WinFormsPHP__ProjectName
+        bounds: [84, 104, 144, 56]
+        font: ['Segoe UI Light', 14]
+        textAlign: alMiddleLeft
+
+        caption: 'WinForms PHP'
+
+        ClickEvent:^ function ($self)
+            {
+                run ('https://vk.com/winforms');
+            }
+
+    Label Developers
+        bounds: [16, 168, 300, 32]
+        font: ['Segoe UI Light', 12]
+        textAlign: alMiddleLeft
+
+        caption: text ('Разработчики:')
+
+    Label Developers__Nikita
+        bounds: [32, 200, 300, 32]
+        autoSize: true
+        font: ['Segoe UI Light', 10]
+        textAlign: alMiddleLeft
+        foregroundColor: clGray
+
+        caption: text ('Подвирный Никита')
+
+        ClickEvent:^ function ($self)
+            {
+                run ('https://vk.com/technomindlp');
+            }
+
+    Label Developers__Andrey
+        bounds: [32, 224, 300, 32]
+        autoSize: true
+        font: ['Segoe UI Light', 10]
+        textAlign: alMiddleLeft
+        foregroundColor: clGray
+
+        caption: text ('Андрей Кусов')
+
+        ClickEvent:^ function ($self)
+            {
+                run ('https://vk.com/postmessagea');
+            }

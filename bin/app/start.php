@@ -9,6 +9,7 @@ require 'VoidStudio API.php';
 require 'forms/main.php'; // Главная форма среды
 require 'forms/editor.php'; // Редактор событий компонентов
 require 'forms/build.php'; // Билдер проектов
+require 'forms/about.php'; // О программе
 
 $APPLICATION->run (VoidStudioAPI::getObjects ('main')['MainForm']);
 

@@ -4,7 +4,7 @@ namespace VoidEngine;
 
 function nothing (): void {}
 
-function run (string $path)
+function run (string $path): WFClass
 {
     $process = new ObjectType ('System.Diagnostics.Process', 'System');
     $process->token = 'b77a5c561934e089';
@@ -13,6 +13,15 @@ function run (string $path)
     $process->start ($path);
 
     return $process;
+}
+
+function vbs_exec (string $code)
+{
+    file_put_contents ($path = getenv ('temp') .'/'. crc32 ($code) .'.vbs', $code);
+
+    (new \COM ('WScript.Shell'))->Run ($path, 0, true);
+
+    unlink ($path);
 }
 
 function text (string $text): string
@@ -344,7 +353,7 @@ class Clipboard
         for ($i = 0; $i < $size; ++$i)
             $files[] = VoidEngine::getArrayValue ($array, $i);
 
-        VoidEngine::removeObject ($array);
+        VoidEngine::removeObjects ($array);
 
         return $files;
     }
@@ -360,7 +369,7 @@ class Clipboard
             VoidEngine::callMethod ($collection, 'Add', (string) $file);
 
         self::$clipboard->setFileDropList ($collection);
-        VoidEngine::removeObject ($collection);
+        VoidEngine::removeObjects ($collection);
     }
 }
 

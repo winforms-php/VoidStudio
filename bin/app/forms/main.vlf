@@ -312,14 +312,7 @@ Form MainForm
         MenuItem Menu__studio_about (text ('О программе'))
             ClickEvent:^ function ($self)
                 {
-                    $msg = new MessageBox;
-
-                    $msg->show
-                    (
-                        text ("Авторы сие произведения:\n\nАндрей Кусов (vk.com/postmessagea) - главный разработчик\nНикита Подвирный (vk.com/technomindlp) - разработчик\n\nWinForms PHP, vk.com/winforms\n\n-----------------------\n\n". file_get_contents (APP_DIR .'/license.txt')),
-
-                        text ('О программе')
-                    );
+                    VoidStudioAPI::getObjects ('about')['MainForm']->showDialog ();
                 }
 
         MenuItem Menu__studio_vk (text ('Группа вк'))

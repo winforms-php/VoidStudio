@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.1.2 build-2019/02/15 (major.minor.patch state-y/m/d)
+ * @version     2.1.3 build-2019/02/16 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -47,8 +47,8 @@ require 'common/Constants.php';
 require 'common/Others.php';
 require 'common/Events.php';
 
-if (is_dir ('extensions') && sizeof ($exts = scandir ('extensions')) > 0)
-    foreach ($exts as $id => $ext)
+if (is_dir ('extensions'))
+    foreach (scandir ('extensions') as $id => $ext)
         if (is_dir ('extensions/'. $ext) && file_exists ($ext = 'extensions/'. $ext .'/main.php'))
             require $ext;
 
