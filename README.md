@@ -6,7 +6,6 @@
   <a href="https://scrutinizer-ci.com/g/KRypt0nn/WinForms-PHP/?branch=master"><img src="https://scrutinizer-ci.com/g/KRypt0nn/WinForms-PHP/badges/quality-score.png?b=master"></a>
   <a href="https://scrutinizer-ci.com/g/KRypt0nn/WinForms-PHP/build-status/master"><img src="https://scrutinizer-ci.com/g/KRypt0nn/WinForms-PHP/badges/build.png?b=master"></a>
   <a href="https://scrutinizer-ci.com/code-intelligence"><img src="https://scrutinizer-ci.com/g/KRypt0nn/WinForms-PHP/badges/code-intelligence.svg?b=master"></a>
-  <a href="https://api.codacy.com/project/badge/Grade/4f1d011b861a412fa15d18afa3905aec"><img src="https://www.codacy.com/app/KRypt0nn/WinForms-PHP?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=KRypt0nn/WinForms-PHP&amp;utm_campaign=Badge_Grade"></a>
   <a href="license.txt"><img src="https://badges.frapsoft.com/os/gpl/gpl.png?v=103"></a>
 </p><br><br>
 
