@@ -4,7 +4,7 @@ namespace VoidEngine;
 
 if (!file_exists (dirname (APP_DIR) .'/VoidStudio.lnk'))
     vbs_exec ('
-        set objSC = CreateObject ("WScript.Shell").CreateShortcut ("'. dirname (APP_DIR) .'/VoidStudio.lnk' .'")
+        set objSC = CreateObject ("WScript.Shell").CreateShortcut ("'. text (dirname (APP_DIR) .'/VoidStudio.lnk') .'")
         
         objSC.TargetPath = "'. CORE_DIR .'/WinForms PHP.exe"
         objSC.WorkingDirectory  = "'. CORE_DIR .'"
