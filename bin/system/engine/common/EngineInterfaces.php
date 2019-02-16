@@ -8,7 +8,7 @@ class VoidEngine
      * * Создание объекта
      * 
      * @param ObjectType object - объект конфигурации
-     * [@param mixed args = []] - список аргументов создания
+     * [@param mixed ...args = []] - список аргументов создания
      * 
      * @return int - возвращает указатель на созданный объект
      * 
@@ -26,7 +26,7 @@ class VoidEngine
     /**
      * * Удаление объектов
      * 
-     * @param int selectors - список указателей для удаления
+     * @param int ...selectors - список указателей для удаления
      * 
      * $button_1 = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * $button_2 = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
@@ -44,7 +44,7 @@ class VoidEngine
      * * Деструктор объектов
      * Удаляет все указанные объекты, если они больше не используюся в коде
      * 
-     * @param int selectors - список указателей для удаления
+     * @param int ...selectors - список указателей для удаления
      * 
      * $button_1 = VoidEngine::createObject ('System.Windows.Forms.Button');
      * $button_2 = VoidEngine::createObject ('System.Windows.Forms.Button');
@@ -167,7 +167,7 @@ class VoidEngine
      * 
      * @param int selector - указатель на объект
      * @param mixed methodName - название метода
-     * [@param mixed args = []] - аргументы вызова метода
+     * [@param mixed ...args = []] - аргументы вызова метода
      * 
      * @param mixed methodName так же может быть передан с указанием на тип возвращаемого методом значения через структуру вида
      * [название метода, возвращаемый им тип]

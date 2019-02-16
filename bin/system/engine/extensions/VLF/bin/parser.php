@@ -42,11 +42,11 @@ class VLFParser
                 else throw new \Exception ('Trying to setting up undefined property "'. $name .'"');
             }
 
-        if ($this->use_caching && file_exists ($file = VLF_EXT_DIR .'/cache/'. sha1 ($content) .'.cache'))
+        if ($this->use_caching && file_exists ($file = text (VLF_EXT_DIR .'/cache/'. sha1 ($content) .'.cache')))
         {
             $info = unserialize (gzinflate (file_get_contents ($file)));
 
-            if ($info[0] == sha1 (file_get_contents (__FILE__)))
+            if ($info[0] == sha1 (file_get_contents (text (__FILE__))))
             {
                 $this->tree  = $info[1][0];
                 $this->links = $info[1][1];
@@ -63,7 +63,7 @@ class VLFParser
         $this->links = $info[1];
 
         if ($this->use_caching)
-            file_put_contents (VLF_EXT_DIR .'/cache/'. sha1 ($content) .'.cache', gzdeflate (serialize ([sha1 (file_get_contents (__FILE__)), $info])));
+            file_put_contents (text (VLF_EXT_DIR .'/cache/'. sha1 ($content) .'.cache'), gzdeflate (serialize ([sha1 (file_get_contents (text (__FILE__))), $info])));
     }
 
     /**
