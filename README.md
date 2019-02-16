@@ -1,4 +1,4 @@
-<h1 align="center"><img align="center" src="https://pp.userapi.com/c846219/v846219787/15f9a8/eIqnn3ZxPtw.jpg" height="300px">WinForms PHP</h1>
+<h1 align="center"><a href="https://vk.com/winforms"><img align="center" src="https://pp.userapi.com/c846219/v846219787/15f9a8/eIqnn3ZxPtw.jpg" height="300px"></a>WinForms PHP</h1>
 
 <p align="center">Графическая оболочка для <b>PHP</b> на <b>.NET Framework</b> - <b>Windows Forms</b></p>
 
