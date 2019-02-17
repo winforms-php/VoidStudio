@@ -70,12 +70,12 @@ Form MainForm
             {
                 $dir = new FolderBrowserDialog;
 
-                if (file_exists ('system/build_path') && is_dir ($path = file_get_contents ('system/build_path')))
+                if (file_exists ('system/settings/build_path') && is_dir ($path = file_get_contents ('system/settings/build_path')))
                     $dir->selectedPath = $path;
                 
                 if ($dir->execute () && is_dir ($dir = $dir->path))
                 {
-                    file_put_contents ('system/build_path', $dir);
+                    file_put_contents ('system/settings/build_path', $dir);
 
                     VoidStudioBuilder::buildProject ($dir, FormSelection->selectedItem, UsingVoidFramework->checked, ResourcesExporting->checked, UseCaching->checked, PrecompileVLF->checked);
 
@@ -97,12 +97,12 @@ Form MainForm
                 $save = new SaveFileDialog;
                 $save->filter = 'EXE file (*.exe)|*.exe';
 
-                if (file_exists ('system/compile_path') && is_dir ($path = file_get_contents ('system/compile_path')))
+                if (file_exists ('system/settings/compile_path') && is_dir ($path = file_get_contents ('system/settings/compile_path')))
                     $save->selectedPath = $path;
                 
                 if ($save->execute () && strlen ($save = $save->fileName) > 0)
                 {
-                    file_put_contents ('system/compile_path', $save);
+                    file_put_contents ('system/settings/compile_path', $save);
 
                     VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, UsingVoidFramework->checked, PrecompileVLF->checked);
 

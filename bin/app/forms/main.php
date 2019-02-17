@@ -19,13 +19,13 @@ VoidStudioAPI::addObjects ($name, VLFInterpreter::run ($parser));
 
 $componentsList = VoidStudioAPI::getObjects ('main')['ComponentsList'];
 
-foreach (array_slice (scandir (ENGINE_DIR .'/components'), 2) as $id => $name)
+foreach (scandir (ENGINE_DIR .'/components') as $id => $name)
     if (class_exists ($class = 'VoidEngine\\'. ($name = basenameNoExt ($name))) && array_key_exists ('VoidEngine\Control', class_parents ($class)) && !array_key_exists ('VoidEngine\NoVisual', class_parents ($class)))
     {
         $item = new ListViewItem ($name);
 
         $componentsList->items->add ($item);
-        // $componentsList->smallImagesList->images->add ((new Bitmap (APP_DIR .'/components/Button_16x.bmp'))->selector);
+        // $componentsList->smallImagesList->images->add ((new Bitmap (APP_DIR .'/components/Button_16x.png'))->selector);
     }
 
 ?>

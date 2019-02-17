@@ -33,14 +33,13 @@ class VLFParser
         // Зачем? Так надо!
         $content = "# VLF begin\n\n$content\n\n# VLF end";
 
-        if (is_array ($settings))
-            foreach ($settings as $name => $setting)
-            {
-                if (isset ($this->$name))
-                    $this->$name = $setting;
+        foreach ($settings as $name => $setting)
+        {
+            if (isset ($this->$name))
+                $this->$name = $setting;
 
-                else throw new \Exception ('Trying to setting up undefined property "'. $name .'"');
-            }
+            else throw new \Exception ('Trying to setting up undefined property "'. $name .'"');
+        }
 
         if ($this->use_caching && file_exists ($file = text (VLF_EXT_DIR .'/cache/'. sha1 ($content) .'.cache')))
         {
@@ -70,9 +69,9 @@ class VLFParser
      * * Генератор АСД
      * Конвертирует VLF разметку в АСД
      * 
-     * @param string content - VLF разметка
+     * @param string content - VLF разметка
      * 
-     * @return array tree - возвращает АСД
+     * @return array - возвращает АСД
      * 
      */
 
@@ -585,7 +584,7 @@ class VLFParser
      * * Подсчёт высоты строки
      * Производит подсчёт высоты строки и удаляет пустые текстовые символы с обоих её концов
      * 
-     * @param string &line - строка для подсчёта высоты
+     * @param string line - строка для подсчёта высоты
      * 
      * @return int - высота строки
      * 

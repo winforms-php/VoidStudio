@@ -6,21 +6,22 @@ class Process extends Component
 {
 	public function __construct (int $pid = null)
 	{
-        $obj = new ObjectType ('System.Diagnostics.Process');
-        $obj->token = 'b77a5c561934e089';
+        $obj = new ObjectType ('System.Diagnostics.Process', 'System');
+		$obj->token = 'b77a5c561934e089';
+		
+		$this->selector = VoidEngine::createClass ($obj);
 
 		if ($pid !== null)
-		{
-            $obj = VoidEngine::createClass ($obj);
-            
-            $this->selector = ($pid == getmypid ()) ?
-                VoidEngine::callMethod ($obj, 'GetCurrentProcess') :
-                VoidEngine::callMethod ($obj, 'GetProcessById', $pid);
-        }
-        
-		else $this->selector = VoidEngine::createObject ($obj);
+            $this->selector = $pid == getmypid () ?
+                VoidEngine::callMethod ($this->selector, 'GetCurrentProcess') :
+                VoidEngine::callMethod ($this->selector, 'GetProcessById', $pid);
 
 		Components::addComponent ($this->selector, $this);
+	}
+
+	public function getProcessesByName (string $name)
+	{
+		return new Items (VoidEngine::callMethod ($this->selector, 'GetProcessesByName', $name));
 	}
 	
 	public static function getProcessById (int $pid)

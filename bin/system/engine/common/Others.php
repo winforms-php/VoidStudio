@@ -73,8 +73,11 @@ function dir_clean (string $path): void
 
 function dir_copy (string $from, string $to): bool
 {
-    if (!is_dir ($from) || !is_dir ($to))
+    if (!is_dir ($from))
         return false;
+
+    if (!is_dir ($to))
+        dir_create ($to);
 
     $files = array_slice (scandir ($from), 2);
 
@@ -370,115 +373,6 @@ class Clipboard
 
         self::$clipboard->setFileDropList ($collection);
         VoidEngine::removeObjects ($collection);
-    }
-}
-
-class Items extends \ArrayObject
-{
-    protected $selector;
-	
-	public function __construct (int $selector)
-	{
-		$this->selector = $selector;
-    }
-    
-    public function __get ($name)
-	{
-		switch (strtolower ($name))
-		{
-			case 'count':
-                return VoidEngine::getProperty ($this->selector, 'Count');
-            break;
-				
-            case 'list':
-                $size = VoidEngine::getProperty ($this->selector, 'Count');
-                $list = [];
-                
-				for ($i = 0; $i < $size; ++$i)
-                    $list[] = VoidEngine::getArrayValue ($this->selector, $i);
-                     
-                return $list;
-            break;
-
-            case 'names':
-                $size = VoidEngine::getProperty ($this->selector, 'Count');
-                $names = [];
-                
-                for ($i = 0; $i < $size; ++$i)
-                    try
-                    {
-                        $names[] = VoidEngine::getProperty (VoidEngine::getArrayValue ($this->selector, [$i, 'object']), 'Text');
-                    }
-
-                    catch (\WinFormsException $e)
-                    {
-                        $names[] = VoidEngine::getArrayValue ($this->selector, [$i, 'string']);
-                    }
-                
-                return $names;
-            break;
-
-            case 'selector':
-                return $this->selector;
-            break;
-		}
-    }
-	
-	public function add ($value)
-	{
-		$this->offsetSet (null, $value);
-	}
-	
-	public function append ($value)
-	{
-		$this->offsetSet (null, $value);
-	}
-	
-	public function offsetSet ($index, $value)
-	{
-        return $index === null ?
-            VoidEngine::callMethod ($this->selector, 'Add', $value instanceof WFObject ? $value->selector : $value) :
-            VoidEngine::callMethod ($this->selector, 'Insert', $index, $value instanceof WFObject ? $value->selector : $value);
-	}
-	
-	public function offsetGet ($index)
-	{
-		return VoidEngine::getArrayValue ($this->selector, $index);
-	}
-	
-	public function addRange (array $items): void
-	{
-		array_map ([$this, 'append'], $items);
-	}
-	
-	public function offsetUnset ($index): void
-	{
-		VoidEngine::callMethod ($this->selector, 'RemoveAt', $index);
-	}
-	
-	public function remove ($index): void
-	{
-		$this->offsetUnset ($index);
-	}
-	
-	public function clear (): void
-	{
-		VoidEngine::callMethod ($this->selector, 'Clear');
-	}
-	
-	public function indexOf ($value): int
-	{
-		return VoidEngine::callMethod ($this->selector, 'IndexOf', $value instanceof WFObject ? $value->selector : $value);
-	}
-	
-	public function insert ($index, $value)
-	{
-		$this->offsetSet ($index, $value);
-	}
-	
-	public function contains ($value): bool
-	{
-		return VoidEngine::callMethod ($this->selector, 'Contains', $value instanceof WFObject ? $value->selector : $value);
     }
 }
 

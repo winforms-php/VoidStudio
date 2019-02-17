@@ -241,7 +241,7 @@ class VoidEngine
     public static function setObjectEvent (int $selector, string $eventName, string $code = ''): void
     {
         if (self::eventExists ($selector, $eventName))
-            self::removeObjectsEvent ($selector, $eventName);
+            self::removeObjectEvent ($selector, $eventName);
 
         try
         {
@@ -284,13 +284,13 @@ class VoidEngine
      * 
      * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
      * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
-     * VoidEngine::removeObjectsEvent ($selector, 'Click');
+     * VoidEngine::removeObjectEvent ($selector, 'Click');
      * 
      * var_dump ($selector, 'Click'); // false
      * 
      */
 
-    public static function removeObjectsEvent (int $selector, string $eventName): void
+    public static function removeObjectEvent (int $selector, string $eventName): void
     {
         winforms_removeEvent ($selector, $eventName);
 
@@ -464,6 +464,133 @@ class EngineAdditions
     }
 }
 
+class Items extends \ArrayObject
+{
+    protected $selector;
+	
+	public function __construct (int $selector)
+	{
+		$this->selector = $selector;
+    }
+    
+    public function __get ($name)
+	{
+		switch (strtolower ($name))
+		{
+            case 'count':
+            case 'length':
+            case 'size':
+                try
+                {
+                    return VoidEngine::getProperty ($this->selector, 'Count');
+                }
+
+                catch (\WinFormsException $e)
+                {
+                    return VoidEngine::getProperty ($this->selector, 'Length');
+                }
+            break;
+				
+            case 'list':
+                $size = $this->count;
+                $list = [];
+                
+				for ($i = 0; $i < $size; ++$i)
+                    $list[] = VoidEngine::getArrayValue ($this->selector, $i);
+                     
+                return $list;
+            break;
+
+            case 'names':
+                $size = $this->count;
+                $names = [];
+                
+                for ($i = 0; $i < $size; ++$i)
+                    try
+                    {
+                        $names[] = VoidEngine::getProperty (VoidEngine::getArrayValue ($this->selector, [$i, 'object']), 'Text');
+                    }
+
+                    catch (\WinFormsException $e)
+                    {
+                        $names[] = VoidEngine::getArrayValue ($this->selector, [$i, 'string']);
+                    }
+                
+                return $names;
+            break;
+
+            case 'selector':
+                return $this->selector;
+            break;
+		}
+    }
+	
+	public function add ($value)
+	{
+		$this->offsetSet (null, $value);
+	}
+	
+	public function append ($value)
+	{
+		$this->offsetSet (null, $value);
+	}
+	
+	public function offsetSet ($index, $value)
+	{
+        return $index === null ?
+            VoidEngine::callMethod ($this->selector, 'Add', $value instanceof WFObject ? $value->selector : $value) :
+            VoidEngine::callMethod ($this->selector, 'Insert', $index, $value instanceof WFObject ? $value->selector : $value);
+	}
+	
+	public function offsetGet ($index)
+	{
+		return VoidEngine::getArrayValue ($this->selector, $index);
+	}
+	
+	public function addRange (array $items): void
+	{
+		array_map ([$this, 'append'], $items);
+	}
+	
+	public function offsetUnset ($index): void
+	{
+		VoidEngine::callMethod ($this->selector, 'RemoveAt', $index);
+	}
+	
+	public function remove ($index): void
+	{
+		$this->offsetUnset ($index);
+	}
+	
+	public function clear (): void
+	{
+		VoidEngine::callMethod ($this->selector, 'Clear');
+	}
+	
+	public function indexOf ($value): int
+	{
+		return VoidEngine::callMethod ($this->selector, 'IndexOf', $value instanceof WFObject ? $value->selector : $value);
+	}
+	
+	public function insert ($index, $value)
+	{
+		$this->offsetSet ($index, $value);
+	}
+	
+	public function contains ($value): bool
+	{
+		return VoidEngine::callMethod ($this->selector, 'Contains', $value instanceof WFObject ? $value->selector : $value);
+    }
+
+    public function foreach (\Closure $callback, string $type = null)
+    {
+        $size = $this->count;
+
+        for ($i = 0; $i < $size; ++$i)
+            $callback ($i, VoidEngine::getArrayValue ($this->selector, $type !== null ? [$i, $type] : $i));
+    }
+}
+
 class ObjectType
 {
     public $extended = false;
@@ -545,8 +672,7 @@ class WFObject
         
         else $value = $this->getProperty ($name);
 
-        return is_int ($value) && VoidEngine::objectExists ($value) && $value != $this->selector ?
-            new WFObject ($value) : $value;
+        return $this->coupleSelector ($value);
 	}
 	
 	public function __set ($name, $value)
@@ -562,28 +688,25 @@ class WFObject
 
             catch (\Throwable $e)
             {
-                return $value instanceof WFObject ?
+                return ($value instanceof WFObject || $value instanceof Items) ?
                     $this->$method ($value->selector) : null;
             }
 
         elseif (substr ($name, -5) == 'Event')
             Events::setObjectEvent ($this->selector, substr ($name, 0, -5), $value);
         
-        else $this->setProperty ($name, $value instanceof WFObject ? $value->selector : $value);
+        else $this->setProperty ($name, $this->uncoupleSelector ($value));
 	}
 	
 	public function __call ($method, $args)
 	{
         array_map (function ($arg)
         {
-            return $arg instanceof WFObject ?
+            return ($arg instanceof WFObject || $arg instanceof Items) ?
                 $arg->selector : $arg;
         }, $args);
 
-        $value = $this->callMethod ($method, ...$args);
-
-        return is_int ($value) && VoidEngine::objectExists ($value) ?
-            new WFObject ($value) : $value;
+        return $this->coupleSelector ($this->callMethod ($method, ...$args));
 	}
 	
     protected function getProperty ($name)
@@ -613,7 +736,22 @@ class WFObject
         VoidEngine::removeObjects ($array);
         
 		return $return;
-	}
+    }
+    
+    protected function coupleSelector ($value)
+    {
+        if (is_int ($value) && VoidEngine::objectExists ($value) && $value != $this->selector)
+            return VoidEngine::getProperty (VoidEngine::callMethod ($value, 'GetType'), 'IsArray') ?
+                new Items ($value) : new WFObject ($value);
+
+        else return $value;
+    }
+
+    protected function uncoupleSelector ($value)
+    {
+        return ($value instanceof WFObject || $value instanceof Items) ?
+            $value->selector : $value;
+    }
 }
 
 class WFClass extends WFObject

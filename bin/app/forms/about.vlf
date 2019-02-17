@@ -1,5 +1,5 @@
 Form MainForm
-    size: [500, 292]
+    size: [446, 292]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
     formBorderStyle: fbsToolWindow
