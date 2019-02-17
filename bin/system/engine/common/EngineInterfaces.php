@@ -19,8 +19,8 @@ class VoidEngine
     public static function createObject (ObjectType $object, ...$args): int
     {
         return $object->extended ?
-            winforms_objectcreate ($object->getResourceLine (), null, ...$args) :
-            winforms_objectcreate (...$object->getResourceLine (), ...$args);
+            winforms_createObject ($object->getResourceLine (), null, ...$args) :
+            winforms_createObject (...$object->getResourceLine (), ...$args);
     }
 
     /**
@@ -37,7 +37,7 @@ class VoidEngine
 
     public static function removeObjects (int ...$selectors): void
     {
-        winforms_objectdelete (...$selectors);
+        winforms_removeObjects (...$selectors);
     }
 
     /**
@@ -55,7 +55,7 @@ class VoidEngine
 
     public static function destructObjects (int ...$selectors): void
     {
-        winforms_objectdestruct (...$selectors);
+        winforms_destructObjects (...$selectors);
     }
 
     /**
@@ -72,8 +72,8 @@ class VoidEngine
     public static function createClass (ObjectType $object): int
     {
         return $object->extended ?
-            winforms_objectget ($object->getResourceLine (), null) :
-            winforms_objectget (...$object->getResourceLine ());
+            winforms_getClass ($object->getResourceLine (), null) :
+            winforms_getClass (...$object->getResourceLine ());
     }
 
     /**
@@ -92,7 +92,7 @@ class VoidEngine
 
     public static function objectExists (int $selector): bool
     {
-        return winforms_objectexists ($selector);
+        return winforms_objectExists ($selector);
     }
 
     /**
@@ -137,7 +137,7 @@ class VoidEngine
 
     public static function getProperty (int $selector, $propertyName)
     {
-        return winforms_getprop ($selector, $propertyName);
+        return winforms_getProp ($selector, $propertyName);
     }
 
     /**
@@ -159,7 +159,7 @@ class VoidEngine
 
     public static function setProperty (int $selector, string $propertyName, $value): void
     {
-        winforms_setprop ($selector, $propertyName, $value);
+        winforms_setProp ($selector, $propertyName, $value);
     }
 
     /**
@@ -185,7 +185,7 @@ class VoidEngine
 
     public static function callMethod (int $selector, $methodName, ...$args)
     {
-        return winforms_callmethod ($selector, $methodName, ...$args);
+        return winforms_callMethod ($selector, $methodName, ...$args);
     }
 
     /**
@@ -203,7 +203,7 @@ class VoidEngine
 
     public static function getArrayValue (int $selector, $index)
     {
-        return winforms_getindex ($selector, $index);
+        return winforms_getArrayValue ($selector, $index);
     }
 
     /**
@@ -223,7 +223,7 @@ class VoidEngine
 
     public static function setArrayValue (int $selector, $index, $value): void
     {
-        winforms_setindex ($selector, $index, $value);
+        winforms_setArrayValue ($selector, $index, $value);
     }
 
     /**
@@ -245,7 +245,7 @@ class VoidEngine
 
         try
         {
-            winforms_setevent ($selector, $eventName, $code);
+            winforms_setEvent ($selector, $eventName, $code);
 
             Components::setComponentEvent ($selector, $eventName, $code);
         }
@@ -273,7 +273,7 @@ class VoidEngine
 
     public static function eventExists (int $selector, string $eventName): bool
     {
-        return winforms_existsevent ($selector, $eventName);
+        return winforms_eventExists ($selector, $eventName);
     }
 
     /**
@@ -292,7 +292,7 @@ class VoidEngine
 
     public static function removeObjectsEvent (int $selector, string $eventName): void
     {
-        winforms_delevent ($selector, $eventName);
+        winforms_removeEvent ($selector, $eventName);
 
         Components::removeComponentEvent ($selector, $eventName);
     }
@@ -308,7 +308,7 @@ class VoidEngine
 
     public static function importObject (string $data): int
     {
-        return winforms_dataimport (gzinflate (base64_decode ($data)));
+        return winforms_importObject (gzinflate (base64_decode ($data)));
     }
 
     /**
@@ -322,7 +322,7 @@ class VoidEngine
 
     public static function exportObject (int $selector): string
     {
-        return base64_encode (gzdeflate (winforms_dataexport ($selector), 9));
+        return base64_encode (gzdeflate (winforms_exportObject ($selector), 9));
     }
 
     /**
