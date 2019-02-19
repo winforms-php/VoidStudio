@@ -51,5 +51,7 @@ final class VLFLink
 
 require 'bin/parser.php';
 require 'bin/interpreter.php';
+require 'bin/exporter.php';
+require 'bin/importer.php';
 
 ?>

@@ -20,9 +20,9 @@ class VoidDesigner extends Component
     protected $currentSelectedItem;
     protected $formsList;
 
-    public function __construct (Control $parent, string $formName = 'form', PropertyGrid $propertyGrid, ListBox $eventsList, ComboBox $currentSelectedItem, TabControl $formsList)
+    public function __construct (Control $parent, string $formName = 'form', PropertyGrid $propertyGrid, ListBox $eventsList, ComboBox $currentSelectedItem, TabControl $formsList, Form $form = null)
     {
-        $this->form = new Form;
+        $this->form = $form === null ? new Form : $form;
 
         $this->propertyGrid        = $propertyGrid;
         $this->eventsList          = $eventsList;
@@ -32,12 +32,14 @@ class VoidDesigner extends Component
         $this->selector = VoidEngine::createObject (new ObjectType ('WinForms_PHP.FormDesigner4', false, true), $this->form->selector, $formName);
         Components::addComponent ($this->selector, $this);
 
-        $this->form->name = $formName;
-        $this->form->text = $formName;
-        $this->form->size = [400, 360];
+        if ($form === null)
+        {
+            $this->form->name = $formName;
+            $this->form->text = $formName;
+            $this->form->size = [400, 360];
+        }
 
         $this->control = $this->callMethod ('GetControl');
-
         $this->objects[$formName] = new ObjectType ('System.Windows.Forms.Form');
 
         VoidEngine::setProperty ($this->control, 'Parent', $parent->selector);
@@ -88,10 +90,12 @@ class VoidDesigner extends Component
         return $selector;
     }
 
-    /*public function addComponent (int $selector, string $componentName): void
+    public function addComponent (int $selector, string $componentName): void
     {
+        $this->objects[$componentName] = new ObjectType (VoidEngine::callMethod (VoidEngine::callMethod ($selector, 'GetType'), 'ToString'));
+
         $this->callMethod ('AddComponent', $selector, $componentName);
-    }*/
+    }
 
     public function removeComponent (int $component): void
     {

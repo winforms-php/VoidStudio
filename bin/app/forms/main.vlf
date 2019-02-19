@@ -342,7 +342,7 @@ Form MainForm
                         }
                     });
 
-                    VoidStudioBuilder::buildProject (getenv ('Temp') .'/vstmpprj', Designer__FormsList->items->names[0]);
+                    VoidStudioBuilder::buildProject (getenv ('Temp') .'/vstmpprj', Designer__FormsList->selectedTab->text);
 
                     run (getenv ('Temp') .'/vstmpprj/system/core/WinForms PHP.exe');
                 }

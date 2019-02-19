@@ -14,6 +14,7 @@ class VLFInterpreter
      * Выполняет то, что было сгенерировано парсером VLF кода
      * 
      * @param mixed syntaxTree - Абстрактное Синтаксическое Дерево (АСД), сгенерированное VLFParser'ом, или сам VLFParser
+     * [@param string resourceDir = null] - директория с ресурсами для импорта
      * [@param array parent = null] - нода-родитель дерева (системная настройка)
      * 
      * @return array - возвращает список созданных объектов
