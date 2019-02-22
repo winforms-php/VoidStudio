@@ -308,7 +308,7 @@ class VoidEngine
 
     public static function importObject (string $data): int
     {
-        return winforms_importObject (gzinflate (base64_decode ($data)));
+        return winforms_importObject ($data);
     }
 
     /**
@@ -322,7 +322,7 @@ class VoidEngine
 
     public static function exportObject (int $selector): string
     {
-        return base64_encode (gzdeflate (winforms_exportObject ($selector), 9));
+        return winforms_exportObject ($selector);
     }
 
     /**
@@ -357,7 +357,7 @@ class VoidEngine
         if ($copyright === null)
             $copyright = $companyName .' copyright (c) '. date ('Y');
 
-        winforms_compile ($savePath, $iconPath, $phpCode, $productDescription, $productName, $productVersion, $companyName, $copyright);
+        return winforms_compile ($savePath, $iconPath, $phpCode, $productDescription, $productName, $productVersion, $companyName, $copyright);
     }
 }
 
