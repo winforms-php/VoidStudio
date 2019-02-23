@@ -18,6 +18,6 @@ else message ('VoidEngine not founded');
 $app = dirname (CORE_DIR, 2) .'/app/start.php';
 
 if (file_exists ($app))
-    require $app;
+	require $app;
 
 ?>
