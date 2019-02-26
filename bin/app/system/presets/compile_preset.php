@@ -1,9 +1,5 @@
 namespace TrueVoidEngine;
 
-file_put_contents ('engine.php', gzinflate (file_get_contents ('engine.pack')));
+%VoidEngine%
 
-require 'engine.php';
-
-unlink ('engine.php');
-
-// pre (isset ($GLOBALS['__underConstruction']) ? $GLOBALS['__underConstruction'] : 'included');
+pre (isset ($GLOBALS['__underConstruction']) ? $GLOBALS['__underConstruction'] : 'included');

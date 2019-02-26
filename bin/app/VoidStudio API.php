@@ -121,14 +121,11 @@ class VoidStudioBuilder
         unlink ($savePath .'/script.php');
         unlink ($savePath .'/WinForms PHP.exe');
 
-        file_put_contents ($savePath .text ('/engine.pack'), gzdeflate ("<?php\n\n\n". VoidStudioBuilder::generateCode (), 9));
-
         $return = VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), $code = str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_preset.php'), [
-            '%VoidEngine%'              => /*"namespace TrueVoidEngine;\n\n". */($withVoidFramework ? "define ('FRAMEWORK_DIR', getenv ('AppData') .'\VoidFramework');\n\nif (file_exists (FRAMEWORK_DIR .'/engine/VoidEngine.php'))\n\trequire FRAMEWORK_DIR .'/engine/VoidEngine.php';\n\nelse message ('VoidEngine not founded');" : VoidStudioBuilder::generateCode ()) . '',
+            '%VoidEngine%'              => ($withVoidFramework ? "define ('FRAMEWORK_DIR', getenv ('AppData') .'\VoidFramework');\n\nif (file_exists (FRAMEWORK_DIR .'/engine/VoidEngine.php'))\n\trequire FRAMEWORK_DIR .'/engine/VoidEngine.php';\n\nelse message ('VoidEngine not founded');" : VoidStudioBuilder::generateCode ()),
             '%entering_point%'          => $enteringPoint,
             'namespace VoidEngine;'     => '',
             'namespace TrueVoidEngine;' => 'namespace VoidEngine;', // Костыль? Да, ну и что!
-            // '\\\''                      => '\''
             // 'VoidEngine\\'            => '',
         ]), null, null, null, null, null, /*$cs = str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_preset.cs'), [
             '%forms%' => join ('", "', $forms)
