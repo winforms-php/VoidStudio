@@ -160,6 +160,11 @@ class Components
             self::$components[$selector] : false;
     }
 
+    static function componentExists (int $selector): bool
+    {
+        return isset (self::$components[$selector]);
+    }
+
     static function setComponentEvent (int $selector, string $eventName, string $code): void
     {
         self::$events[$selector][$eventName] = $code;
@@ -186,7 +191,7 @@ class Components
         foreach (self::$components as $selector => $object)
         {
             // TODO: более строгие правила очистки мусорных объектов
-            VoidEngine::destructObjects ($selector);
+            VoidEngine::destructObject ($selector);
 
             if (!VoidEngine::objectExists ($selector))
             {
@@ -288,16 +293,14 @@ function c ($name, bool $returnAllSimilarObjects = false)
     }
 }
 
-function setTimer (int $interval, $function): Timer
+function setTimer (int $interval, callable $function): Timer
 {
     $timer = new Timer;
     $timer->interval = $interval;
     
     $timer->tickEvent = function ($self) use ($function)
     {
-        is_callable ($function) ?
-            call_user_func ($function, $self) :
-            eval ($function);
+        call_user_func ($function, $self);
     };
     
 	$timer->start ();
@@ -305,18 +308,17 @@ function setTimer (int $interval, $function): Timer
     return $timer;
 }
 
-function setTimeout (int $interval, $function): Timer
+// FIXME: выполняется несколько раз, а не единажды
+function setTimeout (int $timeout, callable $function): Timer
 {
     $timer = new Timer;
-    $timer->interval = $interval;
+    $timer->interval = $timeout;
     
     $timer->tickEvent = function ($self) use ($function)
     {
-        is_callable ($function) ?
-            call_user_func ($function, $self) :
-            eval ($function);
+        call_user_func ($function, $self);
 
-        $self->dispose ();
+        $self->stop ();
     };
     
     $timer->start ();

@@ -31,8 +31,13 @@ class Component extends WFObject
     {
         if (isset ($this->$name))
         {
-            if (is_int ($this->$name) && VoidEngine::objectExists ($this->$name))
-                VoidEngine::removeObjects ($this->$name);
+            if (is_int ($this->$name))
+            {
+                Components::removeComponent ($this->$name);
+
+                if (VoidEngine::objectExists ($this->$name))
+                    VoidEngine::removeObjects ($this->$name);
+            }
 
             elseif ($this->$name instanceof Component)
                 $this->$name->dispose ();
@@ -46,8 +51,13 @@ class Component extends WFObject
         foreach (get_object_vars ($this) as $param => $value)
             if (isset ($this->$param))
             {
-                if (is_int ($value) && VoidEngine::objectExists ($value))
-                    VoidEngine::removeObjects ($value);
+                if (is_int ($value))
+                {
+                    Components::removeComponent ($value);
+
+                    if (VoidEngine::objectExists ($value))
+                        VoidEngine::removeObjects ($value);
+                }
 
                 elseif ($value instanceof Items)
                 {
@@ -65,11 +75,13 @@ class Component extends WFObject
         Components::cleanJunk ();
     }
 
-    // TODO: более строгие правила очистки мусорных объектов
     public function __destruct ()
     {
-        if (isset ($this->selector))
-            VoidEngine::destructObjects ($this->selector);
+        if (VoidEngine::destructObject ($this->selector))
+        {
+            VoidEngine::removeObjects ($this->selector);
+            Components::removeComponent ($this->selector);
+        }
     }
 }
 

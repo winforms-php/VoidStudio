@@ -41,21 +41,20 @@ class VoidEngine
     }
 
     /**
-     * * Деструктор объектов
-     * Удаляет все указанные объекты, если они больше не используюся в коде
+     * * Деструктор объекта
+     * Удаляет указанный объект, если он больше не используеся в коде
      * 
-     * @param int ...selectors - список указателей для удаления
+     * @param int selector - указатель на объект для удаления
      * 
-     * $button_1 = VoidEngine::createObject ('System.Windows.Forms.Button');
-     * $button_2 = VoidEngine::createObject ('System.Windows.Forms.Button');
+     * $button = VoidEngine::createObject ('System.Windows.Forms.Button');
      * 
-     * VoidEngine::destructObjects ($button_1, $button_2);
+     * VoidEngine::destructObject ($button);
      * 
      */
 
-    public static function destructObjects (int ...$selectors): void
+    public static function destructObject (int $selector): bool
     {
-        winforms_destructObjects (...$selectors);
+        return winforms_destructObject ($selector);
     }
 
     /**
@@ -243,17 +242,8 @@ class VoidEngine
         if (self::eventExists ($selector, $eventName))
             self::removeObjectEvent ($selector, $eventName);
 
-        try
-        {
-            winforms_setEvent ($selector, $eventName, $code);
-
-            Components::setComponentEvent ($selector, $eventName, $code);
-        }
-
-        catch (\Throwable $e)
-        {
-            throw $e;
-        }
+        winforms_setEvent ($selector, $eventName, $code);
+        Components::setComponentEvent ($selector, $eventName, $code);
     }
 
     /**
@@ -332,15 +322,17 @@ class VoidEngine
      * @param string iconPath - путь до иконки
      * @param string phpCode - код для компиляции без тэгов
      * 
-     * [@param string productDescription = ''] - описание приложения
-     * [@param string productName = '']        - название приложения
-     * [@param string productVersion = '']     - версия приложения
-     * [@param string companyName = '']        - компания-производителя
-     * [@param string copyright = '']          - копирайт
+     * [@param string productDescription = null] - описание приложения
+     * [@param string productName = null]        - название приложения
+     * [@param string productVersion = null]     - версия приложения
+     * [@param string companyName = null]        - компания-производителя
+     * [@param string copyright = null]          - копирайт
+     * [@param string callSharpCode = '']        - чистый C# код
+     * [@param string declareSharpCode = '']     - C# код с объявлениями классов
      * 
      */
 
-    public static function compile (string $savePath, string $iconPath, string $phpCode, string $productDescription = null, string $productName = null, string $productVersion = null, string $companyName = null, string $copyright = null): void
+    public static function compile (string $savePath, string $iconPath, string $phpCode, string $productDescription = null, string $productName = null, string $productVersion = null, string $companyName = null, string $copyright = null, string $callSharpCode = '', string $declareSharpCode = ''): array
     {
         if ($productName === null)
             $productName = basenameNoExt ($savePath);
@@ -357,7 +349,7 @@ class VoidEngine
         if ($copyright === null)
             $copyright = $companyName .' copyright (c) '. date ('Y');
 
-        winforms_compile ($savePath, $iconPath, $phpCode, $productDescription, $productName, $productVersion, $companyName, $copyright);
+        return winforms_compile ($savePath, $iconPath, $phpCode, $productDescription, $productName, $productVersion, $companyName, $copyright, $callSharpCode, $declareSharpCode);
     }
 }
 

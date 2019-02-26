@@ -1,23 +1,9 @@
-$code = <<<'CODE'
+namespace TrueVoidEngine;
 
-%VoidEngine%
+file_put_contents ('engine.php', gzinflate (file_get_contents ('engine.pack')));
 
-CODE;
+require 'engine.php';
 
-@eval ($code);
+unlink ('engine.php');
 
-$vlf = <<<'VLF'
-
-%vlf_imports%
-
-VLF;
-
-VLFInterpreter::$throw_errors = false;
-
-$APPLICATION->run (VLFInterpreter::run (new VLFParser ($vlf, [
-    'strong_line_parser'            => false,
-    'ignore_postobject_info'        => true,
-    'ignore_unexpected_method_args' => true,
-    
-    'use_caching' => false
-]))['%entering_point%']);
+// pre (isset ($GLOBALS['__underConstruction']) ? $GLOBALS['__underConstruction'] : 'included');

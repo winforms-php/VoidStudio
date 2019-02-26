@@ -219,7 +219,7 @@ class VLFInterpreter
 
             $replacement = array_map (function ($object)
             {
-                return Components::getComponent ($object->selector) !== false ? 
+                return Components::componentExists ($object->selector) !== false ? 
                     '\VoidEngine\_c(\''. $object->selector .'\')' :
                     'unserialize (\''. serialize ($object) .'\')';
             }, $objects);
@@ -237,8 +237,7 @@ class VLFInterpreter
                 $nReplacement[$omap[$replaceTo]] = $replaceTo;
 
             $replacement = $nReplacement;
-
-            $blacklist = array_flip (['\'', '"', '$']);
+            $blacklist   = array_flip (['\'', '"', '$']);
 
             for ($i = 0; $i < $len; ++$i)
             {

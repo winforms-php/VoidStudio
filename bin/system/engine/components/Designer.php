@@ -75,9 +75,9 @@ class VoidDesigner extends Component
         $this->form->focus ();
     }
 
-    public function getSharpCode (): string
+    public function getSharpCode (string $formName): string
     {
-        return $this->callMethod ('GetSharpCode');
+        return $this->callMethod ('GetSharpCode', $formName);
     }
 
     public function createComponent (ObjectType $component, string $componentName): int
@@ -88,6 +88,11 @@ class VoidDesigner extends Component
         $this->callMethod ('AddComponent', $selector, $componentName);
 
         return $selector;
+    }
+
+    public function setComponentToHistory (ObjectType $component, string $componentName): void
+    {
+        $this->objects[$componentName] = $component;
     }
 
     public function addComponent (int $selector, string $componentName): void

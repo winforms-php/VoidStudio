@@ -2,11 +2,15 @@
 
 namespace VoidEngine;
 
+// ! DEPRECATED
+
 class VLFExporter
 {
     public static function parseObjectsProperties (VoidDesigner $designer)
     {
-        $code = $designer->getSharpCode ();
+        trigger_error ('Class "VoidEngine\VLFExporter" is deprecated');
+
+        $code = $designer->getSharpCode ('Form');
         // pre ($code);
 
         $lines              = explode ("\n", $code);

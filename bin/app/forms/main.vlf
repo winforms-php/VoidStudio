@@ -49,12 +49,21 @@ Form MainForm
         width: 280
 
         TabPage PropertiesList__Page (text ('Свойства'))
+            MenuItem PropertiesList__ListMenuItem (text ('Восстановить'))
+                ClickEvent:^ function ($self)
+                    {
+                        c('PropertiesList__List')->resetSelectedProperty ();
+                    }
+
+            ContextMenu PropertiesList__ListMenu
+                ->items->add (PropertiesList__ListMenuItem)
+
             PropertyGrid PropertiesList__List
                 dock: dsFill
+                contextMenu: PropertiesList__ListMenu
                 
                 PropertyValueChangedEvent:^ function ($self, $args)
                     {
-                        // $args        = new PropertyValueChangedEventArgs ($args);
                         $designer    = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
                         $objectClass = $self->selectedObject->getType ()->toString ();
                         $newValue    = $args->changedItem->value;
@@ -208,15 +217,16 @@ Form MainForm
             }
 
     VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
-        #^ ComponentAddedEvent:^ function ($self, $args)
+        ComponentAddedEvent:^ function ($self, $args)
             {
-                $components = c('PropertiesPanel__SelectedComponent');
+                $self->setComponentToHistory ($GLOBALS['new_component'][1], $GLOBALS['new_component'][0]);
+                $components = VoidStudioAPI::getObjects ('main')['PropertiesPanel__SelectedComponent'];
 
                 $components->items->clear ();
                 $components->items->addRange (array_keys ($self->objects));
 
-                $components->selectedItem = $GLOBALS['new_component'];
-                $self->setSelectedComponents ($args->component);
+                $components->selectedItem = $GLOBALS['new_component'][0];
+                $self->setSelectedComponents ($args->component->selector);
 
                 unset ($GLOBALS['new_component']);
             }
@@ -233,7 +243,7 @@ Form MainForm
 
         ->columns->add (ComponentsNamesColumn)
 
-        #^ ClickEvent:^ function ($self) use (Designer__FormsList $formsList)
+        ClickEvent:^ function ($self) use (Designer__FormsList $formsList)
             {
                 $component = _c($self->selectedItems[0])->text;
 
@@ -247,7 +257,10 @@ Form MainForm
                     while (isset ($designer->objects[$name = $component . $i]))
                         ++$i;
 
-                    $GLOBALS['new_component'] = $name;
+                    $GLOBALS['new_component'] = [
+                        $name,
+                        new ObjectType ("System.Windows.Forms.$component")
+                    ];
                 }
             }
 
@@ -265,7 +278,20 @@ Form MainForm
 
                     $page     = new TabPage ($form);
                     $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, $formsList);
-                    # $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents);
+
+                    $designer->componentAddedEvent = function ($self, $args)
+                    {
+                        $self->setComponentToHistory ($GLOBALS['new_component'][1], $GLOBALS['new_component'][0]);
+                        $components = VoidStudioAPI::getObjects ('main')['PropertiesPanel__SelectedComponent'];
+
+                        $components->items->clear ();
+                        $components->items->addRange (array_keys ($self->objects));
+
+                        $components->selectedItem = $GLOBALS['new_component'][0];
+                        $self->setSelectedComponents ($args->component->selector);
+
+                        unset ($GLOBALS['new_component']);
+                    };
 
                     VoidStudioAPI::addObjects ('main', ['Designer__'. $form .'Designer' => $designer]);
 
@@ -274,7 +300,6 @@ Form MainForm
 
                     $name     = $page->text;
                     $selector = $designer->form->selector;
-                    # $selector = $designer->form;
                 }
 
                 else
@@ -293,12 +318,7 @@ Form MainForm
                     catch (\Throwable $e) {}
                 }
 
-                $components = c('PropertiesPanel__SelectedComponent');
-
-                $components->items->clear ();
-                $components->items->addRange (array_keys ($designer->objects));
-
-                $components->selectedItem = $name;
+                $designer->clearTypeForCreationOnClick ();
                 $designer->setSelectedComponents ($selector);
             }
 
@@ -342,9 +362,9 @@ Form MainForm
                         }
                     });
 
-                    VoidStudioBuilder::buildProject (getenv ('Temp') .'/vstmpprj', Designer__FormsList->selectedTab->text);
+                    VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', Designer__FormsList->selectedTab->text, false);
 
-                    run (getenv ('Temp') .'/vstmpprj/system/core/WinForms PHP.exe');
+                    run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
                 }
 
         MenuItem Menu__project_stop (text ('Остановить'))
@@ -362,14 +382,14 @@ Form MainForm
                     });
                 }
 
-        MenuItem Menu__project_build (text ('Собрать'))
+        MenuItem Menu__project_compile (text ('Компилировать'))
             ClickEvent:^ function ($self)
                 {
                     VoidStudioAPI::getObjects ('build')['MainForm']->showDialog ();
                 }
 
     MenuItem Menu__project
-        ->items->addRange ([Menu__project_run, Menu__project_stop, Menu__project_build])
+        ->items->addRange ([Menu__project_run, Menu__project_stop, Menu__project_compile])
 
     MainMenu Menu
         ->items->addRange ([Menu__studio, Menu__project])

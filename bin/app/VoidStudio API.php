@@ -49,10 +49,12 @@ class VoidStudioAPI
 
 class VoidStudioBuilder
 {
-    // TODO: настроить использование $precompileVLF
+    // ! DEPRECATED
     
     public static function buildProject (string $dir, string $enteringPoint, bool $withVoidFramework = false, bool $exportResources = false, bool $useCaching = false, bool $precompileVLF = false)
     {
+        trigger_error ('Function "VoiEngine\VoidStudioBuilder::buildProject" is deprecated');
+
         dir_clean ($dir .'/system');
         dir_clean ($dir .'/app');
 
@@ -89,31 +91,53 @@ class VoidStudioBuilder
         dir_clean ($dir .'/system/engine/extensions/VLF/cache');
     }
 
-    public static function compileProject (string $save, string $enteringPoint, bool $withVoidFramework = false, bool $precompileVLF = false)
+    // TODO
+
+    public static function compileProject (string $save, string $enteringPoint, bool $withVoidFramework = false): array
     {
         $savePath   = text (dirname ($save) .'/'. basenameNoExt ($save));
-        $vlfImports = '';
+        $forms      = [];
+        $globalCode = '';
+        /*$globalCode = 'class VoidControlsParser
+{
+    static void parseControls (string group, Control control)
+    {
+        for (int i = 0; i < control.Controls.Length; ++i)
+            Program.eval ("$GLOBALS[\'__underConstruction\'][\'" + group + "\'][\'" + control.Controls[i].Name + "\'] = " + Program.HashByObject (control.Controls[i]));
+    }
+}';*/
 
         foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
         {
             $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
 
-            $vlfImports .= VLFExporter::constructVLF (VLFExporter::parseObjectsProperties ($designer), $designer);
+            $globalCode .= $designer->getSharpCode ($item);
+            $forms[] = $item;
         }
 
         dir_clean ($savePath);
         dir_copy (CORE_DIR, $savePath);
-
+        
         unlink ($savePath .'/script.php');
         unlink ($savePath .'/WinForms PHP.exe');
 
-        VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_preset.php'), [
-            '%VoidEngine%'          => $withVoidFramework ? "define ('FRAMEWORK_DIR', getenv ('AppData') .'\VoidFramework');\n\nif (file_exists (FRAMEWORK_DIR .'/core/VoidEngine.php'))\n\trequire FRAMEWORK_DIR .'/core/VoidEngine.php';\n\nelse message ('VoidEngine not founded');" : VoidStudioBuilder::generateCode (),
-            '%vlf_imports%'         => $vlfImports,
-            '%entering_point%'      => $enteringPoint,
-            'namespace VoidEngine;' => 'nothing ();',
-            'VoidEngine\\'          => '',
-        ]));
+        file_put_contents ($savePath .text ('/engine.pack'), gzdeflate ("<?php\n\n\n". VoidStudioBuilder::generateCode (), 9));
+
+        $return = VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), $code = str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_preset.php'), [
+            '%VoidEngine%'              => /*"namespace TrueVoidEngine;\n\n". */($withVoidFramework ? "define ('FRAMEWORK_DIR', getenv ('AppData') .'\VoidFramework');\n\nif (file_exists (FRAMEWORK_DIR .'/engine/VoidEngine.php'))\n\trequire FRAMEWORK_DIR .'/engine/VoidEngine.php';\n\nelse message ('VoidEngine not founded');" : VoidStudioBuilder::generateCode ()) . '',
+            '%entering_point%'          => $enteringPoint,
+            'namespace VoidEngine;'     => '',
+            'namespace TrueVoidEngine;' => 'namespace VoidEngine;', // Костыль? Да, ну и что!
+            // '\\\''                      => '\''
+            // 'VoidEngine\\'            => '',
+        ]), null, null, null, null, null, /*$cs = str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_preset.cs'), [
+            '%forms%' => join ('", "', $forms)
+        ])*/ '', $globalCode);
+
+        pre ($code);
+        // pre ($cs);
+
+        return $return;
     }
 
     public static function generateCode (): string
@@ -121,7 +145,7 @@ class VoidStudioBuilder
         $code = "/*\n\n\t". join ("\n\t", explode ("\n", file_get_contents (dirname (ENGINE_DIR) .'/license.txt'))) ."\n\n*/\n\n";
 
         foreach (self::getReferences (ENGINE_DIR .'/VoidEngine.php') as $path)
-            $code .= join (array_slice (array_map (function ($line)
+            $code .= /*"message ('including $path...');\n\n".*/ join (array_slice (array_map (function ($line)
             {
                 return substr ($line, 0, 7) != 'require' ?
                     $line : '';

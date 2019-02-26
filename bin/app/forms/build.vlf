@@ -1,10 +1,10 @@
 Form MainForm
-    size: [340, 316]
+    size: [340, 256]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
     formBorderStyle: fbsToolWindow
 
-    caption: text ('Сборка проекта')
+    caption: text ('Компиляция проекта')
 
     ->icon->loadFromFile (APP_DIR .'/Icon.ico')
 
@@ -32,62 +32,16 @@ Form MainForm
         location: [16, 96]
         font: ['Segoe UI', 12]
 
-        caption: text ('Настройки сборки проекта')
-
-    CheckBox UseCaching
-        bounds: [16, 128, 220, 24]
-        caption: text ('Использовать кэширование')
-
-        checked: true
-
-    CheckBox PrecompileVLF
-        bounds: [16, 152, 220, 24]
-        caption: text ('Прекомпилировать VLF')
-
-        checked: false
-
-        ClickEvent: function ($self) {pre ('Work In Progress');}
-
-    CheckBox ResourcesExporting
-        bounds: [16, 176, 220, 24]
-        caption: text ('Экспортировать ресурсы')
-
-        checked: true
+        caption: text ('Настройки компиляции проекта')
 
     CheckBox UsingVoidFramework
-        bounds: [16, 200, 220, 24]
-        caption: text ('Сборка под VoidFramework')
+        bounds: [16, 128, 220, 24]
+        caption: text ('Компиляция под VoidFramework')
 
         checked: false
 
-    Button BuildProject
-        bounds: [16, 240, 104, 32]
-        flatStyle: flSystem
-
-        caption: text ('Собрать')
-
-        ClickEvent:^ function ($self)
-            {
-                $dir = new FolderBrowserDialog;
-
-                if (file_exists ('system/settings/build_path') && is_dir ($path = file_get_contents ('system/settings/build_path')))
-                    $dir->selectedPath = $path;
-                
-                if ($dir->execute () && is_dir ($dir = $dir->path))
-                {
-                    file_put_contents ('system/settings/build_path', $dir);
-
-                    VoidStudioBuilder::buildProject ($dir, FormSelection->selectedItem, UsingVoidFramework->checked, ResourcesExporting->checked, UseCaching->checked, PrecompileVLF->checked);
-
-                    pre (text ('Проект успешно собран'));
-                    MainForm->hide ();
-                }
-
-                // else pre (text ('Выбран неверный путь для сборки проекта'));
-            }
-
     Button CompileProject
-        bounds: [128, 240, 144, 32]
+        bounds: [16, 176, 120, 32]
         flatStyle: flSystem
 
         caption: text ('Компилировать')
@@ -104,9 +58,23 @@ Form MainForm
                 {
                     file_put_contents ('system/settings/compile_path', $save);
 
-                    VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, UsingVoidFramework->checked, PrecompileVLF->checked);
+                    $errors = VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, UsingVoidFramework->checked);
 
-                    pre (text ('Проект успешно скомпилирован'));
+                    $log = VoidStudioAPI::getObjects ('main')['ToolsPanel__LogList'];
+                    $log->items->add (text ('Проект скомпилирован по пути "'. $save .'". '. (($errorsCount = sizeof ($errors)) > 0 ? ('Обнаружено '. $errorsCount .' ошибок') : 'Ошибок не обнаружено')));
+
+                    if ($errorsCount > 0)
+                    {
+                        $log->items->addRange (array_map (function ($error)
+                        {
+                            return "\t". $error;
+                        }, $errors));
+
+                        pre (text ('Ошибка компиляции: обнаружено '. $errorsCount .' ошибок'));
+                    }
+
+                    else pre (text ('Проект успешно скомпилирован'));
+                    
                     MainForm->hide ();
                 }
 
