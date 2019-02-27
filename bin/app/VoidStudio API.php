@@ -3,13 +3,12 @@
 namespace VoidEngine;
 
 if (!file_exists (dirname (APP_DIR) .'/VoidStudio.lnk'))
-    vbs_exec ('
-        set objSC = CreateObject ("WScript.Shell").CreateShortcut ("'. text (dirname (APP_DIR) .'/VoidStudio.lnk') .'")
-        
-        objSC.TargetPath = "'. text (CORE_DIR .'/WinForms PHP.exe') .'"
-        objSC.WorkingDirectory  = "'. text (CORE_DIR) .'"
-        objSC.Save
-    ');
+{
+    $link = (new \COM ('WScript.Shell'))->CreateShortcut (text (dirname (APP_DIR) .'/VoidStudio.lnk'));
+    $link->TargetPath = text (CORE_DIR .'/WinForms PHP.exe');
+    $link->WorkingDirectory = text (CORE_DIR);
+    $link->Save ();
+}
 
 class VoidStudioAPI
 {
@@ -49,63 +48,12 @@ class VoidStudioAPI
 
 class VoidStudioBuilder
 {
-    // ! DEPRECATED
-    
-    public static function buildProject (string $dir, string $enteringPoint, bool $withVoidFramework = false, bool $exportResources = false, bool $useCaching = false, bool $precompileVLF = false)
-    {
-        trigger_error ('Function "VoiEngine\VoidStudioBuilder::buildProject" is deprecated');
-
-        dir_clean ($dir .'/system');
-        dir_clean ($dir .'/app');
-
-        dir_copy (dirname (ENGINE_DIR), $dir .'/system');
-
-        if ($withVoidFramework)
-            dir_delete ($dir .'/system/engine');
-
-        $resourcesDir = null;
-
-        if ($exportResources)
-        {
-            $resourcesDir = $dir .'/app/resources';
-
-            dir_create ($resourcesDir);
-        }
-
-        foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
-        {
-            $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
-
-            if ($item == $enteringPoint)
-                $item = 'main';
-
-            file_put_contents ($dir .'/app/'. $item .'.vlf', VLFExporter::constructVLF (VLFExporter::parseObjectsProperties ($designer), $designer, $resourcesDir));
-        }
-
-        file_put_contents ($dir .'/app/start.php', str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/build_preset.php'), [
-            '\'%use_caching%\''  => $useCaching ? 'true' : 'false',
-            '\'%resource_dir%\'' => $resourcesDir !== null ? 'APP_DIR .\'/resources\'' : 'null',
-            '%entering_point%'   => $enteringPoint
-        ]));
-
-        dir_clean ($dir .'/system/engine/extensions/VLF/cache');
-    }
-
-    // TODO
-
     public static function compileProject (string $save, string $enteringPoint, bool $withVoidFramework = false): array
     {
         $savePath   = text (dirname ($save) .'/'. basenameNoExt ($save));
+        $globalCode = file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs');
         $forms      = [];
-        $globalCode = '';
-        /*$globalCode = 'class VoidControlsParser
-{
-    static void parseControls (string group, Control control)
-    {
-        for (int i = 0; i < control.Controls.Length; ++i)
-            Program.eval ("$GLOBALS[\'__underConstruction\'][\'" + group + "\'][\'" + control.Controls[i].Name + "\'] = " + Program.HashByObject (control.Controls[i]));
-    }
-}';*/
+        $events     = [];
 
         foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
         {
@@ -113,6 +61,10 @@ class VoidStudioBuilder
 
             $globalCode .= $designer->getSharpCode ($item);
             $forms[] = $item;
+
+            foreach ($designer->objects as $name => $objectType)
+                if (isset (Components::$events[$designer->getComponentByName ($name)]) && sizeof (Components::$events[$designer->getComponentByName ($name)]) > 0)
+                    $events[$item][$name] = Components::$events[$designer->getComponentByName ($name)];
         }
 
         dir_clean ($savePath);
@@ -121,34 +73,31 @@ class VoidStudioBuilder
         unlink ($savePath .'/script.php');
         unlink ($savePath .'/WinForms PHP.exe');
 
-        $return = VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), $code = str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_preset.php'), [
-            '%VoidEngine%'              => ($withVoidFramework ? "define ('FRAMEWORK_DIR', getenv ('AppData') .'\VoidFramework');\n\nif (file_exists (FRAMEWORK_DIR .'/engine/VoidEngine.php'))\n\trequire FRAMEWORK_DIR .'/engine/VoidEngine.php';\n\nelse message ('VoidEngine not founded');" : VoidStudioBuilder::generateCode ()),
-            '%entering_point%'          => $enteringPoint,
-            'namespace VoidEngine;'     => '',
-            'namespace TrueVoidEngine;' => 'namespace VoidEngine;', // Костыль? Да, ну и что!
-            // 'VoidEngine\\'            => '',
-        ]), null, null, null, null, null, /*$cs = str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_preset.cs'), [
+        return VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.php'),[
+            '%VoidEngine%'     => $withVoidFramework ?
+                file_get_contents (APP_DIR .'/system/presets/compile_framework_preset.php') :
+                VoidStudioBuilder::generateCode (),
+
+            '%entering_point%' => $enteringPoint,
+            '%events%'         => base64_encode (gzdeflate (serialize ($events), 9)),
+        ]), null, null, null, null, null, str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
             '%forms%' => join ('", "', $forms)
-        ])*/ '', $globalCode);
-
-        pre ($code);
-        // pre ($cs);
-
-        return $return;
+        ]), $globalCode);
     }
 
-    public static function generateCode (): string
+    public static function generateCode (bool $removeNamespaces = true): string
     {
         $code = "/*\n\n\t". join ("\n\t", explode ("\n", file_get_contents (dirname (ENGINE_DIR) .'/license.txt'))) ."\n\n*/\n\n";
 
         foreach (self::getReferences (ENGINE_DIR .'/VoidEngine.php') as $path)
-            $code .= /*"message ('including $path...');\n\n".*/ join (array_slice (array_map (function ($line)
+            $code .= join (array_slice (array_map (function ($line)
             {
                 return substr ($line, 0, 7) != 'require' ?
                     $line : '';
             }, file ($path)), 1, -1));
 
-        return $code;
+        return $removeNamespaces ?
+            preg_replace ('/namespace [a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*;/', '', $code) : $code;
     }
 
     public static function getReferences (string $file, bool $parseExtensions = true): array

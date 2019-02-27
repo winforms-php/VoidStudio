@@ -40,6 +40,11 @@ Form MainForm
 
         checked: false
 
+        ClickEvent:^ function ($self)
+            {
+                pre (text ('Не рекомендуется использовать'));
+            }
+
     Button CompileProject
         bounds: [16, 176, 120, 32]
         flatStyle: flSystem

@@ -13,11 +13,18 @@ $APPLICATION = new class
         $this->executablePath = $this->application->executablePath;
     }
     
-    public function run (Form $form = null): void
+    public function run ($form = null): void
     {
-        $form !== null ?
-            $this->application->run ($form->selector) :
+        if ($form instanceof WFObject)
+            $this->application->run ($form->selector);
+        
+        elseif (is_int ($form) && VoidEngine::objectExists ($form))
+            $this->application->run ($form);
+        
+        elseif ($form === null)
             $this->application->run ();
+
+        else throw new \Exception ('$form param must be instance of "VoidEngine\WFObject" ("VoidEngine\Form"), be null or object selector');
     }
     
     public function restart (): void

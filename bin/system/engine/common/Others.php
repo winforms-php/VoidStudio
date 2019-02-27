@@ -220,39 +220,47 @@ function c ($name, bool $returnAllSimilarObjects = false)
         $similar = [];
 
         foreach (Components::$components as $object)
-            if (($object instanceof Control || method_exists ($object, 'get_name') || property_exists ($object, 'name')) && $object->name == end ($path))
+            try
             {
-                if (sizeof ($path) > 1)
-                    try
-                    {
-                        if (is_object ($parent = _c($object->parent->selector)))
+                if ($object->name == end ($path))
+                {
+                    if (sizeof ($path) > 1)
+                        try
                         {
-                            if (c(join ('->', array_slice ($path, 0, -1))) == $parent)
+                            if (is_object ($parent = _c($object->parent->selector)))
                             {
-                                if ($returnAllSimilarObjects)
-                                    $similar[] = $object;
+                                if (c(join ('->', array_slice ($path, 0, -1))) == $parent)
+                                {
+                                    if ($returnAllSimilarObjects)
+                                        $similar[] = $object;
 
-                                else return $object;
+                                    else return $object;
+                                }
+
+                                else continue;
                             }
 
                             else continue;
                         }
 
-                        else continue;
-                    }
+                        catch (\Throwable $e)
+                        {
+                            continue;
+                        }
 
-                    catch (\Throwable $e)
+                    else
                     {
-                        continue;
+                        if ($returnAllSimilarObjects)
+                            $similar[] = $object;
+
+                        else return $object;
                     }
-
-                else
-                {
-                    if ($returnAllSimilarObjects)
-                        $similar[] = $object;
-
-                    else return $object;
                 }
+            }
+
+            catch (\Exception $e)
+            {
+                continue;
             }
 
         if (sizeof ($path) == 2)
@@ -266,9 +274,7 @@ function c ($name, bool $returnAllSimilarObjects = false)
                     {
                         while (is_object ($parent = _c($object->parent->selector)))
                         {
-                            // TODO $parent может быть и WFObject с типом System.Windows.Forms.Form
-
-                            if ($parent instanceof Form && $parent->name == $path[0])
+                            if ($parent->getType ()->toString () == 'System.Windows.Forms.Form' && $parent->name == $path[0])
                                 return $objects[$id];
 
                             else $object = $parent;

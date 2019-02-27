@@ -48,16 +48,16 @@ Form MainForm
         dock: dsLeft
         width: 280
 
+        MenuItem PropertiesList__ListMenuItem (text ('Восстановить'))
+            ClickEvent:^ function ($self)
+                {
+                    c('PropertiesList__List')->resetSelectedProperty ();
+                }
+
+        ContextMenu PropertiesList__ListMenu ()
+            ->items->add (PropertiesList__ListMenuItem)
+
         TabPage PropertiesList__Page (text ('Свойства'))
-            MenuItem PropertiesList__ListMenuItem (text ('Восстановить'))
-                ClickEvent:^ function ($self)
-                    {
-                        c('PropertiesList__List')->resetSelectedProperty ();
-                    }
-
-            ContextMenu PropertiesList__ListMenu
-                ->items->add (PropertiesList__ListMenuItem)
-
             PropertyGrid PropertiesList__List
                 dock: dsFill
                 contextMenu: PropertiesList__ListMenu
@@ -165,7 +165,7 @@ Form MainForm
                                 return $item;
                             }, $events));
 
-                            $menu->show (MainForm->selector, (new WFClass ('System.Windows.Forms.Cursor'))->position->selector);
+                            $menu->show (MainForm, MainForm->pointToClient ((new WFClass ('System.Windows.Forms.Cursor'))->position));
                         }
                     }
 
@@ -196,7 +196,6 @@ Form MainForm
                 }
 
     TabPage Designer__Form1 (text ('Form1'))
-        # VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents)
 
     TabControl Designer__FormsList (ToolsPanel__Container->panel1)
         dock: dsFill
@@ -212,8 +211,7 @@ Form MainForm
                 $components->items->addRange (array_keys ($designer->objects));
 
                 $components->selectedItem = $tab;
-                $designer->setSelectedComponents ($designer->form->selector);
-                # $designer->setSelectedComponents ($designer->form);
+                $designer->setSelectedComponents ($designer->form);
             }
 
     VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
@@ -226,9 +224,48 @@ Form MainForm
                 $components->items->addRange (array_keys ($self->objects));
 
                 $components->selectedItem = $GLOBALS['new_component'][0];
-                $self->setSelectedComponents ($args->component->selector);
+                $self->setSelectedComponents ($args->component);
 
                 unset ($GLOBALS['new_component']);
+            }
+
+        RightClickEvent:^ function ($self, $args)
+            {
+                $delItem = new MenuItem (text ('Удалить'));
+                $delItem->clickEvent = function () use ($self)
+                {
+                    $self->removeSelected ();
+                };
+
+                $toFrontItem = new MenuItem (text ('На передний план'));
+                $toFrontItem->clickEvent = function () use ($self)
+                {
+                    $self->bringToFrontSelected ();
+                };
+
+                $toBackItem = new MenuItem (text ('На задний план'));
+                $toBackItem->clickEvent = function () use ($self)
+                {
+                    $self->sendToBackSelected ();
+                };
+
+                $infoItem = new MenuItem (text ('Отладочная информация'));
+                $infoItem->clickEvent = function () use ($self)
+                {
+                    $self->getSelectedComponents ()->foreach (function ($index, $value)
+                    {
+                        pre (is_object ($obj = _c($value)) ? $obj : (VoidEngine::callMethod ($value, 'ToString') ."\nSelector: $value"));
+                    });
+                };
+
+                $menu = new ContextMenu;
+                $menu->items->addRange ([
+                    $delItem, '-',
+                    $toFrontItem, $toBackItem, '-',
+                    $infoItem
+                ]);
+
+                $menu->show ($self->form, $self->form->pointToClient (VoidEngine::createObject (new ObjectType ('System.Drawing.Point'), $args->x, $args->y)));
             }
 
     ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
@@ -288,15 +325,54 @@ Form MainForm
                         $components->items->addRange (array_keys ($self->objects));
 
                         $components->selectedItem = $GLOBALS['new_component'][0];
-                        $self->setSelectedComponents ($args->component->selector);
+                        $self->setSelectedComponents ($args->component);
 
                         unset ($GLOBALS['new_component']);
+                    };
+
+                    $designer->rightClickEvent = function ($self, $args)
+                    {
+                        $delItem = new MenuItem (text ('Удалить'));
+                        $delItem->clickEvent = function () use ($self)
+                        {
+                            $self->removeSelected ();
+                        };
+
+                        $toFrontItem = new MenuItem (text ('На передний план'));
+                        $toFrontItem->clickEvent = function () use ($self)
+                        {
+                            $self->bringToFrontSelected ();
+                        };
+
+                        $toBackItem = new MenuItem (text ('На задний план'));
+                        $toBackItem->clickEvent = function () use ($self)
+                        {
+                            $self->sendToBackSelected ();
+                        };
+
+                        $infoItem = new MenuItem (text ('Отладочная информация'));
+                        $infoItem->clickEvent = function () use ($self)
+                        {
+                            $self->getSelectedComponents ()->foreach (function ($index, $value)
+                            {
+                                pre (is_object ($obj = _c($value)) ? $obj : (VoidEngine::callMethod ($value, 'ToString') ."\nSelector: $value"));
+                            });
+                        };
+
+                        $menu = new ContextMenu;
+                        $menu->items->addRange ([
+                            $delItem, '-',
+                            $toFrontItem, $toBackItem, '-',
+                            $infoItem
+                        ]);
+
+                        $menu->show ($self->form, $self->form->pointToClient (VoidEngine::createObject (new ObjectType ('System.Drawing.Point'), $args->x, $args->y)));
                     };
 
                     VoidStudioAPI::addObjects ('main', ['Designer__'. $form .'Designer' => $designer]);
 
                     $formsList->items->add ($page);
-                    $formsList->selectedTab = $page->selector;
+                    $formsList->selectedTab = $page;
 
                     $name     = $page->text;
                     $selector = $designer->form->selector;
@@ -312,7 +388,7 @@ Form MainForm
 
                     try
                     {
-                        VoidEngine::setProperty ($selector, 'Text', $component);
+                        VoidEngine::setProperty ($selector, 'Text', $name);
                     }
 
                     catch (\Throwable $e) {}
@@ -351,18 +427,15 @@ Form MainForm
         MenuItem Menu__project_run (text ('Запустить'))
             ClickEvent:^ function ($self)
                 {
-                    (new Process)->getProcessesByName ('WinForms PHP')->foreach (function ($index, $value)
+                    (new Process)->getProcessesByName ('vstmpprj')->foreach (function ($index, $value)
                     {
                         $process = new WFObject ($value);
 
-                        if ($process->id != getmypid ())
-                        {
-                            $process->kill ();
-                            $process->waitForExit ();
-                        }
+                        $process->kill ();
+                        $process->waitForExit ();
                     });
 
-                    VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', Designer__FormsList->selectedTab->text, false);
+                    VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', _c(Designer__FormsList->items[0])->text, false);
 
                     run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
                 }
@@ -370,15 +443,12 @@ Form MainForm
         MenuItem Menu__project_stop (text ('Остановить'))
             ClickEvent:^ function ($self)
                 {
-                    (new Process)->getProcessesByName ('WinForms PHP')->foreach (function ($index, $value)
+                    (new Process)->getProcessesByName ('vstmpprj')->foreach (function ($index, $value)
                     {
                         $process = new WFObject ($value);
-
-                        if ($process->id != getmypid ())
-                        {
-                            $process->kill ();
-                            $process->waitForExit ();
-                        }
+                        
+                        $process->kill ();
+                        $process->waitForExit ();
                     });
                 }
 
@@ -405,8 +475,7 @@ Form MainForm
             if (file_exists ('system/settings/last_eval.php'))
                 ToolsPanel__EvalEditor->text = file_get_contents ('system/settings/last_eval.php');
 
-            PropertiesList__List->selectedObject = Designer__Form1Designer->form->selector;
-            # PropertiesList__List->selectedObject = Designer__Form1Designer->form;
+            PropertiesList__List->selectedObject = Designer__Form1Designer->form;
 
             $time = round (microtime (true) - $GLOBALS['__debug']['start_time'], 4);
 

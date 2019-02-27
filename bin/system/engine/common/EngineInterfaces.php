@@ -692,7 +692,7 @@ class WFObject
 	
 	public function __call ($method, $args)
 	{
-        array_map (function ($arg)
+        $args = array_map (function ($arg)
         {
             return ($arg instanceof WFObject || $arg instanceof Items) ?
                 $arg->selector : $arg;

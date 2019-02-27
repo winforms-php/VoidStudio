@@ -23,6 +23,7 @@ class Component extends WFObject
     {
         return [
             'description' => $this->callMethod ('ToString'),
+            'selector'    => $this->selector,
             'objectInfo'  => json_encode ($this, JSON_PRETTY_PRINT)
         ];
     }
