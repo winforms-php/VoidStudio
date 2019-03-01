@@ -202,71 +202,29 @@ Form MainForm
 
         ->items->add (Designer__Form1)
 
-        SelectedIndexChangedEvent:^ function ($self) use (PropertiesPanel__SelectedComponent $components)
+        SelectedIndexChangedEvent:^ function ($self) use (PropertiesPanel__SelectedComponent $components, EventsList__ActiveEvents $eventsList)
             {
-                $designer = VoidStudioAPI::getObjects ('main')['Designer__'. ($tab = $self->selectedTab->text) .'Designer'];
-                $designer->focus ();
+                if ($self->items->count > 0)
+                {
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. ($tab = $self->selectedTab->text) .'Designer'];
+                    $designer->focus ();
 
-                $components->items->clear ();
-                $components->items->addRange (array_keys ($designer->objects));
+                    $components->items->clear ();
+                    $components->items->addRange (array_keys ($designer->objects));
 
-                $components->selectedItem = $tab;
-                $designer->setSelectedComponents ($designer->form);
+                    $components->selectedItem = $tab;
+                    $designer->setSelectedComponents ($designer->form);
+
+                    $events = Events::getObjectEvents ($designer->form->selector);
+                    $eventsList->items->clear ();
+
+                    if (is_array ($events))
+                        $eventsList->items->addRange (array_keys ($events));
+                }
             }
 
     VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
-        ComponentAddedEvent:^ function ($self, $args)
-            {
-                $self->setComponentToHistory ($GLOBALS['new_component'][1], $GLOBALS['new_component'][0]);
-                $components = VoidStudioAPI::getObjects ('main')['PropertiesPanel__SelectedComponent'];
-
-                $components->items->clear ();
-                $components->items->addRange (array_keys ($self->objects));
-
-                $components->selectedItem = $GLOBALS['new_component'][0];
-                $self->setSelectedComponents ($args->component);
-
-                unset ($GLOBALS['new_component']);
-            }
-
-        RightClickEvent:^ function ($self, $args)
-            {
-                $delItem = new MenuItem (text ('Удалить'));
-                $delItem->clickEvent = function () use ($self)
-                {
-                    $self->removeSelected ();
-                };
-
-                $toFrontItem = new MenuItem (text ('На передний план'));
-                $toFrontItem->clickEvent = function () use ($self)
-                {
-                    $self->bringToFrontSelected ();
-                };
-
-                $toBackItem = new MenuItem (text ('На задний план'));
-                $toBackItem->clickEvent = function () use ($self)
-                {
-                    $self->sendToBackSelected ();
-                };
-
-                $infoItem = new MenuItem (text ('Отладочная информация'));
-                $infoItem->clickEvent = function () use ($self)
-                {
-                    $self->getSelectedComponents ()->foreach (function ($index, $value)
-                    {
-                        pre (is_object ($obj = _c($value)) ? $obj : (VoidEngine::callMethod ($value, 'ToString') ."\nSelector: $value"));
-                    });
-                };
-
-                $menu = new ContextMenu;
-                $menu->items->addRange ([
-                    $delItem, '-',
-                    $toFrontItem, $toBackItem, '-',
-                    $infoItem
-                ]);
-
-                $menu->show ($self->form, $self->form->pointToClient (VoidEngine::createObject (new ObjectType ('System.Drawing.Point'), $args->x, $args->y)));
-            }
+        ->initDesigner ()
 
     ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
         width: 216
@@ -276,13 +234,14 @@ Form MainForm
         width: 220
 
         fullRowSelect: true
+        multiselect: false
         view: vwDetails
 
         ->columns->add (ComponentsNamesColumn)
 
         ClickEvent:^ function ($self) use (Designer__FormsList $formsList)
             {
-                $component = _c($self->selectedItems[0])->text;
+                $component = $self->selectedItems[0]->text;
 
                 if ($component != 'Form')
                 {
@@ -304,7 +263,7 @@ Form MainForm
         DoubleClickEvent:^ function ($self) use (Designer__FormsList $formsList)
             {
                 $form      = $formsList->selectedTab->text;
-                $component = _c($self->selectedItems[0])->text;
+                $component = $self->selectedItems[0]->text;
                 $designer  = VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer'];
 
                 if ($component == 'Form')
@@ -316,65 +275,11 @@ Form MainForm
                     $page     = new TabPage ($form);
                     $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, $formsList);
 
-                    $designer->componentAddedEvent = function ($self, $args)
-                    {
-                        $self->setComponentToHistory ($GLOBALS['new_component'][1], $GLOBALS['new_component'][0]);
-                        $components = VoidStudioAPI::getObjects ('main')['PropertiesPanel__SelectedComponent'];
-
-                        $components->items->clear ();
-                        $components->items->addRange (array_keys ($self->objects));
-
-                        $components->selectedItem = $GLOBALS['new_component'][0];
-                        $self->setSelectedComponents ($args->component);
-
-                        unset ($GLOBALS['new_component']);
-                    };
-
-                    $designer->rightClickEvent = function ($self, $args)
-                    {
-                        $delItem = new MenuItem (text ('Удалить'));
-                        $delItem->clickEvent = function () use ($self)
-                        {
-                            $self->removeSelected ();
-                        };
-
-                        $toFrontItem = new MenuItem (text ('На передний план'));
-                        $toFrontItem->clickEvent = function () use ($self)
-                        {
-                            $self->bringToFrontSelected ();
-                        };
-
-                        $toBackItem = new MenuItem (text ('На задний план'));
-                        $toBackItem->clickEvent = function () use ($self)
-                        {
-                            $self->sendToBackSelected ();
-                        };
-
-                        $infoItem = new MenuItem (text ('Отладочная информация'));
-                        $infoItem->clickEvent = function () use ($self)
-                        {
-                            $self->getSelectedComponents ()->foreach (function ($index, $value)
-                            {
-                                pre (is_object ($obj = _c($value)) ? $obj : (VoidEngine::callMethod ($value, 'ToString') ."\nSelector: $value"));
-                            });
-                        };
-
-                        $menu = new ContextMenu;
-                        $menu->items->addRange ([
-                            $delItem, '-',
-                            $toFrontItem, $toBackItem, '-',
-                            $infoItem
-                        ]);
-
-                        $menu->show ($self->form, $self->form->pointToClient (VoidEngine::createObject (new ObjectType ('System.Drawing.Point'), $args->x, $args->y)));
-                    };
-
-                    VoidStudioAPI::addObjects ('main', ['Designer__'. $form .'Designer' => $designer]);
+                    $designer->initDesigner ();
 
                     $formsList->items->add ($page);
                     $formsList->selectedTab = $page;
 
-                    $name     = $page->text;
                     $selector = $designer->form->selector;
                 }
 
@@ -421,7 +326,7 @@ Form MainForm
        Menu__studio_about. Типо, опять фиксить и всё такое, но мне влом пока что
 
     MenuItem Menu__studio
-        ->items->addRange ([Menu__studio_restart, Menu__studio_about, Menu__studio_vk])
+        ->items->addRange ([Menu__studio_restart, '-', Menu__studio_about, Menu__studio_vk])
 
     MenuItem Menu__project (text ('Проект'))
         MenuItem Menu__project_run (text ('Запустить'))
@@ -435,7 +340,7 @@ Form MainForm
                         $process->waitForExit ();
                     });
 
-                    VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', _c(Designer__FormsList->items[0])->text, false);
+                    VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', Designer__FormsList->items[0]->text, false);
 
                     run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
                 }
@@ -457,9 +362,33 @@ Form MainForm
                 {
                     VoidStudioAPI::getObjects ('build')['MainForm']->showDialog ();
                 }
+        
+        MenuItem Menu__project_open (text ('Открыть'))
+            ClickEvent:^ function ($self)
+                {
+                    $open = new OpenFileDialog;
+                    $open->filter = 'VoidStudio Project file (*.vsp)|*.vsp';
+
+                    if ($open->execute () && is_readable ($file = $open->fileName))
+                        VoidStudioProjectManager::openProject ($file);
+                }
+
+        MenuItem Menu__project_save (text ('Сохранить'))
+            ClickEvent:^ function ($self)
+                {
+                    $save = new SaveFileDialog;
+                    $save->filter = 'VoidStudio Project file (*.vsp)|*.vsp';
+                    
+                    if ($save->execute () && strlen ($save = $save->fileName) > 0)
+                    {
+                        VoidStudioProjectManager::saveProject ($save);
+
+                        pre (text ('Проект успешно сохранён'));
+                    }
+                }
 
     MenuItem Menu__project
-        ->items->addRange ([Menu__project_run, Menu__project_stop, Menu__project_compile])
+        ->items->addRange ([Menu__project_run, Menu__project_stop, Menu__project_compile, '-', Menu__project_open, Menu__project_save])
 
     MainMenu Menu
         ->items->addRange ([Menu__studio, Menu__project])

@@ -143,6 +143,11 @@ function pre (...$args): void
 	message (print_r ($args, true));
 }
 
+function messageBox (string $message, string $caption = null, ...$args)
+{
+    (new MessageBox)->show ($message, $caption, ...$args);
+}
+
 class Components
 {
     static $components = [];
@@ -281,7 +286,10 @@ function c ($name, bool $returnAllSimilarObjects = false)
                         }
                     }
 
-                    catch (\Throwable $e) {}
+                    catch (\Throwable $e)
+					{
+						continue;
+					}
 
                 return false;
             }
@@ -314,7 +322,7 @@ function setTimer (int $interval, callable $function): Timer
     return $timer;
 }
 
-// FIXME: выполняется несколько раз, а не единажды
+// FIXME: выполняется несколько раз, а не единожды
 function setTimeout (int $timeout, callable $function): Timer
 {
     $timer = new Timer;
@@ -334,30 +342,19 @@ function setTimeout (int $timeout, callable $function): Timer
 
 class Clipboard
 {
-    static $clipboard;
-
     public static function getText (): string
     {
-        if (!isset (self::$clipboard))
-            self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
-
-        return self::$clipboard->getText ();
+        return (new WFClass ('System.Windows.Forms.Clipboard'))->getText ();
     }
     
     public static function setText (string $text): void
     {
-        if (!isset (self::$clipboard))
-            self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
-
-        self::$clipboard->setText ($text);
+        (new WFClass ('System.Windows.Forms.Clipboard'))->setText ($text);
     }
     
     public static function getFiles (): array
     {
-        if (!isset (self::$clipboard))
-            self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
-
-        $array = self::$clipboard->getFileDropList ();
+        $array = (new WFClass ('System.Windows.Forms.Clipboard'))->getFileDropList ();
         $size  = VoidEngine::getProperty ($array, 'Count');
         $files = [];
 
@@ -371,15 +368,12 @@ class Clipboard
     
     public static function setFiles (array $files): void
     {
-        if (!isset (self::$clipboard))
-            self::$clipboard = new WFClass ('System.Windows.Forms.Clipboard');
-
         $collection = VoidEngine::createObject (new ObjectType ('System.Collections.Specialized.StringCollection'));
 
         foreach ($files as $file)
             VoidEngine::callMethod ($collection, 'Add', (string) $file);
 
-        self::$clipboard->setFileDropList ($collection);
+        (new WFClass ('System.Windows.Forms.Clipboard'))->setFileDropList ($collection);
         VoidEngine::removeObjects ($collection);
     }
 }

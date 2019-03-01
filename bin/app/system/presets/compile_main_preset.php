@@ -13,7 +13,11 @@ if (isset ($GLOBALS['__underConstruction']))
 
             if (isset ($events[$group][$name]))
                 foreach ($events[$group][$name] as $eventName => $event)
+                {
+                    Events::reserveObjectEvent ($selector, $eventName);
+                    
                     VoidEngine::setObjectEvent ($selector, $eventName, "namespace VoidEngine;\n\n\$self = _c($selector);\n\$args = isset (\$args) ? (is_int (\$args) && VoidEngine::objectExists (\$args) ? new EventArgs (\$args) : \$args) : false;\n\n". $event);
+                }
 
             try
             {

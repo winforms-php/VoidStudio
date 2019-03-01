@@ -454,6 +454,21 @@ class EngineAdditions
 
         return $events;
     }
+
+    public static function coupleSelector ($value, int $selfSelector = null)
+    {
+        if (is_int ($value) && VoidEngine::objectExists ($value) && $value != $selfSelector)
+            return VoidEngine::getProperty (VoidEngine::callMethod ($value, 'GetType'), 'IsArray') ?
+                new Items ($value) : new WFObject ($value);
+
+        else return $value;
+    }
+
+    public static function uncoupleSelector ($value)
+    {
+        return ($value instanceof WFObject || $value instanceof Items) ?
+            $value->selector : $value;
+    }
 }
 
 class Items extends \ArrayObject
@@ -503,7 +518,7 @@ class Items extends \ArrayObject
                         $names[] = VoidEngine::getProperty (VoidEngine::getArrayValue ($this->selector, [$i, 'object']), 'Text');
                     }
 
-                    catch (\WinFormsException $e)
+                    catch (\Throwable $e)
                     {
                         $names[] = VoidEngine::getArrayValue ($this->selector, [$i, 'string']);
                     }
@@ -529,14 +544,12 @@ class Items extends \ArrayObject
 	
 	public function offsetSet ($index, $value)
 	{
-        return $index === null ?
-            VoidEngine::callMethod ($this->selector, 'Add', $value instanceof WFObject ? $value->selector : $value) :
-            VoidEngine::callMethod ($this->selector, 'Insert', $index, $value instanceof WFObject ? $value->selector : $value);
+        return VoidEngine::callMethod ($this->selector, $index === null ? 'Add' : 'Insert', $value instanceof WFObject ? $value->selector : $value);
 	}
 	
 	public function offsetGet ($index)
 	{
-		return VoidEngine::getArrayValue ($this->selector, $index);
+		return EngineAdditions::coupleSelector (VoidEngine::getArrayValue ($this->selector, $index), $this->selector);
 	}
 	
 	public function addRange (array $items): void
@@ -579,7 +592,7 @@ class Items extends \ArrayObject
         $size = $this->count;
 
         for ($i = 0; $i < $size; ++$i)
-            $callback ($i, VoidEngine::getArrayValue ($this->selector, $type !== null ? [$i, $type] : $i));
+            $callback ($i, EngineAdditions::coupleSelector (VoidEngine::getArrayValue ($this->selector, $type !== null ? [$i, $type] : $i), $this->selector));
     }
 }
 
@@ -664,7 +677,7 @@ class WFObject
         
         else $value = $this->getProperty ($name);
 
-        return $this->coupleSelector ($value);
+        return EngineAdditions::coupleSelector ($value, $this->selector);
 	}
 	
 	public function __set ($name, $value)
@@ -687,7 +700,7 @@ class WFObject
         elseif (substr ($name, -5) == 'Event')
             Events::setObjectEvent ($this->selector, substr ($name, 0, -5), $value);
         
-        else $this->setProperty ($name, $this->uncoupleSelector ($value));
+        else $this->setProperty ($name, EngineAdditions::uncoupleSelector ($value));
 	}
 	
 	public function __call ($method, $args)
@@ -698,7 +711,7 @@ class WFObject
                 $arg->selector : $arg;
         }, $args);
 
-        return $this->coupleSelector ($this->callMethod ($method, ...$args));
+        return EngineAdditions::coupleSelector ($this->callMethod ($method, ...$args), $this->selector);
 	}
 	
     protected function getProperty ($name)
@@ -728,21 +741,6 @@ class WFObject
         VoidEngine::removeObjects ($array);
         
 		return $return;
-    }
-    
-    protected function coupleSelector ($value)
-    {
-        if (is_int ($value) && VoidEngine::objectExists ($value) && $value != $this->selector)
-            return VoidEngine::getProperty (VoidEngine::callMethod ($value, 'GetType'), 'IsArray') ?
-                new Items ($value) : new WFObject ($value);
-
-        else return $value;
-    }
-
-    protected function uncoupleSelector ($value)
-    {
-        return ($value instanceof WFObject || $value instanceof Items) ?
-            $value->selector : $value;
     }
 }
 

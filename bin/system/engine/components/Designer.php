@@ -20,9 +20,13 @@ class VoidDesigner extends Component
     protected $currentSelectedItem;
     protected $formsList;
 
-    public function __construct (Control $parent, string $formName = 'form', PropertyGrid $propertyGrid, ListBox $eventsList, ComboBox $currentSelectedItem, TabControl $formsList, Form $form = null)
+    public function __construct (Control $parent, string $formName = 'form', PropertyGrid $propertyGrid, ListBox $eventsList, ComboBox $currentSelectedItem, TabControl $formsList, $form = null)
     {
-        $this->form = $form === null ? new Form : $form;
+        $this->form = $form === null ? new Form :
+            EngineAdditions::coupleSelector ($form);
+
+        if (!is_object ($this->form))
+            throw new \Exception ('$form param in "VoidEngine\VoidDesigner" constructor must be instance of "VoidEngine\WFObject" ("VoidEngine\Form") or be object selector');
 
         $this->propertyGrid        = $propertyGrid;
         $this->eventsList          = $eventsList;
@@ -68,6 +72,67 @@ class VoidDesigner extends Component
             if (is_array ($events))
                 _c('. $eventsList->selector .')->items->addRange (array_keys ($events));
         ');
+    }
+
+    public function initDesigner (): void
+    {
+        $this->componentAddedEvent = function ($self, $args)
+        {
+            if (isset ($GLOBALS['new_component']))
+            {
+                $self->setComponentToHistory ($GLOBALS['new_component'][1], $GLOBALS['new_component'][0]);
+                $components = VoidStudioAPI::getObjects ('main')['PropertiesPanel__SelectedComponent'];
+
+                $components->items->clear ();
+                $components->items->addRange (array_keys ($self->objects));
+
+                $components->selectedItem = $GLOBALS['new_component'][0];
+                $self->setSelectedComponents ($args->component);
+
+                unset ($GLOBALS['new_component']);
+            }
+        };
+
+        $this->rightClickEvent = function ($self, $args)
+        {
+            $delItem = new MenuItem (text ('Удалить'));
+            $delItem->clickEvent = function () use ($self)
+            {
+                $self->removeSelected ();
+            };
+
+            $toFrontItem = new MenuItem (text ('На передний план'));
+            $toFrontItem->clickEvent = function () use ($self)
+            {
+                $self->bringToFrontSelected ();
+            };
+
+            $toBackItem = new MenuItem (text ('На задний план'));
+            $toBackItem->clickEvent = function () use ($self)
+            {
+                $self->sendToBackSelected ();
+            };
+
+            $infoItem = new MenuItem (text ('Отладочная информация'));
+            $infoItem->clickEvent = function () use ($self)
+            {
+                $self->getSelectedComponents ()->foreach (function ($index, $value)
+                {
+                    pre ($value instanceof Component ? $value : $value->toString () ."\nSelector: ". $value->selector);
+                });
+            };
+
+            $menu = new ContextMenu;
+            $menu->items->addRange ([
+                $delItem, '-',
+                $toFrontItem, $toBackItem, '-',
+                $infoItem
+            ]);
+
+            $menu->show ($self->form, $self->form->pointToClient (VoidEngine::createObject (new ObjectType ('System.Drawing.Point'), $args->x, $args->y)));
+        };
+
+        VoidStudioAPI::addObjects ('main', ['Designer__'. $this->form->name .'Designer' => $this]);
     }
 
     public function focus (): void
@@ -130,6 +195,7 @@ class VoidDesigner extends Component
 
                     $this->formsList->items->remove (array_flip ($this->formsList->items->names)[$form = VoidEngine::getProperty ($object, 'Name')]);
 
+                    $this->control->dispose ();
                     $this->form->dispose ();
                     $this->callMethod ('DeleteSelected');
 

@@ -46,12 +46,86 @@ class VoidStudioAPI
     }
 }
 
+class VoidStudioProjectManager
+{
+    public static function saveProject (string $file): void
+    {
+        $info = [
+            'forms'  => [],
+            'events' => []
+        ];
+
+        foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $item)
+        {
+            $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
+
+            $info['forms'][$item] = VoidStudioBuilder::appendResources ($designer->getSharpCode ($item), $designer);
+
+            foreach ($designer->objects as $name => $objectType)
+                if (isset (Components::$events[$designer->getComponentByName ($name)]) && sizeof (Components::$events[$designer->getComponentByName ($name)]) > 0)
+                    $info['events'][$item][$name] = Components::$events[$designer->getComponentByName ($name)];
+        }
+
+        file_put_contents ($file, gzdeflate (serialize ($info), 9));
+    }
+
+    public static function openProject (string $file): void
+    {
+        $info    = unserialize (gzinflate (file_get_contents ($file)));
+        $objects = VoidStudioAPI::getObjects ('main');
+
+        $objects['PropertiesList__List']->selectedObject = null;
+        $objects['Designer__FormsList']->items->foreach (function ($index, $value)
+        {
+            VoidStudioAPI::$objects['main']['Designer__'. $value->text .'Designer']->control->dispose ();
+            VoidStudioAPI::$objects['main']['Designer__'. $value->text .'Designer']->form->dispose ();
+
+            unset (VoidStudioAPI::$objects['main']['Designer__'. $value->text .'Designer']);
+        });
+
+        $objects['Designer__FormsList']->items->clear ();
+
+        foreach ($info['forms'] as $formName => $form)
+        {
+            (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ("using System;\nusing System.Windows.Forms;\n\npublic class CodeEvaler\n{\n\tpublic void EvalCode ()\n\t{\n\t\tVoidControlsParser.parseControls (\"". $formName ."\", (Control) new ". $formName ." ());\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". $form, true);
+
+            $form = $GLOBALS['__underConstruction'][$formName];
+            unset ($GLOBALS['__underConstruction'], $form[$formName]);
+
+            $page     = new TabPage ($formName);
+            $designer = new VoidDesigner ($page, $formName, $objects['PropertiesList__List'], $objects['EventsList__ActiveEvents'], $objects['PropertiesPanel__SelectedComponent'], $objects['Designer__FormsList']);
+
+            $designer->initDesigner ();
+
+            $objects['Designer__FormsList']->items->add ($page);
+            $objects['Designer__FormsList']->selectedTab = $page;
+            
+            $objects['PropertiesList__List']->selectedObject = $designer->form;
+            $designer->focus ();
+
+            foreach ($form as $name => $selector)
+            {
+                $designer->addComponent ($selector, $name);
+
+                if (isset ($info['events'][$formName][$name]))
+                    foreach ($info['events'][$formName][$name] as $eventName => $event)
+                    {
+                        Events::reserveObjectEvent ($selector, $eventName);
+                        VoidEngine::setObjectEvent ($selector, $eventName, $event);
+                    }
+            }
+        }
+
+        Components::cleanJunk ();
+    }
+}
+
 class VoidStudioBuilder
 {
     public static function compileProject (string $save, string $enteringPoint, bool $withVoidFramework = false): array
     {
         $savePath   = text (dirname ($save) .'/'. basenameNoExt ($save));
-        $globalCode = file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs');
+        $globalCode = file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n";
         $forms      = [];
         $events     = [];
 
@@ -59,7 +133,7 @@ class VoidStudioBuilder
         {
             $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
 
-            $globalCode .= $designer->getSharpCode ($item);
+            $globalCode .= self::appendResources ($designer->getSharpCode ($item), $designer);
             $forms[] = $item;
 
             foreach ($designer->objects as $name => $objectType)
@@ -83,6 +157,28 @@ class VoidStudioBuilder
         ]), null, null, null, null, null, str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
             '%forms%' => join ('", "', $forms)
         ]), $globalCode);
+    }
+
+    public static function appendResources (string $code, VoidDesigner $designer)
+    {
+        $offset = 0;
+
+        while (($pos = strpos ($code, ')(resources.GetObject("', $offset)) !== false)
+        {
+            $offset   = $pos + 23;
+            $property = explode ('.', substr ($code, $offset, ($end = strpos ($code, '")));', $offset)) - $offset));
+
+            $object = $property[0] == '$this' ?
+                $designer->form->selector :
+                $designer->getComponentByName ($property[0]);
+
+            foreach (array_slice ($property, 1) as $path)
+                $object = VoidEngine::getProperty ($object, $path);
+
+            $code = substr ($code, 0, $pos + 2) .'WinForms_PHP.Program.getResource ("'. VoidEngine::exportObject ($object) .'")'. substr ($code, $end + 2);
+        }
+
+        return $code;
     }
 
     public static function generateCode (bool $removeNamespaces = true): string
