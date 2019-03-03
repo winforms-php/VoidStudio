@@ -24,6 +24,24 @@ function vbs_exec (string $code)
     unlink ($path);
 }
 
+function php_errors_check (string $code): ?array
+{
+    try
+    {
+        eval ('return; '. $code);
+
+        return null;
+    }
+
+    catch (\ParseError $e)
+    {
+        return [
+            'text' => $e->getMessage (), 
+			'line' => $e->getLine ()
+        ];
+    }
+}
+
 function text (string $text): string
 {
     return mb_convert_encoding ($text, 'Windows-1251');
@@ -297,13 +315,8 @@ function c ($name, bool $returnAllSimilarObjects = false)
             else return false;
         }
 
-        else
-        {
-            if ($returnAllSimilarObjects && sizeof ($similar) > 0)
-                return $similar;
-            
-            else return false;
-        }
+        else return $returnAllSimilarObjects && sizeof ($similar) > 0 ?
+            $similar : false;
     }
 }
 

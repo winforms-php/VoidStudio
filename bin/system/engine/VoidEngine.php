@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.4.0 build-2019/03/01 (major.minor.patch state-y/m/d)
+ * @version     2.5.0 build-2019/03/03 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -71,12 +71,14 @@ require 'components/Label.php';
 require 'components/TextBox.php';
 require 'components/ProgressBar.php';
 require 'components/PropertyGrid.php';
+require 'components/EventGrid.php';
 require 'components/Panel.php';
 require 'components/Button.php';
 require 'components/CheckBox.php';
 require 'components/ComboBox.php';
 require 'components/ListBox.php';
 require 'components/ListView.php';
+require 'components/DataGridView.php';
 require 'components/TreeView.php';
 require 'components/TabControl.php';
 require 'components/WebBrowser.php';

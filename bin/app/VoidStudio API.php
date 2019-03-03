@@ -210,7 +210,10 @@ class VoidStudioBuilder
                     $references = array_merge ($references, self::getReferences (dirname ($file) .'/'. eval ('namespace VoidEngine; return '. substr ($line, $begin, $end) .';'), false));
                 }
 
-                catch (\Throwable $e) {}
+                catch (\Throwable $e)
+                {
+                    continue;
+                }
 
         if ($parseExtensions)
             if (is_dir (ENGINE_DIR .'/extensions') && is_array ($exts = scandir (ENGINE_DIR .'/extensions')))

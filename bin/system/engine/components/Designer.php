@@ -20,7 +20,7 @@ class VoidDesigner extends Component
     protected $currentSelectedItem;
     protected $formsList;
 
-    public function __construct (Control $parent, string $formName = 'form', PropertyGrid $propertyGrid, ListBox $eventsList, ComboBox $currentSelectedItem, TabControl $formsList, $form = null)
+    public function __construct (Control $parent, string $formName = 'form', PropertyGrid $propertyGrid, EventGrid $eventsList, ComboBox $currentSelectedItem, TabControl $formsList, $form = null)
     {
         $this->form = $form === null ? new Form :
             EngineAdditions::coupleSelector ($form);
@@ -64,13 +64,14 @@ class VoidDesigner extends Component
             $firstObject = VoidEngine::getArrayValue ($objects, 0);
             
             _c('. $propertyGrid->selector .')->selectedObject = $firstObject;
+            _c('. $eventsList->selector .')->selectedObject = $firstObject;
             _c('. $currentSelectedItem->selector .')->selectedItem = VoidEngine::getProperty ($firstObject, "Name");
-        
-            $events = Events::getObjectEvents ($firstObject);
-            _c('. $eventsList->selector .')->items->clear ();
 
-            if (is_array ($events))
-                _c('. $eventsList->selector .')->items->addRange (array_keys ($events));
+            if (isset (Components::$events[$firstObject]) && sizeof (Components::$events[$firstObject]) > 0)
+                foreach (Components::$events[$firstObject] as $eventName => $event)
+                    _c('. $eventsList->selector .')->getEventByName ($eventName)->value = text ("(добавлено)");
+
+            _c('. $eventsList->selector .')->refresh ();
         ');
     }
 

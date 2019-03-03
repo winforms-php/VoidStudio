@@ -108,65 +108,33 @@ Form MainForm
                             $components->selectedItem = $self->selectedObject->name;
                         }
                     }
+        
+        MenuItem EventsList__ListMenuItem (text ('Удалить'))
+            ClickEvent:^ function ($self)
+                {
+                    $eventsList = c('EventsList__ActiveEvents');
+
+                    Events::removeObjectEvent ($eventsList->selectedObject->selector, $eventsList->selectedGridItem->propertyDescriptor->customProperty->name);
+                    $eventsList->selectedGridItem->propertyDescriptor->customProperty->value = '';
+
+                    $eventsList->refresh ();
+                }
+
+        ContextMenu EventsList__ListMenu ()
+            ->items->add (EventsList__ListMenuItem)
 
         TabPage EventsList__Page (text ('События'))
-            ListBox EventsList__ActiveEvents
+            EventGrid EventsList__ActiveEvents
                 dock: dsFill
+                toolbarVisible: false
 
-                font: ['Microsoft Sans Serif', 10]
+                contextMenu: EventsList__ListMenu
 
-                KeyDownEvent:^ function ($self, $args)
+                EventClickEvent:^ function ($self, $args)
                     {
-                        if ($args->keycode == 46 && ($event = $self->selectedItem))
-                        {
-                            Events::removeObjectEvent (PropertiesList__List->selectedObject->selector, $event);
-
-                            $self->items->remove ($self->items->indexOf ($event));    
-                        }
-                    }
-
-                DoubleClickEvent:^ function ($self)
-                    {
-                        if ($event = $self->selectedItem)
-                            VoidStudioAPI::openEventEditor (PropertiesList__List->selectedObject->selector, $event);
-                    }
-
-            Button EventsList__AddEvent
-                dock: dsTop
-                flatStyle: flSystem
-
-                caption: text ('Добавить')
-                
-                ClickEvent:^ function ($self) use (EventsList__ActiveEvents $eventsList)
-                    {
-                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
-                        $selected = VoidEngine::callMethod ($designer->selector, 'GetSelectedComponents');
-
-                        if ($selected !== null && VoidEngine::getProperty ($selected, 'Length') > 1)
-                            pre (text ('Вы не можете добавить событие нескольким объектам'));
-
-                        else
-                        {
-                            $events = array_diff (EngineAdditions::getObjectEvents ($object = PropertiesList__List->selectedObject->selector), $eventsList->items->names);
-                            sort ($events);
-
-                            $menu = new ContextMenu;
-                            $menu->items->addRange (array_map (function ($name) use ($object, $eventsList)
-                            {
-                                $item = new MenuItem ($name);
-
-                                $item->clickEvent = function ($self) use ($name, $object, $eventsList)
-                                {
-                                    $eventsList->items->add ($name);
-
-                                    Events::reserveObjectEvent ($object, $name);
-                                };
-
-                                return $item;
-                            }, $events));
-
-                            $menu->show (MainForm, MainForm->pointToClient ((new WFClass ('System.Windows.Forms.Cursor'))->position));
-                        }
+                        VoidStudioAPI::openEventEditor ($self->selectedObject->selector, $args->customProp->name);
+                        
+                        $args->retVal = text ('(добавлено)');
                     }
 
         TabControl Properties__Items
@@ -181,11 +149,11 @@ Form MainForm
             ->items->add ('Form1')
             selectedItem: 'Form1'
 
-            SelectedIndexChangedEvent:^ function ($self) use (PropertiesList__List $propertyGrid)
+            SelectedIndexChangedEvent:^ function ($self)
                 {
-                    $item = $self->selectedItem;
+                    $item = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer']->getComponentByName ($self->selectedItem);
 
-                    $propertyGrid->selectedObject = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer']->getComponentByName ($item);
+                    PropertiesList__List->selectedObject = $item;
                 }
 
             SelectionChangeCommittedEvent:^ function ($self)
@@ -214,12 +182,6 @@ Form MainForm
 
                     $components->selectedItem = $tab;
                     $designer->setSelectedComponents ($designer->form);
-
-                    $events = Events::getObjectEvents ($designer->form->selector);
-                    $eventsList->items->clear ();
-
-                    if (is_array ($events))
-                        $eventsList->items->addRange (array_keys ($events));
                 }
             }
 
@@ -405,6 +367,7 @@ Form MainForm
                 ToolsPanel__EvalEditor->text = file_get_contents ('system/settings/last_eval.php');
 
             PropertiesList__List->selectedObject = Designer__Form1Designer->form;
+            EventsList__ActiveEvents->selectedObject = Designer__Form1Designer->form;
 
             $time = round (microtime (true) - $GLOBALS['__debug']['start_time'], 4);
 

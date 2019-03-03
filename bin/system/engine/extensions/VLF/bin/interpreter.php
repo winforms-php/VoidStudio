@@ -13,9 +13,9 @@ class VLFInterpreter
      * * Интерпретирование синтаксического дерева
      * Выполняет то, что было сгенерировано парсером VLF кода
      * 
-     * @param mixed syntaxTree - Абстрактное Синтаксическое Дерево (АСД), сгенерированное VLFParser'ом, или сам VLFParser
-     * [@param string resourceDir = null] - директория с ресурсами для импорта
-     * [@param array parent = null] - нода-родитель дерева (системная настройка)
+     * @param mixed $syntaxTree - Абстрактное Синтаксическое Дерево (АСД), сгенерированное VLFParser'ом, или сам VLFParser
+     * [@param string $resourceDir = null] - директория с ресурсами для импорта
+     * [@param array $parent = null] - нода-родитель дерева (системная настройка)
      * 
      * @return array - возвращает список созданных объектов
      */
@@ -65,7 +65,7 @@ class VLFInterpreter
                         catch (\Throwable $e)
                         {
                             if (self::$throw_errors)
-                                throw new \Exception ('Interpeter couldn\'t create object "'. $class .'" with name "'. $name .'" at line "'. $syntaxInfo['line'] .'"');
+                                throw new \Exception ('Interpeter couldn\'t create object "'. $class .'" with name "'. $name .'" at line "'. $syntaxInfo['line'] .'". Exception info:'. "\n\n". (string) $e, 0, $e);
                         }
                     break;
 
@@ -126,13 +126,13 @@ class VLFInterpreter
                                 catch (\Throwable $e)
                                 {
                                     if (self::$throw_errors)
-                                        throw new \Exception ('Interpeter couldn\'t set property "'. $propertyName .'" with value "'. $propertyValue .'" at line "'. $syntaxInfo['line'] .'"');
+                                        throw new \Exception ('Interpeter couldn\'t set property "'. $propertyName .'" with value "'. $propertyValue .'" at line "'. $syntaxInfo['line'] .'". Exception info:'. "\n\n". (string) $e, 0, $e);
                                 }
                             }
                         }
 
                         elseif (self::$throw_errors)
-                            throw new \Exception ('Setting property to an non-object at line "'. $syntaxInfo['line'] .'"');
+                            throw new \Exception ('Setting property to an non-object at line "'. $syntaxInfo['line'] .'". Exception info:'. "\n\n". (string) $e, 0, $e);
                     break;
 
                     case VLF_METHOD_CALL:
@@ -159,7 +159,7 @@ class VLFInterpreter
                             catch (\Throwable $e)
                             {
                                 if (self::$throw_errors)
-                                    throw new \Exception ('Interpeter couldn\'t call method "'. $methodName .'" with arguments '. json_encode ($methodArgs) .' at line "'. $syntaxInfo['line'] .'"');
+                                    throw new \Exception ('Interpeter couldn\'t call method "'. $methodName .'" with arguments '. json_encode ($methodArgs) .' at line "'. $syntaxInfo['line'] .'". Exception info:'. "\n\n". (string) $e, 0, $e);
                             }
                         }
 
@@ -176,7 +176,7 @@ class VLFInterpreter
                     self::$objects = self::run ($syntaxInfo['syntax_nodes'], null, $syntaxInfo);
             }
 
-            else throw new \Exception ('Catched unknown syntax node: '. json_encode ($syntaxInfo));
+            else throw new \Exception ('Catched unknown syntax node: "'. json_encode ($syntaxInfo) .'"');
 
         if (is_dir ($resourcesDir))
             foreach (glob ($resourcesDir .'/*.vrsf') as $id => $dir)
@@ -204,8 +204,8 @@ class VLFInterpreter
      * * Форматирование строки
      * Необходимо для замены ссылок на объекты из человекочитаемого вида на PHP код
      * 
-     * @param string line - строка для форматирования
-     * [@param array objects = []] - список объектов, которые будут участвовать в форматировании
+     * @param string $line - строка для форматирования
+     * [@param array $objects = []] - список объектов, которые будут участвовать в форматировании
      * 
      * @return string - возвращает форматированную строку
      */
