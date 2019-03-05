@@ -20,7 +20,7 @@ VoidStudioAPI::addObjects ($name, VLFInterpreter::run ($parser));
 $componentsList = VoidStudioAPI::getObjects ('main')['ComponentsList'];
 
 foreach (scandir (ENGINE_DIR .'/components') as $id => $name)
-    if (class_exists ($class = 'VoidEngine\\'. ($name = basenameNoExt ($name))) && array_key_exists ('VoidEngine\Control', class_parents ($class)) && !array_key_exists ('VoidEngine\NoVisual', class_parents ($class)))
+    if (class_exists ($class = 'VoidEngine\\'. ($name = basenameNoExt ($name))) && array_key_exists ('VoidEngine\Component', class_parents ($class)) && !array_key_exists ('VoidEngine\NoVisual', class_parents ($class)))
     {
         $item = new ListViewItem ($name);
 

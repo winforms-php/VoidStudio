@@ -42,9 +42,9 @@ function php_errors_check (string $code): ?array
     }
 }
 
-function text (string $text): string
+function text (string $text, string $encoding = 'Windows-1251'): string
 {
-    return mb_convert_encoding ($text, 'Windows-1251');
+    return mb_convert_encoding ($text, $encoding);
 }
 
 function dir_create (string $path): void
@@ -65,9 +65,7 @@ function dir_delete (string $path): bool
     if (!is_dir ($path))
         return false;
 
-    $files = array_slice (scandir ($path), 2);
-
-    foreach ($files as $file)
+    foreach (array_slice (scandir ($path), 2) as $file)
         if (is_dir ($file = "$path/$file"))
         {
             dir_delete ($file);
@@ -97,9 +95,7 @@ function dir_copy (string $from, string $to): bool
     if (!is_dir ($to))
         dir_create ($to);
 
-    $files = array_slice (scandir ($from), 2);
-
-    foreach ($files as $id => $file)
+    foreach (array_slice (scandir ($from), 2) as $file)
         if (is_dir ("$from/$file"))
         {
             if (!is_dir ("$to/$file"))

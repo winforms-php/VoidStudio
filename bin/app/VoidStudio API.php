@@ -31,7 +31,7 @@ class VoidStudioAPI
             self::$objects[$group] : false;
     }
 
-    public static function openEventEditor (int $component, string $event)
+    public static function openEventEditor (int $component, string $event, VoidDesigner $designer = null)
     {
         $objects = self::getObjects ('editor');
         $form    = $objects['MainForm'];
@@ -40,7 +40,7 @@ class VoidStudioAPI
         $editor->helpStorage = [$component, $event];
         $editor->text = Components::getComponentEvent ($component, $event);
 
-        $form->caption = text ('Событие "'. $event .'", объект "'. VoidEngine::getProperty ($component, 'Name') .'"');
+        $form->caption = text ('Событие "'. $event .'", объект "'. ($designer === null ? VoidEngine::getProperty ($component, 'Name') : $designer->getComponentName ($component)) .'"');
 
         $form->showDialog ();
     }
@@ -59,7 +59,7 @@ class VoidStudioProjectManager
         {
             $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
 
-            $info['forms'][$item] = VoidStudioBuilder::appendResources ($designer->getSharpCode ($item), $designer);
+            $info['forms'][$item] = VoidStudioBuilder::appendDesignerData ($designer->getSharpCode ($item), $designer);
 
             foreach ($designer->objects as $name => $objectType)
                 if (isset (Components::$events[$designer->getComponentByName ($name)]) && sizeof (Components::$events[$designer->getComponentByName ($name)]) > 0)
@@ -122,23 +122,35 @@ class VoidStudioProjectManager
 
 class VoidStudioBuilder
 {
-    public static function compileProject (string $save, string $enteringPoint, bool $withVoidFramework = false): array
+    public static function compileProject (string $save, string $enteringPoint, array $references, bool $withVoidFramework = false): array
     {
         $savePath   = text (dirname ($save) .'/'. basenameNoExt ($save));
-        $globalCode = file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n";
+        $strClass   = (new WFClass ('System.String', 'mscorlib'))->selector;
+        $globalCode = new WFObject (VoidEngine::callMethod ($strClass, ['Concat', 'object'], file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n"));
         $forms      = [];
-        $events     = [];
 
         foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
         {
             $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
 
-            $globalCode .= self::appendResources ($designer->getSharpCode ($item), $designer);
+            $globalCode = new WFObject (VoidEngine::callMethod ($strClass, ['Concat', 'object'], $globalCode->selector, self::appendDesignerData ($designer->getSharpCode ($item, true), $designer)->selector));
+
             $forms[] = $item;
 
             foreach ($designer->objects as $name => $objectType)
-                if (isset (Components::$events[$designer->getComponentByName ($name)]) && sizeof (Components::$events[$designer->getComponentByName ($name)]) > 0)
-                    $events[$item][$name] = Components::$events[$designer->getComponentByName ($name)];
+                if (isset (Components::$events[$designer->getComponentByName ($name)]) && sizeof ($events = Components::$events[$designer->getComponentByName ($name)]) > 0)
+                    {
+                        $name = 'this.'. $name;
+                        $str = substr ($globalCode, strrpos ($globalCode, $name .'.'));
+                        $pos = strpos ($str, "\n");
+
+                        foreach ($events as $eventName => $event)
+                        {
+                            $eventStr = '        '. $name .'.'. $eventName .' += (sender, e) => WinForms_PHP.Program.CallEvent (WinForms_PHP.Program.HashByObject ('. $name .'), @"namespace VoidEngine; '. str_replace ('"', '""', $event) .'", e);';
+
+                            $globalCode = new WFObject (VoidEngine::callMethod ($globalCode->selector, ['Replace', 'object'], $str, substr ($str, 0, $pos). $eventStr .substr ($str, $pos)));
+                        }
+                    }
         }
 
         dir_clean ($savePath);
@@ -150,17 +162,17 @@ class VoidStudioBuilder
         return VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.php'),[
             '%VoidEngine%'     => $withVoidFramework ?
                 file_get_contents (APP_DIR .'/system/presets/compile_framework_preset.php') :
-                VoidStudioBuilder::generateCode (),
+                VoidStudioBuilder::generateCode ($references),
 
             '%entering_point%' => $enteringPoint,
-            '%events%'         => base64_encode (gzdeflate (serialize ($events), 9)),
         ]), null, null, null, null, null, str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
             '%forms%' => join ('", "', $forms)
         ]), $globalCode);
     }
 
-    public static function appendResources (string $code, VoidDesigner $designer)
+    public static function appendDesignerData (int $code, VoidDesigner $designer): WFObject
     {
+        $code   = new WFObject ($code);
         $offset = 0;
 
         while (($pos = strpos ($code, ')(resources.GetObject("', $offset)) !== false)
@@ -175,17 +187,17 @@ class VoidStudioBuilder
             foreach (array_slice ($property, 1) as $path)
                 $object = VoidEngine::getProperty ($object, $path);
 
-            $code = substr ($code, 0, $pos + 2) .'WinForms_PHP.Program.getResource ("'. VoidEngine::exportObject ($object) .'")'. substr ($code, $end + 2);
+            $code = $code->insert ($pos + 2, 'WinForms_PHP.Program.getResource ("'. VoidEngine::exportObject ($object) .'")');
         }
 
         return $code;
     }
 
-    public static function generateCode (bool $removeNamespaces = true): string
+    public static function generateCode (array $references, bool $removeNamespaces = true): string
     {
         $code = "/*\n\n\t". join ("\n\t", explode ("\n", file_get_contents (dirname (ENGINE_DIR) .'/license.txt'))) ."\n\n*/\n\n";
 
-        foreach (self::getReferences (ENGINE_DIR .'/VoidEngine.php') as $path)
+        foreach ($references as $path)
             $code .= join (array_slice (array_map (function ($line)
             {
                 return substr ($line, 0, 7) != 'require' ?

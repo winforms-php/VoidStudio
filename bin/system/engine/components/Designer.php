@@ -65,7 +65,7 @@ class VoidDesigner extends Component
             
             _c('. $propertyGrid->selector .')->selectedObject = $firstObject;
             _c('. $eventsList->selector .')->selectedObject = $firstObject;
-            _c('. $currentSelectedItem->selector .')->selectedItem = VoidEngine::getProperty ($firstObject, "Name");
+            _c('. $currentSelectedItem->selector .')->selectedItem = _c('. $this->selector .')->getComponentName ($firstObject);
 
             if (isset (Components::$events[$firstObject]) && sizeof (Components::$events[$firstObject]) > 0)
                 foreach (Components::$events[$firstObject] as $eventName => $event)
@@ -141,9 +141,9 @@ class VoidDesigner extends Component
         $this->form->focus ();
     }
 
-    public function getSharpCode (string $formName): string
+    public function getSharpCode (string $formName, bool $asObject = false): string
     {
-        return $this->callMethod ('GetSharpCode', $formName);
+        return $this->callMethod ($asObject ? ['GetSharpCode', 'object'] : 'GetSharpCode', $formName);
     }
 
     public function createComponent (ObjectType $component, string $componentName): int

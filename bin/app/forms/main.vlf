@@ -81,7 +81,13 @@ Form MainForm
                             elseif (substr ($newValue, 0, 4) == 'Form')
                                 {
                                     $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
-                                    $self->selectedObject->name = $args->oldValue;
+
+                                    try
+                                    {
+                                        $self->selectedObject->name = $args->oldValue;
+                                    }
+
+                                    catch (\Throwable $e) {}
 
                                     pre (text ('Объекту нельзя задать название, начинающееся на "Form"'));
                                 }
@@ -89,13 +95,25 @@ Form MainForm
                             else try
                             {
                                 $designer->renameComponent ($self->selectedObject->selector, $newValue, $args->oldValue);
-                                $self->selectedObject->name = $newValue;
+
+                                try
+                                {
+                                    $self->selectedObject->name = $newValue;
+                                }
+
+                                catch (\Throwable $e) {}
                             }
 
                             catch (\Throwable $e)
                             {
                                 $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
-                                $self->selectedObject->name = $args->oldValue;
+
+                                try
+                                {
+                                    $self->selectedObject->name = $args->oldValue;
+                                }
+
+                                catch (\Throwable $e) {}
 
                                 pre (text ('Произошла ошибка при попытке переименования объекта'));
                             }
@@ -105,7 +123,7 @@ Form MainForm
                             $components->items->clear ();
                             $components->items->addRange (array_keys ($designer->objects));
 
-                            $components->selectedItem = $self->selectedObject->name;
+                            $components->selectedItem = $designer->getComponentName ($self->selectedObject->selector);
                         }
                     }
         
@@ -132,7 +150,7 @@ Form MainForm
 
                 EventClickEvent:^ function ($self, $args)
                     {
-                        VoidStudioAPI::openEventEditor ($self->selectedObject->selector, $args->customProp->name);
+                        VoidStudioAPI::openEventEditor ($self->selectedObject->selector, $args->customProp->name, VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer']);
                         
                         $args->retVal = text ('(добавлено)');
                     }
@@ -302,7 +320,7 @@ Form MainForm
                         $process->waitForExit ();
                     });
 
-                    VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', Designer__FormsList->items[0]->text, false);
+                    VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', Designer__FormsList->items[0]->text, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php'), false);
 
                     run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
                 }

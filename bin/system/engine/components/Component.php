@@ -13,16 +13,11 @@ class Component extends WFObject
         parent::__construct ('System.Windows.Forms.'. $className);
         Components::addComponent ($this->selector, $this);
     }
-
-    function __toString (): string
-    {
-        return $this->callMethod ('ToString');
-    }
 	
     public function __debugInfo (): array
     {
         return [
-            'description' => $this->callMethod ('ToString'),
+            'description' => $this->__toString (),
             'selector'    => $this->selector,
             'objectInfo'  => json_encode ($this, JSON_PRETTY_PRINT)
         ];

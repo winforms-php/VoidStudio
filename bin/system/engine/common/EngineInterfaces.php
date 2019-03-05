@@ -742,6 +742,11 @@ class WFObject
         
 		return $return;
     }
+
+    public function __toString (): string
+    {
+        return $this->callMethod ('ToString');
+    }
 }
 
 class WFClass extends WFObject

@@ -18,70 +18,93 @@ Form MainForm
             $forms->selectedItem = current (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names);
         }
 
-    Label EntryPoint
-        location: [16, 16]
-        font: ['Segoe UI', 12]
+    TreeNode VoidEngineNode (text ('VoidEngine'))
+        checked: true
 
-        caption: text ('Точка входа')
+        ->nodes->addRange (array_map (function ($path) {$item = new TreeNode (text (str_replace (ENGINE_DIR, '', $path))); $item->checked = true; return $item;}, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php')))
 
-    ComboBox FormSelection
-        dropDownStyle: ddDropDownList
-        bounds: [16, 48, 220, 16]
+    TabPage BuildConfigs__Dependency (text ('Настройки'))
+        #^ CheckBox UsingVoidFramework
+            bounds: [16, 16, 220, 24]
+            caption: text ('Компиляция под VoidFramework')
 
-    Label BuildConfigs
-        location: [16, 96]
-        font: ['Segoe UI', 12]
+            checked: false
 
-        caption: text ('Настройки компиляции проекта')
-
-    CheckBox UsingVoidFramework
-        bounds: [16, 128, 220, 24]
-        caption: text ('Компиляция под VoidFramework')
-
-        checked: false
-
-        ClickEvent:^ function ($self)
-            {
-                pre (text ('Не рекомендуется использовать'));
-            }
-
-    Button CompileProject
-        bounds: [16, 176, 120, 32]
-        flatStyle: flSystem
-
-        caption: text ('Компилировать')
-
-        ClickEvent:^ function ($self)
-            {
-                $save = new SaveFileDialog;
-                $save->filter = 'EXE file (*.exe)|*.exe';
-
-                if (file_exists ('system/settings/compile_path') && is_dir ($path = file_get_contents ('system/settings/compile_path')))
-                    $save->selectedPath = $path;
-                
-                if ($save->execute () && strlen ($save = $save->fileName) > 0)
+            ClickEvent:^ function ($self)
                 {
-                    file_put_contents ('system/settings/compile_path', $save);
-
-                    $errors = VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, UsingVoidFramework->checked);
-
-                    $log = VoidStudioAPI::getObjects ('main')['ToolsPanel__LogList'];
-                    $log->items->add (text ('Проект скомпилирован по пути "'. $save .'". '. (($errorsCount = sizeof ($errors)) > 0 ? ('Обнаружено '. $errorsCount .' ошибок') : 'Ошибок не обнаружено')));
-
-                    if ($errorsCount > 0)
-                    {
-                        $log->items->addRange (array_map (function ($error)
-                        {
-                            return "\t". $error;
-                        }, $errors));
-
-                        pre (text ('Ошибка компиляции: обнаружено '. $errorsCount .' ошибок'));
-                    }
-
-                    else pre (text ('Проект успешно скомпилирован'));
-                    
-                    MainForm->hide ();
+                    pre (text ('Не рекомендуется использовать'));
                 }
 
-                // else pre (text ('Выбран неверный путь сохранения проекта'));
-            }
+        TreeView EngineDependencies
+            dock: dsFill
+
+            hotTracking: true
+            checkBoxes: true
+
+            ->nodes->add (VoidEngineNode)
+
+    TabPage BuildConfigs__Main (text ('Главное'))
+        Label EntryPoint
+            location: [16, 16]
+            font: ['Segoe UI', 12]
+
+            caption: text ('Точка входа')
+
+        ComboBox FormSelection
+            dropDownStyle: ddDropDownList
+            bounds: [16, 48, 220, 16]
+
+        Button CompileProject
+            bounds: [16, 152, 120, 32]
+            flatStyle: flSystem
+
+            caption: text ('Компилировать')
+
+            ClickEvent:^ function ($self) use (EngineDependencies $dependencies)
+                {
+                    $save = new SaveFileDialog;
+                    $save->filter = 'EXE file (*.exe)|*.exe';
+
+                    if (file_exists ('system/settings/compile_path') && is_dir ($path = file_get_contents ('system/settings/compile_path')))
+                        $save->selectedPath = $path;
+                    
+                    if ($save->execute () && strlen ($save = $save->fileName) > 0)
+                    {
+                        file_put_contents ('system/settings/compile_path', $save);
+
+                        $references = [];
+
+                        if ($dependencies->nodes[0]->checked)
+                            (new Items ($dependencies->nodes[0]->nodes->selector))->foreach (function ($index, $item) use (&$references)
+                            {
+                                if ($item->checked)
+                                    $references[] = ENGINE_DIR. $item->text;
+                            });
+
+                        $errors = VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, $references, /*UsingVoidFramework->checked*/ false);
+
+                        $log = VoidStudioAPI::getObjects ('main')['ToolsPanel__LogList'];
+                        $log->items->add (text ('Проект скомпилирован по пути "'. $save .'". '. (($errorsCount = sizeof ($errors)) > 0 ? ('Обнаружено '. $errorsCount .' ошибок') : 'Ошибок не обнаружено')));
+
+                        if ($errorsCount > 0)
+                        {
+                            $log->items->addRange (array_map (function ($error)
+                            {
+                                return "\t". $error;
+                            }, $errors));
+
+                            pre (text ('Ошибка компиляции: обнаружено '. $errorsCount .' ошибок'));
+                        }
+
+                        else pre (text ('Проект успешно скомпилирован'));
+                        
+                        MainForm->hide ();
+                    }
+
+                    // else pre (text ('Выбран неверный путь сохранения проекта'));
+                }
+
+    TabControl BuildConfigs__ConfigsTabs
+        dock: dsFill
+
+        ->items->addRange ([BuildConfigs__Main, BuildConfigs__Dependency])
