@@ -131,8 +131,7 @@ class VoidStudioBuilder
 
         foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
         {
-            $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
-
+            $designer   = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
             $globalCode = new WFObject (VoidEngine::callMethod ($strClass, ['Concat', 'object'], $globalCode->selector, self::appendDesignerData ($designer->getSharpCode ($item, true), $designer)->selector));
 
             $forms[] = $item;
@@ -148,7 +147,7 @@ class VoidStudioBuilder
                         {
                             $eventStr = '        '. $name .'.'. $eventName .' += (sender, e) => WinForms_PHP.Program.CallEvent (WinForms_PHP.Program.HashByObject ('. $name .'), @"namespace VoidEngine; '. str_replace ('"', '""', $event) .'", e);';
 
-                            $globalCode = new WFObject (VoidEngine::callMethod ($globalCode->selector, ['Replace', 'object'], $str, substr ($str, 0, $pos). $eventStr .substr ($str, $pos)));
+                            $globalCode = new WFObject (VoidEngine::callMethod ($globalCode->selector, ['Replace', 'object'], $str, text (substr ($str, 0, $pos). $eventStr .substr ($str, $pos), 'UTF-8')));
                         }
                     }
         }
@@ -159,7 +158,47 @@ class VoidStudioBuilder
         unlink ($savePath .'/script.php');
         unlink ($savePath .'/WinForms PHP.exe');
 
-        return VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.php'),[
+/*
+
+$t = VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), 'namespace VoidEngine;
+
+'. VoidStudioBuilder::generateCode ($references) .'
+
+if (isset ($GLOBALS[\'__underConstruction\']))
+{
+    foreach ($GLOBALS[\'__underConstruction\'] as $group => $objects)
+        foreach ($objects as $name => $selector)
+        {
+            $object = new WFObject ($selector);
+
+            try
+            {
+                $object->name = $name;
+            }
+
+            catch (\Throwable $e) {}
+
+            Components::addComponent ($selector, $object);
+        }
+
+    $enteringPoint = $GLOBALS[\'__underConstruction\'][\''. $enteringPoint .'\'][\''. $enteringPoint .'\'];
+    unset ($GLOBALS[\'__underConstruction\']);
+
+    $APPLICATION->run ($enteringPoint);
+}
+
+else throw new \Exception (\'Objects not initialized\');', null, null, null, null, null, str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
+    '%forms%' => implode ('", "', $forms)
+]), $globalCode->selector);
+
+pre ($t);
+pre ((string) $globalCode);
+
+return $t;
+
+*/
+
+        return VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.php'), [
             '%VoidEngine%'     => $withVoidFramework ?
                 file_get_contents (APP_DIR .'/system/presets/compile_framework_preset.php') :
                 VoidStudioBuilder::generateCode ($references),
@@ -172,8 +211,9 @@ class VoidStudioBuilder
 
     public static function appendDesignerData (int $code, VoidDesigner $designer): WFObject
     {
-        $code   = new WFObject ($code);
-        $offset = 0;
+        $strClass = (new WFClass ('System.String', 'mscorlib'))->selector;
+        $code     = new WFObject ($code);
+        $offset   = 0;
 
         while (($pos = strpos ($code, ')(resources.GetObject("', $offset)) !== false)
         {
@@ -187,7 +227,7 @@ class VoidStudioBuilder
             foreach (array_slice ($property, 1) as $path)
                 $object = VoidEngine::getProperty ($object, $path);
 
-            $code = $code->insert ($pos + 2, 'WinForms_PHP.Program.getResource ("'. VoidEngine::exportObject ($object) .'")');
+            $code = new WFObject (VoidEngine::callMethod ($code->selector, ['Replace', 'object'], substr ($code, $pos + 2, $end - $pos), 'WinForms_PHP.Program.getResource ("'. VoidEngine::exportObject ($object) .'")'));
         }
 
         return $code;
