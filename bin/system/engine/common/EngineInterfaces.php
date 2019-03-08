@@ -649,6 +649,7 @@ class ObjectType
 class WFObject
 {
     protected $selector;
+    protected $name;
 
     public function __construct ($object, string $classGroup = null, bool $onlyClassInfo = false, ...$args)
     {
@@ -742,6 +743,32 @@ class WFObject
         
 		return $return;
     }
+
+    public function get_name ()
+	{
+		try
+		{
+			return $this->getProperty ('Name');
+        }
+        
+		catch (\WinFormsException $e)
+		{
+			return $this->name;
+		}
+	}
+	
+	public function set_name (string $name)
+	{
+		try
+		{
+			$this->setProperty ('Name', $name);
+        }
+        
+		catch (\WinFormsException $e)
+		{
+			$this->name = $name;
+		}
+	}
 
     public function __toString (): string
     {
