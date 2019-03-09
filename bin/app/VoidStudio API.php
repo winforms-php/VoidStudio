@@ -44,6 +44,24 @@ class VoidStudioAPI
 
         $form->showDialog ();
     }
+
+    public static function stopProject ()
+    {
+        (new Process)->getProcessesByName ('vstmpprj')->foreach (function ($index, $process)
+        {
+            $process->kill ();
+            $process->waitForExit ();
+        });
+    }
+
+    public static function startProject (TabControl $formsList)
+    {
+        self::stopProject ();
+
+        VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', $formsList->items[0]->text, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php'), false);
+
+        run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
+    }
 }
 
 class VoidStudioProjectManager
@@ -59,7 +77,7 @@ class VoidStudioProjectManager
         {
             $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
 
-            $info['forms'][$item] = VoidStudioBuilder::appendDesignerData ($designer->getSharpCode ($item), $designer);
+            $info['forms'][$item] = (string) VoidStudioBuilder::appendDesignerData ($designer->getSharpCode ($item, true), $designer);
 
             foreach ($designer->objects as $name => $objectType)
                 if (isset (Components::$events[$designer->getComponentByName ($name)]) && sizeof (Components::$events[$designer->getComponentByName ($name)]) > 0)
@@ -87,7 +105,7 @@ class VoidStudioProjectManager
 
         foreach ($info['forms'] as $formName => $form)
         {
-            (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ("using System;\nusing System.Windows.Forms;\n\npublic class CodeEvaler\n{\n\tpublic void EvalCode ()\n\t{\n\t\tVoidControlsParser.parseControls (\"". $formName ."\", (Control) new ". $formName ." ());\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". $form, true);
+            (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ("using System;\nusing System.Windows.Forms;\nusing System.Reflection;\nusing System.Linq;\nusing System.ComponentModel;\n\npublic class CodeEvaler\n{\n\tpublic void EvalCode ()\n\t{\n\t\tVoidControlsParser.parseControls (\"$formName\", (Control) new $formName ());\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". (string)($form), true);
 
             $form = $GLOBALS['__underConstruction'][$formName];
             unset ($GLOBALS['__underConstruction'], $form[$formName]);
@@ -140,14 +158,14 @@ class VoidStudioBuilder
                 if (isset (Components::$events[$designer->getComponentByName ($name)]) && sizeof ($events = Components::$events[$designer->getComponentByName ($name)]) > 0)
                     {
                         $name = 'this.'. $name;
-                        $str = substr ($globalCode, strrpos ($globalCode, $name .'.'));
+                        $str = substr ($globalCode, strrpos ($globalCode, $name));
                         $pos = strpos ($str, "\n");
 
                         foreach ($events as $eventName => $event)
                         {
-                            $eventStr = '        '. $name .'.'. $eventName .' += (sender, e) => WinForms_PHP.Program.CallEvent (WinForms_PHP.Program.HashByObject ('. $name .'), @"namespace VoidEngine; '. str_replace ('"', '""', $event) .'", e);';
+                            $eventStr = '        '. $name .'.'. $eventName .' += (sender, e) => WinForms_PHP.Program.CallEvent (WinForms_PHP.Program.HashByObject ('. $name .'), @"namespace VoidEngine; $self = _c($self); $args = isset ($args) && is_int ($args) && VoidEngine::objectExists ($args) ? new EventArgs ($args) : null; '. str_replace ('"', '\"', $event) .'", e);';
 
-                            $globalCode = new WFObject (VoidEngine::callMethod ($globalCode->selector, ['Replace', 'object'], $str, text (substr ($str, 0, $pos). $eventStr .substr ($str, $pos), 'UTF-8')));
+                            $globalCode = new WFObject (VoidEngine::callMethod ($globalCode->selector, ['Replace', 'object'], $str, substr ($str, 0, $pos). $eventStr .substr ($str, $pos)));
                         }
                     }
         }

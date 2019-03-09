@@ -18,14 +18,33 @@ $parser = new VLFParser (__DIR__. '/'. $name .'.vlf', [
 VoidStudioAPI::addObjects ($name, VLFInterpreter::run ($parser));
 
 $componentsList = VoidStudioAPI::getObjects ('main')['ComponentsList'];
+$imageList      = new ImageList;
+$components     = json_decode (file_get_contents ('components/components.json'), true);
+$index          = 0;
 
-foreach (scandir (ENGINE_DIR .'/components') as $id => $name)
-    if (class_exists ($class = 'VoidEngine\\'. ($name = basenameNoExt ($name))) && array_key_exists ('VoidEngine\Component', class_parents ($class)) && !array_key_exists ('VoidEngine\NoVisual', class_parents ($class)))
+foreach ($components as $groupName => $comps)
+{
+    $group = new ListViewGroup (text ($groupName));
+    //$group->foreColor = clTurquoise;
+
+    $componentsList->groups->add ($group);
+
+    foreach ($comps as $component)
     {
-        $item = new ListViewItem ($name);
+        $item = new ListViewItem ('  '. $component);
+        $item->group      = $group;
+        $item->imageIndex = $index++;
 
+        $path = text (APP_DIR .'/components/icons/'. $component .'_16x.png');
+
+        if (!file_exists ($path))
+            $path = text (APP_DIR .'/components/icons/Unknown_16x.png');
+
+        $imageList->images->add ((new Image)->loadFromFile ($path));
         $componentsList->items->add ($item);
-        // $componentsList->smallImagesList->images->add ((new Bitmap (APP_DIR .'/components/Button_16x.png'))->selector);
     }
+}
+
+$componentsList->smallImageList = $imageList;
 
 ?>

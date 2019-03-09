@@ -6,8 +6,7 @@ class ListView extends Control
 {
     protected $items;
     protected $columns;
-    protected $smallImagesList;
-    protected $largeImagesList;
+    protected $groups;
 
     public function __construct (Control $parent = null)
     {
@@ -15,12 +14,7 @@ class ListView extends Control
 
         $this->items   = new Items ($this->getProperty ('Items'));
         $this->columns = new Items ($this->getProperty ('Columns'));
-
-        $this->smallImagesList = new ImageList;
-        $this->largeImagesList = new ImageList;
-
-        // $this->setProperty ('SmallImageList', [$this->smallImagesList->selector, 'object']);
-        // $this->setProperty ('LargeImageList', [$this->largeImagesList->selector, 'object']);
+        $this->groups  = new Items ($this->getProperty ('Groups'));
     }
 
     public function get_selectedItems ()
@@ -49,6 +43,16 @@ class ColumnHeader extends Control
         parent::__construct (null, self::class);
 
         $this->text = $text;
+    }
+}
+
+class ListViewGroup extends Control
+{
+    public function __construct (string $text = '')
+    {
+        parent::__construct (null, self::class);
+
+        $this->header = $text;
     }
 }
 

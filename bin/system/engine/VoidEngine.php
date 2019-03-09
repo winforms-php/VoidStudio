@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.6.1 build-2019/03/08 (major.minor.patch state-y/m/d)
+ * @version     2.7.0 build-2019/03/09 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -38,7 +38,7 @@ $GLOBALS['__debug'] = [
 
 $GLOBALS['__message_handler'] = function (...$args)
 {
-    throw new \Exception ($args);
+    throw new \Exception (...$args);
 };
 
 require 'common/EngineInterfaces.php';

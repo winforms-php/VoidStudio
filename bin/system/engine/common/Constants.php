@@ -12,6 +12,10 @@ for ($i = 0; $i < $size; ++$i)
 
 VoidEngine::removeObjects ($selector);
 
+$converter = new ObjectType ('System.Drawing.ColorTranslator');
+$converter->token = 'b03f5f7f11d50a3a';
+$converter = new WFClass ($converter);
+
 $constants = [
 	# Информация о программе
 	
@@ -333,12 +337,21 @@ $constants = [
 	'clWhite'				 => 0xFFFFFFFF,
 	'clWhiteSmoke'			 => 0xFFF5F5F5,
 	'clYellow'				 => 0xFFFFFF00,
-	'clYellowGreen'			 => 0xFF9ACD32
+	'clYellowGreen'			 => 0xFF9ACD32,
+
+	# Моя подборка цветов
+
+	'clDark'	  => $converter->fromHtml ('#0D0F12'),
+	'clDark2'	  => $converter->fromHtml ('#121416'),
+	'clTurquoise' => $converter->fromHtml ('#00ADB5'),
+	'clLight'  	  => $converter->fromHtml ('#EEEEEE')
 ];
 
 foreach ($constants as $constantName => $constantValue)
 	define ($constantName, $constantValue);
 
-unset ($constants, $env, $array, $selector, $size, $params);
+VoidEngine::removeObjects ($converter->selector);
+
+unset ($constants, $env, $array, $selector, $size, $params, $converter);
 
 ?>

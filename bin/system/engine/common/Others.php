@@ -109,6 +109,14 @@ function dir_copy (string $from, string $to): bool
     return true;
 }
 
+function getARGBColor (string $color)
+{
+    $converter = new ObjectType ('System.Drawing.ColorTranslator');
+    $converter->token = 'b03f5f7f11d50a3a';
+
+    return (new WFClass ($converter))->fromHtml ($color);
+}
+
 function replaceSl (string $string): string
 {
     return str_replace ('\\', '/', $string);
@@ -157,7 +165,7 @@ function pre (...$args): void
 	message (print_r ($args, true));
 }
 
-function messageBox (string $message, string $caption = null, ...$args)
+function messageBox (string $message, string $caption = '', ...$args)
 {
     (new MessageBox)->show ($message, $caption, ...$args);
 }

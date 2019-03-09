@@ -7,7 +7,7 @@ if (isset ($GLOBALS['__underConstruction']))
     foreach ($GLOBALS['__underConstruction'] as $group => $objects)
         foreach ($objects as $name => $selector)
         {
-            $object = new WFObject ($selector);
+            $object = new Control (null, $selector);
 
             try
             {

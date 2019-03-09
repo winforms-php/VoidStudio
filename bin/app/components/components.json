@@ -1,0 +1,40 @@
+{
+    "Текст": [
+        "Label",
+        "TextBox"
+    ],
+
+    "Элементы управления": [
+        "Form",
+        "Button",
+        "CheckBox",
+        "ComboBox"
+    ],
+
+    "Элементы вывода": [
+        "ListBox",
+        "PictureBox",
+        "ProgressBar"
+    ],
+
+    "Панели": [
+        "Panel",
+        "TabControl",
+        "TreeView",
+        "ListView",
+        "PropertyGrid",
+        "DataGridView"
+    ],
+
+    "Диалоги": [
+        "OpenFileDialog",
+        "SaveFileDialog",
+        "FolderBrowserDialog",
+        "ColorDialog"
+    ],
+
+    "Остальное": [
+        "Timer",
+        "WebBrowser"
+    ]
+}

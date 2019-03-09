@@ -4,7 +4,7 @@ namespace VoidEngine;
 
 class Control extends Component
 {
-    public function __construct (Control $parent = null, string $className)
+    public function __construct (Control $parent = null, $className)
 	{
         parent::__construct ($className);
         

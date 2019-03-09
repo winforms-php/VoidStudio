@@ -203,6 +203,42 @@ Form MainForm
                 }
             }
 
+    Panel ToolsList__Panel (ToolsPanel__Container->panel1)
+        dock: dsTop
+        height: 32
+
+        # Иконки почему-то не грузятся
+
+        Button ToolsList__Start
+            bounds: [8, 4, 88, 24]
+            flatStyle: flSystem
+
+            caption: text (' Запустить')
+            imageAlign: alMiddleRight
+            textAlign: alMiddleLeft
+
+            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Run_16x.png'))
+
+            ClickEvent:^ function ($self)
+                {
+                    VoidStudioAPI::startProject (Designer__FormsList);
+                }
+
+        Button ToolsList__Stop
+            bounds: [104, 4, 96, 24]
+            flatStyle: flSystem
+
+            caption: text (' Остановить')
+            imageAlign: alMiddleRight
+            textAlign: alMiddleLeft
+
+            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Stop_16x.png'))
+
+            ClickEvent:^ function ($self)
+                {
+                    VoidStudioAPI::stopProject ();
+                }
+
     VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
         ->initDesigner ()
 
@@ -215,13 +251,14 @@ Form MainForm
 
         fullRowSelect: true
         multiselect: false
+        headerStyle: 1
         view: vwDetails
 
         ->columns->add (ComponentsNamesColumn)
 
         ClickEvent:^ function ($self) use (Designer__FormsList $formsList)
             {
-                $component = $self->selectedItems[0]->text;
+                $component = ltrim ($self->selectedItems[0]->text);
 
                 if ($component != 'Form')
                 {
@@ -243,7 +280,7 @@ Form MainForm
         DoubleClickEvent:^ function ($self) use (Designer__FormsList $formsList)
             {
                 $form      = $formsList->selectedTab->text;
-                $component = $self->selectedItems[0]->text;
+                $component = ltrim ($self->selectedItems[0]->text);
                 $designer  = VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer'];
 
                 if ($component == 'Form')
@@ -312,29 +349,13 @@ Form MainForm
         MenuItem Menu__project_run (text ('Запустить'))
             ClickEvent:^ function ($self)
                 {
-                    (new Process)->getProcessesByName ('vstmpprj')->foreach (function ($index, $value)
-                    {
-                        $process = new WFObject ($value);
-
-                        $process->kill ();
-                        $process->waitForExit ();
-                    });
-
-                    VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', Designer__FormsList->items[0]->text, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php'), false);
-
-                    run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
+                    VoidStudioAPI::startProject (Designer__FormsList);
                 }
 
         MenuItem Menu__project_stop (text ('Остановить'))
             ClickEvent:^ function ($self)
                 {
-                    (new Process)->getProcessesByName ('vstmpprj')->foreach (function ($index, $value)
-                    {
-                        $process = new WFObject ($value);
-                        
-                        $process->kill ();
-                        $process->waitForExit ();
-                    });
+                    VoidStudioAPI::stopProject ();
                 }
 
         MenuItem Menu__project_compile (text ('Компилировать'))

@@ -6,11 +6,13 @@ class Component extends WFObject
 {
     public $helpStorage = '';
 
-    public function __construct (string $className)
+    public function __construct ($className)
     {
-        $className = substr ($className, ($pos = strrpos ($className, '\\')) !== false ? $pos + 1 : 0);
-
-        parent::__construct ('System.Windows.Forms.'. $className);
+        parent::__construct (
+            is_string ($className) ?
+                'System.Windows.Forms.'. substr ($className, ($pos = strrpos ($className, '\\')) !== false ? $pos + 1 : 0) : $className
+        );
+        
         Components::addComponent ($this->selector, $this);
     }
 	
