@@ -47,6 +47,14 @@ function text (string $text, string $encoding = 'Windows-1251'): string
     return mb_convert_encoding ($text, $encoding);
 }
 
+function enum (string $name): array
+{
+    return [
+        substr ($name, strrpos ($name, '.') + 1),
+        ($name = substr ($name, 0, strrpos ($name, '.'))) .', '. substr ($name, 0, strrpos ($name, '.'))
+    ];
+}
+
 function dir_create (string $path): void
 {
     if (!is_dir ($path))
@@ -167,7 +175,7 @@ function pre (...$args): void
 
 function messageBox (string $message, string $caption = '', ...$args)
 {
-    (new MessageBox)->show ($message, $caption, ...$args);
+    return (new MessageBox)->show ($message, $caption, ...$args);
 }
 
 class Components
@@ -393,27 +401,6 @@ class Clipboard
         (new WFClass ('System.Windows.Forms.Clipboard'))->setFileDropList ($collection);
         VoidEngine::removeObjects ($collection);
     }
-}
-
-class Icon extends WFObject
-{
-    public function __construct (string $file)
-    {
-        $icon = new ObjectType ('System.Drawing.Icon');
-        $icon->token = 'b03f5f7f11d50a3a';
-
-		parent::__construct ($icon);
-    }
-
-    public function applyToObject (int $selector): void
-	{
-		VoidEngine::setProperty ($selector, 'Icon', $this->selector);
-	}
-	
-	public function saveToFile (string $file): void
-	{
-		VoidEngine::callMethod ($this->selector, 'Save', $file);
-	}
 }
 
 class Cursor

@@ -10,4 +10,7 @@ class TextBox extends Control
 	}
 }
 
+class MaskedTextBox extends TextBox {}
+class RichTextBox extends TextBox {}
+
 ?>

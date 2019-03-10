@@ -4,7 +4,7 @@ Form MainForm
 
     caption: text ('Редактор событий')
 
-    ->icon->loadFromFile (APP_DIR .'/Icon.ico')
+    ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
     FastColoredTextBox Editor
         bounds: [0, 0, MainForm->w, MainForm->h - 88]
@@ -25,7 +25,7 @@ Form MainForm
                 VoidEngine::setObjectEvent ($editor->helpStorage[0], $editor->helpStorage[1], $editor->text);
 
                 if (strlen (trim ($editor->text)) > 0 && is_array ($error = php_errors_check ($editor->text)))
-                    pre (text ('Обнаружена ошибка на строке '. $error['line'] .". Текст ошибки:\n\n". $error['text']));
+                    messageBox (text ('Обнаружена ошибка на строке '. $error['line'] .". Текст ошибки:\n\n". $error['text']), text ('Ошибка кода события'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));
 
                 $form->hide ();
             }

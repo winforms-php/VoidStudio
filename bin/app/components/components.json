@@ -1,24 +1,34 @@
 {
     "Текст": [
         "Label",
-        "TextBox"
+        "LinkLabel",
+        "ToolStripStatusLabel",
+        "TextBox",
+        "MaskedTextBox",
+        "RichTextBox"
     ],
 
     "Элементы управления": [
         "Form",
         "Button",
         "CheckBox",
-        "ComboBox"
+        "ComboBox",
+        "ToolStrip",
+        "DateTimePicker",
+        "MonthCalendar"
     ],
 
     "Элементы вывода": [
         "ListBox",
+        "CheckedListBox",
         "PictureBox",
         "ProgressBar"
     ],
 
     "Панели": [
         "Panel",
+        "GroupBox",
+        "SplitContainer",
         "TabControl",
         "TreeView",
         "ListView",
@@ -30,10 +40,16 @@
         "OpenFileDialog",
         "SaveFileDialog",
         "FolderBrowserDialog",
-        "ColorDialog"
+        "ColorDialog",
+        "FontDialog",
+        "PrintDialog"
     ],
 
     "Остальное": [
+        "MainMenu",
+        "MenuStrip",
+        "ContextMenu",
+        "ContextMenuStrip",
         "Timer",
         "WebBrowser"
     ]

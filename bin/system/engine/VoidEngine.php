@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.7.0 build-2019/03/09 (major.minor.patch state-y/m/d)
+ * @version     2.8.0 build-2019/03/10 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -57,22 +57,29 @@ require 'components/Control.php';
 require 'components/CommonDialog.php';
 require 'components/FileDialog.php';
 require 'components/ColorDialog.php';
+require 'components/FontDialog.php';
+require 'components/PrintDialog.php';
 require 'components/OpenFileDialog.php';
 require 'components/SaveFileDialog.php';
 require 'components/FolderBrowserDialog.php';
+require 'components/DateTimePicker.php';
+require 'components/MonthCalendar.php';
 require 'components/Process.php';
 require 'components/Timer.php';
 require 'components/Image.php';
 require 'components/PictureBox.php';
 require 'components/MainMenu.php';
+require 'components/MenuStrip.php';
 require 'components/MessageBox.php';
 require 'components/Form.php';
 require 'components/Label.php';
+require 'components/ToolStripStatusLabel.php';
 require 'components/TextBox.php';
 require 'components/ProgressBar.php';
 require 'components/PropertyGrid.php';
-require 'components/EventGrid.php';
 require 'components/Panel.php';
+require 'components/GroupBox.php';
+require 'components/ToolStrip.php';
 require 'components/Button.php';
 require 'components/CheckBox.php';
 require 'components/ComboBox.php';
@@ -86,5 +93,6 @@ require 'components/SplitContainer.php';
 require 'components/FastColoredTextBox.php';
 require 'components/Scintilla.php';
 require 'components/Designer.php';
+require 'components/EventGrid.php';
 
 ?>

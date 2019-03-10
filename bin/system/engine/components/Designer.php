@@ -96,34 +96,41 @@ class VoidDesigner extends Component
 
         $this->rightClickEvent = function ($self, $args)
         {
-            $delItem = new MenuItem (text ('Удалить'));
+            $delItem = new ToolStripMenuItem (text ('Удалить'));
+            $delItem->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Delete_16x.png'));
             $delItem->clickEvent = function () use ($self)
             {
                 $self->removeSelected ();
             };
 
-            $toFrontItem = new MenuItem (text ('На передний план'));
+            $toFrontItem = new ToolStripMenuItem (text ('На передний план'));
+            $toFrontItem->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Top_16x.png'));
             $toFrontItem->clickEvent = function () use ($self)
             {
                 $self->bringToFrontSelected ();
             };
 
-            $toBackItem = new MenuItem (text ('На задний план'));
+            $toBackItem = new ToolStripMenuItem (text ('На задний план'));
+            $toBackItem->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Bottom_16x.png'));
             $toBackItem->clickEvent = function () use ($self)
             {
                 $self->sendToBackSelected ();
             };
 
-            $infoItem = new MenuItem (text ('Отладочная информация'));
+            $infoItem = new ToolStripMenuItem (text ('Отладочная информация'));
+            $infoItem->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Debug_16x.png'));
             $infoItem->clickEvent = function () use ($self)
             {
-                $self->getSelectedComponents ()->foreach (function ($index, $value)
+                $self->getSelectedComponents ()->foreach (function ($index, $value) use ($self)
                 {
                     pre ($value instanceof Component ? $value : $value->toString () ."\nSelector: ". $value->selector);
+
+                    if ($value->getType ()->toString () == 'System.Windows.Forms.Form')
+                        pre ($self->getSharpCode ($self->form->name));
                 });
             };
 
-            $menu = new ContextMenu;
+            $menu = new ContextMenuStrip;
             $menu->items->addRange ([
                 $delItem, '-',
                 $toFrontItem, $toBackItem, '-',
@@ -175,6 +182,11 @@ class VoidDesigner extends Component
         $this->callMethod ('RemoveComponent', $component);
     }
 
+    public function removeComponentHistoryByName (string $name): void
+    {
+        unset ($this->objects[$name]);
+    }
+
     public function removeSelected (): void
     {
         $objects = VoidEngine::callMethod ($this->selector, 'GetSelectedComponents');
@@ -192,28 +204,31 @@ class VoidDesigner extends Component
             {
                 if ($this->formsList->items->count > 1)
                 {
-                    $toUnset[] = $this->getComponentName ($object);
+                    if (messageBox (text ('Вы действительно хотите удалить форму "'. $this->form->name .'"?'), text ('Подтвердите действие'), enum ('System.Windows.Forms.MessageBoxButtons.YesNo'), enum ('System.Windows.Forms.MessageBoxIcon.Question')) == 6)
+                    {
+                        $toUnset[] = $this->getComponentName ($object);
 
-                    $this->formsList->items->remove (array_flip ($this->formsList->items->names)[$form = VoidEngine::getProperty ($object, 'Name')]);
+                        $this->formsList->items->remove (array_flip ($this->formsList->items->names)[$form = VoidEngine::getProperty ($object, 'Name')]);
 
-                    $this->control->dispose ();
-                    $this->form->dispose ();
-                    $this->callMethod ('DeleteSelected');
+                        VoidEngine::callMethod ($this->control, 'Dispose');
+                        $this->form->dispose ();
+                        $this->callMethod ('DeleteSelected');
 
-                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $this->formsList->selectedTab->text .'Designer'];
-                    
-                    $this->propertyGrid->selectedObject = $designer->form->selector;
-                    $designer->setSelectedComponents ($designer->form->selector);
+                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $this->formsList->selectedTab->text .'Designer'];
+                        
+                        $this->propertyGrid->selectedObject = $designer->form->selector;
+                        $designer->setSelectedComponents ($designer->form->selector);
 
-                    unset (VoidStudioAPI::$objects['main']['Designer__'. $form .'Designer']);
-                    Components::cleanJunk ();
+                        unset (VoidStudioAPI::$objects['main']['Designer__'. $form .'Designer']);
+                        Components::cleanJunk ();
 
-                    return;
+                        return;
+                    }
                 }
 
                 else
                 {
-                    pre (text ('Нельзя удалить единственную форму проекта'));
+                    messageBox (text ('Нельзя удалить единственную форму проекта'), text ('Ошибка удаления'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));
 
                     return;
                 }

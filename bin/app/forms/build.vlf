@@ -6,7 +6,7 @@ Form MainForm
 
     caption: text ('Компиляция проекта')
 
-    ->icon->loadFromFile (APP_DIR .'/Icon.ico')
+    ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
     ShownEvent:^ function ($self)
         {
@@ -81,22 +81,7 @@ Form MainForm
                                     $references[] = ENGINE_DIR. $item->text;
                             });
 
-                        $errors = VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, $references, /*UsingVoidFramework->checked*/ false);
-
-                        $log = VoidStudioAPI::getObjects ('main')['ToolsPanel__LogList'];
-                        $log->items->add (text ('Проект скомпилирован по пути "'. $save .'". '. (($errorsCount = sizeof ($errors)) > 0 ? ('Обнаружено '. $errorsCount .' ошибок') : 'Ошибок не обнаружено')));
-
-                        if ($errorsCount > 0)
-                        {
-                            $log->items->addRange (array_map (function ($error)
-                            {
-                                return "\t". $error;
-                            }, $errors));
-
-                            pre (text ('Ошибка компиляции: обнаружено '. $errorsCount .' ошибок'));
-                        }
-
-                        else pre (text ('Проект успешно скомпилирован'));
+                        VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, $references, /*UsingVoidFramework->checked*/ false, true);
                         
                         MainForm->hide ();
                     }

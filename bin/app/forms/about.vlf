@@ -6,13 +6,13 @@ Form MainForm
 
     caption: text ('О программе')
 
-    ->icon->loadFromFile (APP_DIR .'/Icon.ico')
+    ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
     PictureBox VoidStudio__Logo
         bounds: [16, 16, 64, 64]
         sizeMode: smStretchImage
 
-        ->image->loadFromFile (APP_DIR .'/Icon.ico')
+        ->image->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
     Label VoidStudio__ProjectName
         bounds: [96, 16, 380, 64]
@@ -33,7 +33,7 @@ Form MainForm
         bounds: [20, 104, 56, 56]
         sizeMode: smStretchImage
 
-        ->image->loadFromFile (APP_DIR .'/WinForms PHP.jpg')
+        ->image->loadFromFile (APP_DIR .'/system/icons/WinForms PHP.jpg')
 
     Label WinFormsPHP__ProjectName
         bounds: [84, 104, 144, 56]

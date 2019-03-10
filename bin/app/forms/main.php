@@ -25,7 +25,6 @@ $index          = 0;
 foreach ($components as $groupName => $comps)
 {
     $group = new ListViewGroup (text ($groupName));
-    //$group->foreColor = clTurquoise;
 
     $componentsList->groups->add ($group);
 

@@ -6,7 +6,7 @@ Form MainForm
 
     caption: 'VoidStudio'
 
-    ->icon->loadFromFile (APP_DIR .'/Icon.ico')
+    ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
     SplitContainer ToolsPanel__Container
         dock: dsFill
@@ -18,49 +18,70 @@ Form MainForm
         ListBox ToolsPanel__LogList
             dock: dsFill
 
-    TabPage ToolsPanel__Eval (text ('Выполнение кода'))
-        FastColoredTextBox ToolsPanel__EvalEditor
+            horizontalScrollbar: true
+
+    TabPage ToolsPanel__EvalPHP (text ('Выполнение PHP кода'))
+        FastColoredTextBox ToolsPanel__EvalPHPEditor
             dock: dsFill
 
             language: langPHP
             wordWrap: true
 
-            # syntax: 'syntax.json'
-
-        Button ToolsPanel__EvalButton
+        Button ToolsPanel__EvalPHPButton
             dock: dsBottom
 
             text: text ('Выполнить')
 
-            ClickEvent:^ function ($self) use (ToolsPanel__EvalEditor $editor)
+            ClickEvent:^ function ($self) use (ToolsPanel__EvalPHPEditor $editor)
                 {
                     file_put_contents ('system/settings/last_eval.php', $editor->text);
 
                     eval ($editor->text);
                 }
 
+    TabPage ToolsPanel__EvalCS (text ('Выполнение C# кода'))
+        FastColoredTextBox ToolsPanel__EvalCSEditor
+            dock: dsFill
+
+            language: langCSharp
+            wordWrap: true
+
+        Button ToolsPanel__EvalCSButton
+            dock: dsBottom
+
+            text: text ('Выполнить')
+
+            ClickEvent:^ function ($self) use (ToolsPanel__EvalCSEditor $editor)
+                {
+                    file_put_contents ('system/settings/last_eval.cs', $editor->text);
+
+                    (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ($editor->text, false);
+                }
+
     TabControl ToolsPanel__ToolsList (ToolsPanel__Container->panel2)
         dock: dsFill
 
-        ->items->addRange ([ToolsPanel__Log, ToolsPanel__Eval])
+        ->items->addRange ([ToolsPanel__Log, ToolsPanel__EvalPHP, ToolsPanel__EvalCS])
 
     Panel PropertiesPanel
         dock: dsLeft
         width: 280
 
-        MenuItem PropertiesList__ListMenuItem (text ('Восстановить'))
+        ToolStripMenuItem PropertiesList__ListMenuItem (text ('Сбросить'))
+            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Undo_16x.png'))
+
             ClickEvent:^ function ($self)
                 {
                     c('PropertiesList__List')->resetSelectedProperty ();
                 }
 
-        ContextMenu PropertiesList__ListMenu ()
+        ContextMenuStrip PropertiesList__ListMenu ()
             ->items->add (PropertiesList__ListMenuItem)
 
         TabPage PropertiesList__Page (text ('Свойства'))
             PropertyGrid PropertiesList__List
                 dock: dsFill
-                contextMenu: PropertiesList__ListMenu
+                contextMenuStrip: PropertiesList__ListMenu
                 
                 PropertyValueChangedEvent:^ function ($self, $args)
                     {
@@ -127,7 +148,9 @@ Form MainForm
                         }
                     }
         
-        MenuItem EventsList__ListMenuItem (text ('Удалить'))
+        ToolStripMenuItem EventsList__ListMenuItem (text ('Удалить'))
+            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Delete_16x.png'))
+
             ClickEvent:^ function ($self)
                 {
                     $eventsList = c('EventsList__ActiveEvents');
@@ -138,7 +161,7 @@ Form MainForm
                     $eventsList->refresh ();
                 }
 
-        ContextMenu EventsList__ListMenu ()
+        ContextMenuStrip EventsList__ListMenu ()
             ->items->add (EventsList__ListMenuItem)
 
         TabPage EventsList__Page (text ('События'))
@@ -146,7 +169,7 @@ Form MainForm
                 dock: dsFill
                 toolbarVisible: false
 
-                contextMenu: EventsList__ListMenu
+                contextMenuStrip: EventsList__ListMenu
 
                 EventClickEvent:^ function ($self, $args)
                     {
@@ -169,16 +192,44 @@ Form MainForm
 
             SelectedIndexChangedEvent:^ function ($self)
                 {
-                    $item = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer']->getComponentByName ($self->selectedItem);
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
 
-                    PropertiesList__List->selectedObject = $item;
+                    try
+                    {
+                        PropertiesList__List->selectedObject = $designer->getComponentByName ($self->selectedItem);
+
+                    }
+
+                    catch (\Throwable $e)
+                    {
+                        if ($self->selectedItem)
+                            $designer->removeComponentHistoryByName ($self->selectedItem);
+
+                        $self->items->clear ();
+                        $self->items->addRange (array_keys ($designer->objects));
+                        $self->selectedItem = $self->items[0];
+                    }
                 }
 
             SelectionChangeCommittedEvent:^ function ($self)
                 {
                     $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
-                    
-                    $designer->setSelectedComponents ($designer->getComponentByName ($self->selectedItem));
+
+                    try
+                    {
+                        $designer->setSelectedComponents ($designer->getComponentByName ($self->selectedItem));
+
+                    }
+
+                    catch (\Throwable $e)
+                    {
+                        if ($self->selectedItem)
+                            $designer->removeComponentHistoryByName ($self->selectedItem);
+
+                        $self->items->clear ();
+                        $self->items->addRange (array_keys ($designer->objects));
+                        $self->selectedItem = $self->items[0];
+                    }
                 }
 
     TabPage Designer__Form1 (text ('Form1'))
@@ -207,11 +258,9 @@ Form MainForm
         dock: dsTop
         height: 32
 
-        # Иконки почему-то не грузятся
-
         Button ToolsList__Start
             bounds: [8, 4, 88, 24]
-            flatStyle: flSystem
+            flatStyle: flFlat
 
             caption: text (' Запустить')
             imageAlign: alMiddleRight
@@ -226,7 +275,7 @@ Form MainForm
 
         Button ToolsList__Stop
             bounds: [104, 4, 96, 24]
-            flatStyle: flSystem
+            flatStyle: flFlat
 
             caption: text (' Остановить')
             imageAlign: alMiddleRight
@@ -243,11 +292,11 @@ Form MainForm
         ->initDesigner ()
 
     ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
-        width: 216
+        width: 212
 
     ListView ComponentsList
         dock: dsRight
-        width: 220
+        width: 240
 
         fullRowSelect: true
         multiselect: false
@@ -347,6 +396,8 @@ Form MainForm
 
     MenuItem Menu__project (text ('Проект'))
         MenuItem Menu__project_run (text ('Запустить'))
+            # image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Run_16x.png'))
+
             ClickEvent:^ function ($self)
                 {
                     VoidStudioAPI::startProject (Designer__FormsList);
@@ -384,7 +435,7 @@ Form MainForm
                     {
                         VoidStudioProjectManager::saveProject ($save);
 
-                        pre (text ('Проект успешно сохранён'));
+                        messageBox (text ('Проект успешно сохранён'), text ('Успешное сохранение'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Information'));
                     }
                 }
 
@@ -403,7 +454,10 @@ Form MainForm
     ShownEvent:^ function ($self)
         {
             if (file_exists ('system/settings/last_eval.php'))
-                ToolsPanel__EvalEditor->text = file_get_contents ('system/settings/last_eval.php');
+                ToolsPanel__EvalPHPEditor->text = file_get_contents ('system/settings/last_eval.php');
+
+            if (file_exists ('system/settings/last_eval.cs'))
+                ToolsPanel__EvalCSEditor->text = file_get_contents ('system/settings/last_eval.cs');
 
             PropertiesList__List->selectedObject = Designer__Form1Designer->form;
             EventsList__ActiveEvents->selectedObject = Designer__Form1Designer->form;

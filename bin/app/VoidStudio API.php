@@ -140,7 +140,7 @@ class VoidStudioProjectManager
 
 class VoidStudioBuilder
 {
-    public static function compileProject (string $save, string $enteringPoint, array $references, bool $withVoidFramework = false): array
+    public static function compileProject (string $save, string $enteringPoint, array $references, bool $withVoidFramework = false, bool $printSuccessCompile = false): array
     {
         $savePath   = text (dirname ($save) .'/'. basenameNoExt ($save));
         $strClass   = (new WFClass ('System.String', 'mscorlib'))->selector;
@@ -157,13 +157,15 @@ class VoidStudioBuilder
             foreach ($designer->objects as $name => $objectType)
                 if (isset (Components::$events[$designer->getComponentByName ($name)]) && sizeof ($events = Components::$events[$designer->getComponentByName ($name)]) > 0)
                     {
-                        $name = 'this.'. $name;
-                        $str = substr ($globalCode, strrpos ($globalCode, $name));
+                        $name = $name == $item ? 'this' : 'this.'. $name;
+                        $str = substr ($globalCode, strrpos ($globalCode, $name, $offset = strrpos ($globalCode, 'this.SuspendLayout();')) ?: $offset);
                         $pos = strpos ($str, "\n");
 
                         foreach ($events as $eventName => $event)
                         {
-                            $eventStr = '        '. $name .'.'. $eventName .' += (sender, e) => WinForms_PHP.Program.CallEvent (WinForms_PHP.Program.HashByObject ('. $name .'), @"namespace VoidEngine; $self = _c($self); $args = isset ($args) && is_int ($args) && VoidEngine::objectExists ($args) ? new EventArgs ($args) : null; '. str_replace ('"', '\"', $event) .'", e);';
+                            $eventStr = VoidEngine::callMethod ($strClass, ['Concat', 'object'], $event);
+                            
+                            $eventStr = '        '. $name .'.'. $eventName .' += (sender, e) => WinForms_PHP.Program.CallEvent (WinForms_PHP.Program.HashByObject ('. $name .'), @"namespace VoidEngine; $self = _c($self); $args = isset ($args) && is_int ($args) && VoidEngine::objectExists ($args) ? new EventArgs ($args) : null; " + WinForms_PHP.Program.getResource ("'. VoidEngine::exportObject ($eventStr) .'"), e);';
 
                             $globalCode = new WFObject (VoidEngine::callMethod ($globalCode->selector, ['Replace', 'object'], $str, substr ($str, 0, $pos). $eventStr .substr ($str, $pos)));
                         }
@@ -216,7 +218,7 @@ return $t;
 
 */
 
-        return VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.php'), [
+        $errors = VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/system/icons/Icon.ico'), str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.php'), [
             '%VoidEngine%'     => $withVoidFramework ?
                 file_get_contents (APP_DIR .'/system/presets/compile_framework_preset.php') :
                 VoidStudioBuilder::generateCode ($references),
@@ -225,6 +227,27 @@ return $t;
         ]), null, null, null, null, null, str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
             '%forms%' => join ('", "', $forms)
         ]), $globalCode);
+
+        /*pre ($errors);
+        pre ($globalCode->toString ());*/
+
+        $log = VoidStudioAPI::getObjects ('main')['ToolsPanel__LogList'];
+        $log->items->add (text ('Проект скомпилирован по пути "'. $save .'". '. (($errorsCount = sizeof ($errors)) > 0 ? ('Обнаружено '. $errorsCount .' ошибок') : 'Ошибок не обнаружено')));
+
+        if ($errorsCount > 0)
+        {
+            $log->items->addRange (array_map (function ($error)
+            {
+                return "\t". $error;
+            }, $errors));
+
+            messageBox (text ('Обнаружено '. $errorsCount .' ошибок'), text ('Ошибка компиляции'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));
+        }
+
+        elseif ($printSuccessCompile)
+            messageBox (text ('Проект успешно скомпилирован'), text ('Успешное компилирование'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Information'));
+
+        return $errors;
     }
 
     public static function appendDesignerData (int $code, VoidDesigner $designer): WFObject
