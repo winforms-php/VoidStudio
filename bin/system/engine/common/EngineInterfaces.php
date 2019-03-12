@@ -458,8 +458,28 @@ class EngineAdditions
     public static function coupleSelector ($value, int $selfSelector = null)
     {
         if (is_int ($value) && VoidEngine::objectExists ($value) && $value != $selfSelector)
-            return VoidEngine::getProperty (VoidEngine::callMethod ($value, 'GetType'), 'IsArray') ?
-                new Items ($value) : new WFObject ($value);
+        {
+            $type = VoidEngine::callMethod ($value, 'GetType');
+
+            if (VoidEngine::getProperty ($type, 'IsArray'))
+                return new Items ($value);
+
+            if (strpos (VoidEngine::callMethod ($type, 'ToString'), 'Collection') !== false)
+                return new Items ($value);
+
+            // Объект можешь иметь класс "System.RuntimeType" у которого нет свойства "IsCollectible"
+
+            try
+            {
+                if (VoidEngine::getProperty ($type, 'IsCollectible'))
+                    return new Items ($value);
+            }
+
+            catch (\Throwable $e)
+            {
+                return new WFObject ($value);
+            }
+        }
 
         else return $value;
     }

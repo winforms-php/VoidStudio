@@ -3,12 +3,16 @@ namespace VoidEngine;
 $form = new Form;
 
 $menu = new MenuStrip;
+$menu->stretch = true;
+
+$item = new ToolStripMenuItem ('rwerwe213123wefwef');
+$item->size = [80, 20];
+
 $menu->items->addRange ([
-    new ToolStripMenuItem ('rwerwe213123wefwef'),
-    new ToolStripMenuItem ('rwerwe213123wefwef'),
-    new ToolStripMenuItem ('rwerwe213123wefwef')
+    $item
 ]);
 
+$menu->dock = dsTop;
 $form->mainMenuStrip = $menu;
 $form->show ();
 

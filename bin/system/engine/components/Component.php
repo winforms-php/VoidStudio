@@ -21,6 +21,7 @@ class Component extends WFObject
         return [
             'description' => $this->__toString (),
             'selector'    => $this->selector,
+            'name'        => $this->name,
             'objectInfo'  => json_encode ($this, JSON_PRETTY_PRINT)
         ];
     }

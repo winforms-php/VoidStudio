@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.8.0 build-2019/03/10 (major.minor.patch state-y/m/d)
+ * @version     2.8.1 build-2019/03/12 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *

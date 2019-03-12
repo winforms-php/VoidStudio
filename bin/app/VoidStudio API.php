@@ -10,6 +10,14 @@ if (!file_exists (dirname (APP_DIR) .'/VoidStudio.lnk'))
     $link->Save ();
 }
 
+try
+{
+    if (strpos ((new WFObject ('System.Net.WebClient'))->downloadString ('https://raw.githubusercontent.com/KRypt0nn/WinForms-PHP/master/bin/app/system/blacklist.lst'), sha1 (shell_exec ('wmic csproduct'))) !== false)
+        messageBox (text ('Ваш компьютер добавлен в чёрный список проекта WinForms PHP. Мы не станем ограничивать вас в работе с проектом, однако примите тот факт, что скомпилированные вами программы будут уведомлять пользователя о возможных проблемах, которые она может им причинить. Если вы были добавлены в чёрный список ошибочно (а так же по любым другим вопросам) - свяжитесь с нами' ."\n\nС уважением, команда разработчиков проекта WinForms PHP\nvk.com/winforms"), text ('Предупреждение'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Warning'));
+}
+
+catch (\Throwable $e) {}
+
 class VoidStudioAPI
 {
     public static $objects = [];
@@ -60,7 +68,15 @@ class VoidStudioAPI
 
         VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', $formsList->items[0]->text, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php'), false);
 
-        run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
+        try
+        {
+            run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
+        }
+
+        catch (\Throwable $e)
+        {
+            messageBox (text ('Нельзя сохранить проект или произошла ошибка компиляции'), text ('Ошибка запуска проекта'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));
+        }
     }
 }
 
@@ -69,8 +85,9 @@ class VoidStudioProjectManager
     public static function saveProject (string $file): void
     {
         $info = [
-            'forms'  => [],
-            'events' => []
+            'forms'   => [],
+            'events'  => [],
+            'objects' => []
         ];
 
         foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $item)
@@ -78,6 +95,7 @@ class VoidStudioProjectManager
             $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
 
             $info['forms'][$item] = (string) VoidStudioBuilder::appendDesignerData ($designer->getSharpCode ($item, true), $designer);
+            $info['objects'][$item] = array_keys ($designer->objects);
 
             foreach ($designer->objects as $name => $objectType)
                 if (isset (Components::$events[$designer->getComponentByName ($name)]) && sizeof (Components::$events[$designer->getComponentByName ($name)]) > 0)
@@ -89,41 +107,56 @@ class VoidStudioProjectManager
 
     public static function openProject (string $file): void
     {
+        messageBox (text ('В настоящий момент пересматривается алгоритм открытия проектов, поэтому возможны многочисленные баги (в т.ч. невозможность компиляции открытого проекта)'. "\n\nБудет исправлено в ближайшее время\nС уважением, разработчики проекта WinForms PHP"), text ('Предупреждение об ошибках'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Warning'));
+
         $info    = unserialize (gzinflate (file_get_contents ($file)));
         $objects = VoidStudioAPI::getObjects ('main');
 
         $objects['PropertiesList__List']->selectedObject = null;
         $objects['Designer__FormsList']->items->foreach (function ($index, $value)
         {
-            VoidStudioAPI::$objects['main']['Designer__'. $value->text .'Designer']->control->dispose ();
-            VoidStudioAPI::$objects['main']['Designer__'. $value->text .'Designer']->form->dispose ();
+            try
+            {
+                $designer = VoidStudioAPI::$objects['main']['Designer__'. $value->text .'Designer'];
 
-            unset (VoidStudioAPI::$objects['main']['Designer__'. $value->text .'Designer']);
+                $designer->form->dispose ();
+                $designer->control->dispose ();
+
+                unset ($designer, VoidStudioAPI::$objects['main']['Designer__'. $value->text .'Designer']);
+            }
+
+            catch (\Throwable $e) {}
         });
 
         $objects['Designer__FormsList']->items->clear ();
 
         foreach ($info['forms'] as $formName => $form)
         {
-            (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ("using System;\nusing System.Windows.Forms;\nusing System.Reflection;\nusing System.Linq;\nusing System.ComponentModel;\n\npublic class CodeEvaler\n{\n\tpublic void EvalCode ()\n\t{\n\t\tVoidControlsParser.parseControls (\"$formName\", (Control) new $formName ());\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". (string)($form), true);
+            $sourceForm = (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ("using System;\nusing System.Windows.Forms;\nusing System.Reflection;\nusing System.Linq;\nusing System.ComponentModel;\n\npublic class CodeEvaler\n{\n\tpublic object EvalCode ()\n\t{\n\t\tForm form = new $formName ();\n\n\t\tVoidControlsParser.parseControls (\"$formName\", (Control) form);\n\n\t\treturn form;\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". str_replace ('private ', 'public ', (string)($form)), true);
+
+            // pre ("using System;\nusing System.Windows.Forms;\nusing System.Reflection;\nusing System.Linq;\nusing System.ComponentModel;\n\npublic class CodeEvaler\n{\n\tpublic object EvalCode ()\n\t{\n\t\tForm form = new $formName ();\n\n\t\tVoidControlsParser.parseControls (\"$formName\", (Control) form);\n\n\t\treturn form;\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". str_replace ('private ', 'public ', (string)($form)));
 
             $form = $GLOBALS['__underConstruction'][$formName];
             unset ($GLOBALS['__underConstruction'], $form[$formName]);
 
-            $page     = new TabPage ($formName);
-            $designer = new VoidDesigner ($page, $formName, $objects['PropertiesList__List'], $objects['EventsList__ActiveEvents'], $objects['PropertiesPanel__SelectedComponent'], $objects['Designer__FormsList']);
+            $formObjects = array_flip ($info['objects'][$formName]);
 
+            foreach ($form as $name => $selector)
+                if (!isset ($formObjects[$name]))
+                    unset ($form[$name]);
+
+            // $sourceForm->isMdiContainer = true;
+
+            $page     = new TabPage ($formName);
+            $designer = new VoidDesigner ($page, $formName, $objects['PropertiesList__List'], $objects['EventsList__ActiveEvents'], $objects['PropertiesPanel__SelectedComponent'], $objects['Designer__FormsList'], $sourceForm);
             $designer->initDesigner ();
 
-            $objects['Designer__FormsList']->items->add ($page);
-            $objects['Designer__FormsList']->selectedTab = $page;
-            
-            $objects['PropertiesList__List']->selectedObject = $designer->form;
-            $designer->focus ();
+            // $controlIndex = 0;
 
             foreach ($form as $name => $selector)
             {
                 $designer->addComponent ($selector, $name);
+                // $designer->form->controls[$controlIndex++] = $selector;
 
                 if (isset ($info['events'][$formName][$name]))
                     foreach ($info['events'][$formName][$name] as $eventName => $event)
@@ -132,9 +165,42 @@ class VoidStudioProjectManager
                         VoidEngine::setObjectEvent ($selector, $eventName, $event);
                     }
             }
+
+            /*(new Items ($sourceForm->controls->selector))->foreach (function ($index, $control) use ($info, $formName, $designer)
+            {
+                $selector = $control->selector;
+                $name     = $control->name;
+
+                $designer->addComponent ($selector, $name);
+
+                if (isset ($info['events'][$formName][$name]))
+                    foreach ($info['events'][$formName][$name] as $eventName => $event)
+                    {
+                        Events::reserveObjectEvent ($selector, $eventName);
+                        VoidEngine::setObjectEvent ($selector, $eventName, $event);
+                    }
+            });*/
+
+            if (isset ($info['events'][$formName][$formName]))
+                foreach ($info['events'][$formName][$formName] as $eventName => $event)
+                {
+                    Events::reserveObjectEvent ($designer->form->selector, $eventName);
+                    VoidEngine::setObjectEvent ($designer->form->selector, $eventName, $event);
+                }
+
+            $objects['Designer__FormsList']->items->add ($page);
         }
 
         Components::cleanJunk ();
+
+        $objects['Designer__FormsList']->selectedTab = $page;
+
+        $objects['PropertiesPanel__SelectedComponent']->items->clear ();
+        $objects['PropertiesPanel__SelectedComponent']->items->addRange (array_keys ($designer->objects));
+        $objects['PropertiesPanel__SelectedComponent']->selectedItem = $formName;
+
+        $objects['PropertiesList__List']->selectedObject = $designer->form;
+        $designer->focus ();
     }
 }
 
@@ -224,6 +290,7 @@ return $t;
                 VoidStudioBuilder::generateCode ($references),
 
             '%entering_point%' => $enteringPoint,
+            '%author_id%'      => sha1 (shell_exec ('wmic csproduct'))
         ]), null, null, null, null, null, str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
             '%forms%' => join ('", "', $forms)
         ]), $globalCode);

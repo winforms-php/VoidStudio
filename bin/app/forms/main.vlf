@@ -192,44 +192,53 @@ Form MainForm
 
             SelectedIndexChangedEvent:^ function ($self)
                 {
-                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
-
                     try
                     {
-                        PropertiesList__List->selectedObject = $designer->getComponentByName ($self->selectedItem);
+                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
 
+                        try
+                        {
+                            PropertiesList__List->selectedObject = $designer->getComponentByName ($self->selectedItem);
+                        }
+
+                        catch (\Throwable $e)
+                        {
+                            if ($self->selectedItem)
+                                $designer->removeComponentHistoryByName ($self->selectedItem);
+
+                            $self->items->clear ();
+                            $self->items->addRange (array_keys ($designer->objects));
+                            $self->selectedItem = $self->items[0];
+                        }
                     }
 
-                    catch (\Throwable $e)
-                    {
-                        if ($self->selectedItem)
-                            $designer->removeComponentHistoryByName ($self->selectedItem);
-
-                        $self->items->clear ();
-                        $self->items->addRange (array_keys ($designer->objects));
-                        $self->selectedItem = $self->items[0];
-                    }
+                    catch (\Throwable $e) {}
                 }
 
             SelectionChangeCommittedEvent:^ function ($self)
                 {
-                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
-
                     try
                     {
-                        $designer->setSelectedComponents ($designer->getComponentByName ($self->selectedItem));
+                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
 
+                        try
+                        {
+                            $designer->setSelectedComponents ($designer->getComponentByName ($self->selectedItem));
+
+                        }
+
+                        catch (\Throwable $e)
+                        {
+                            if ($self->selectedItem)
+                                $designer->removeComponentHistoryByName ($self->selectedItem);
+
+                            $self->items->clear ();
+                            $self->items->addRange (array_keys ($designer->objects));
+                            $self->selectedItem = $self->items[0];
+                        }
                     }
 
-                    catch (\Throwable $e)
-                    {
-                        if ($self->selectedItem)
-                            $designer->removeComponentHistoryByName ($self->selectedItem);
-
-                        $self->items->clear ();
-                        $self->items->addRange (array_keys ($designer->objects));
-                        $self->selectedItem = $self->items[0];
-                    }
+                    catch (\Throwable $e) {}
                 }
 
     TabPage Designer__Form1 (text ('Form1'))

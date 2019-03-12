@@ -36,9 +36,10 @@ class VoidDesigner extends Component
         $this->selector = VoidEngine::createObject (new ObjectType ('WinForms_PHP.FormDesigner4', false, true), $this->form->selector, $formName);
         Components::addComponent ($this->selector, $this);
 
+        $this->form->name = $formName;
+
         if ($form === null)
         {
-            $this->form->name = $formName;
             $this->form->text = $formName;
             $this->form->size = [400, 360];
         }
