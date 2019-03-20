@@ -1,4 +1,6 @@
 {
+    "-Cursor": "Указатель",
+
     "Текст": [
         "Label",
         "LinkLabel",
@@ -12,8 +14,11 @@
         "Form",
         "Button",
         "CheckBox",
+        "RadioButton",
         "ComboBox",
+        "TrackBar",
         "ToolStrip",
+        "NumericUpDown",
         "DateTimePicker",
         "MonthCalendar"
     ],
@@ -22,11 +27,14 @@
         "ListBox",
         "CheckedListBox",
         "PictureBox",
-        "ProgressBar"
+        "ProgressBar",
+        "ImageList",
+        "WebBrowser"
     ],
 
     "Панели": [
         "Panel",
+        "FlowLayoutPanel",
         "GroupBox",
         "SplitContainer",
         "TabControl",
@@ -50,7 +58,6 @@
         "MenuStrip",
         "ContextMenu",
         "ContextMenuStrip",
-        "Timer",
-        "WebBrowser"
+        "Timer"
     ]
 }

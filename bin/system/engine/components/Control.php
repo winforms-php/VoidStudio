@@ -177,7 +177,7 @@ class Control extends Component
     {
         $anchor = 0;
 
-        foreach ($anchors as $id => $anc)
+        foreach ($anchors as $anc)
             $anchor |= $anc;
 
         return $this->setProperty ('Anchor', $anchor, 'int');

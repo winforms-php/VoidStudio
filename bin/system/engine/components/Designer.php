@@ -105,14 +105,14 @@ class VoidDesigner extends Component
             };
 
             $toFrontItem = new ToolStripMenuItem (text ('На передний план'));
-            $toFrontItem->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Top_16x.png'));
+            $toFrontItem->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Front_16x.png'));
             $toFrontItem->clickEvent = function () use ($self)
             {
                 $self->bringToFrontSelected ();
             };
 
             $toBackItem = new ToolStripMenuItem (text ('На задний план'));
-            $toBackItem->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Bottom_16x.png'));
+            $toBackItem->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Back_16x.png'));
             $toBackItem->clickEvent = function () use ($self)
             {
                 $self->sendToBackSelected ();
@@ -239,10 +239,15 @@ class VoidDesigner extends Component
         foreach ($toUnset as $name)
             unset ($this->objects[$name]);
 
+        $this->callMethod ('DeleteSelected');
+
+        foreach ($this->objects as $objectName => $object)
+            if (!is_int ($this->getComponentByName ($objectName)))
+                unset ($this->objects[$objectName]);
+
         $this->currentSelectedItem->items->clear ();
         $this->currentSelectedItem->items->addRange (array_keys ($this->objects));
-
-        $this->callMethod ('DeleteSelected');
+        $this->currentSelectedItem->selectedItem = $this->form->name;
 
         Components::cleanJunk ();
     }

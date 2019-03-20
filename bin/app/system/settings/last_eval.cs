@@ -5,6 +5,6 @@ form.Show ();*/
 
 var url = "https://raw.githubusercontent.com/KRypt0nn/WinForms-PHP/master/bin/app/license.txt";
 
-var textFromFile = (new System.Net.WebClient()).DownloadString(url);
+var textFromFile = (new System.Net.WebClient ()).DownloadString (url);
 
 MessageBox.Show (textFromFile);

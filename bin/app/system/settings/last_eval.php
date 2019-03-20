@@ -2,17 +2,25 @@ namespace VoidEngine;
 
 $form = new Form;
 
-$menu = new MenuStrip;
-$menu->stretch = true;
+$menu = new MenuStrip ($form);
+$menu->backColor = [clRed, 'color'];
+$menu->foreColor = [clYellow, 'color'];
+$menu->left = 0;
+$menu->top = 0;
+$menu->width = $form->width;
+$menu->height = $form->height;
+$menu->dock = dsTop;
 
 $item = new ToolStripMenuItem ('rwerwe213123wefwef');
-$item->size = [80, 20];
+$item->width = 152;
+$item->height = 22;
+$menu->backColor = [clRed, 'color'];
+$menu->foreColor = [clYellow, 'color'];
 
 $menu->items->addRange ([
     $item
 ]);
 
-$menu->dock = dsTop;
 $form->mainMenuStrip = $menu;
 $form->show ();
 

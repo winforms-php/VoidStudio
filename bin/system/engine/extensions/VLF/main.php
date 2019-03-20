@@ -49,6 +49,9 @@ final class VLFLink
     }
 }
 
+if (!is_dir (__DIR__ .'/cache'))
+    mkdir (__DIR__ .'/cache');
+
 require 'bin/parser.php';
 require 'bin/interpreter.php';
 require 'bin/exporter.php';

@@ -82,6 +82,32 @@ class VoidStudioAPI
 
 class VoidStudioProjectManager
 {
+    static $projectPath = '';
+
+    public static function createProject (string $name = 'default'): bool
+    {
+        if (!is_dir ($dir = 'C:/Users/'. USERNAME .'/Documents/VoidStudio'))
+            dir_create ($dir);
+
+        if (is_dir ($dir = $dir .'/'. $name))
+        {
+            if (messageBox (text ('Проект "'. $name .'" уже создан. Перезаписать его?'), text ('Подтвердите действие'), enum ('System.Windows.Forms.MessageBoxButtons.YesNo'), enum ('System.Windows.Forms.MessageBoxIcon.Question')) == 6)
+                dir_clean ($dir);
+
+            else return false;
+        }
+
+        else dir_create ($dir);
+
+        self::$projectPath = $dir;
+
+        VoidStudioAPI::getObjects ('main')['MainForm']->caption = $name .' - VoidStudio';
+
+        dir_create ($dir .'/modules');
+
+        return true;
+    }
+
     public static function saveProject (string $file): void
     {
         $info = [
@@ -103,11 +129,16 @@ class VoidStudioProjectManager
         }
 
         file_put_contents ($file, gzdeflate (serialize ($info), 9));
+
+        if (replaceSl (self::$projectPath) != replaceSl (dirname ($file)))
+            dir_copy (self::$projectPath .'/modules', dirname ($file) .'/modules');
     }
 
     public static function openProject (string $file): void
     {
         messageBox (text ('В настоящий момент пересматривается алгоритм открытия проектов, поэтому возможны многочисленные баги (в т.ч. невозможность компиляции открытого проекта)'. "\n\nБудет исправлено в ближайшее время\nС уважением, разработчики проекта WinForms PHP"), text ('Предупреждение об ошибках'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Warning'));
+
+        self::$projectPath = dirname ($file);
 
         $info    = unserialize (gzinflate (file_get_contents ($file)));
         $objects = VoidStudioAPI::getObjects ('main');
@@ -288,6 +319,22 @@ return $t;
             '%VoidEngine%'     => $withVoidFramework ?
                 file_get_contents (APP_DIR .'/system/presets/compile_framework_preset.php') :
                 VoidStudioBuilder::generateCode ($references),
+
+            '%modules%' => implode ("\n", array_map (function ($module)
+            {
+                $module = trim (file_get_contents ($module));
+
+                if (substr ($module, 0, 2) == '<?')
+                    $module = substr ($module, 2);
+
+                if (substr ($module, 0, 3) == 'php')
+                    $module = substr ($module, 3);
+
+                if (substr ($module, -2) == '?>')
+                    $module = substr ($module, 0, -2);
+
+                return "\$module = <<<'MODULE'\n$module\nMODULE;\neval (\$module);";
+            }, glob (VoidStudioProjectManager::$projectPath .'/modules/*.php'))),
 
             '%entering_point%' => $enteringPoint,
             '%author_id%'      => sha1 (shell_exec ('wmic csproduct'))

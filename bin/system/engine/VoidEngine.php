@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.8.1 build-2019/03/12 (major.minor.patch state-y/m/d)
+ * @version     2.8.3 build-2019/03/20 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -74,10 +74,15 @@ require 'components/MessageBox.php';
 require 'components/Form.php';
 require 'components/Label.php';
 require 'components/ToolStripStatusLabel.php';
+require 'components/TrackBar.php';
+require 'components/RadioButton.php';
+require 'components/NumericUpDown.php';
 require 'components/TextBox.php';
 require 'components/ProgressBar.php';
 require 'components/PropertyGrid.php';
 require 'components/Panel.php';
+require 'components/FlowLayoutPanel.php';
+require 'components/ImageList.php';
 require 'components/GroupBox.php';
 require 'components/ToolStrip.php';
 require 'components/Button.php';

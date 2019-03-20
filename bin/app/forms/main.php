@@ -22,19 +22,39 @@ $imageList      = new ImageList;
 $components     = json_decode (file_get_contents ('components/components.json'), true);
 $index          = 0;
 
+$controlGroup = new ListViewGroup (text ('Управление'));
+$componentsList->groups->add ($controlGroup);
+
 foreach ($components as $groupName => $comps)
 {
-    $group = new ListViewGroup (text ($groupName));
-
-    $componentsList->groups->add ($group);
-
-    foreach ($comps as $component)
+    if ($groupName[0] != '-')
     {
-        $item = new ListViewItem ('  '. $component);
-        $item->group      = $group;
+        $group = new ListViewGroup (text ($groupName));
+        $componentsList->groups->add ($group);
+
+        foreach ($comps as $component)
+        {
+            $item = new ListViewItem (text ('  '. $component));
+            $item->group      = $group;
+            $item->imageIndex = $index++;
+
+            $path = text (APP_DIR .'/components/icons/'. $component .'_16x.png');
+
+            if (!file_exists ($path))
+                $path = text (APP_DIR .'/components/icons/Unknown_16x.png');
+
+            $imageList->images->add ((new Image)->loadFromFile ($path));
+            $componentsList->items->add ($item);
+        }
+    }
+
+    else
+    {
+        $item = new ListViewItem (text ('  '. $comps));
+        $item->group      = $controlGroup;
         $item->imageIndex = $index++;
 
-        $path = text (APP_DIR .'/components/icons/'. $component .'_16x.png');
+        $path = text (APP_DIR .'/components/icons/'. substr ($groupName, 1) .'_16x.png');
 
         if (!file_exists ($path))
             $path = text (APP_DIR .'/components/icons/Unknown_16x.png');

@@ -26,7 +26,7 @@ class ContextMenuStrip extends Component
     }
 }
 
-class ToolStripDropDownMenu extends Component
+/*class ToolStripDropDownMenu extends Component
 {
     protected $items;
 
@@ -36,7 +36,7 @@ class ToolStripDropDownMenu extends Component
 
         $this->items = new Items ($this->getProperty ('Items'));
     }
-}
+}*/
 
 class ToolStripMenuItem extends Control
 {

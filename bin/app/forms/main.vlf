@@ -317,11 +317,13 @@ Form MainForm
         ClickEvent:^ function ($self) use (Designer__FormsList $formsList)
             {
                 $component = ltrim ($self->selectedItems[0]->text);
+                $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $formsList->selectedTab->text .'Designer'];
 
-                if ($component != 'Form')
+                if ($component == text ('Указатель'))
+                    $designer->clearTypeForCreationOnClick ();
+
+                elseif ($component != 'Form')
                 {
-                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $formsList->selectedTab->text .'Designer'];
-
                     $designer->setTypeForCreationOnClick (VoidEngine::objectType (new ObjectType ("System.Windows.Forms.$component")));
 
                     $i = 1;
@@ -341,7 +343,10 @@ Form MainForm
                 $component = ltrim ($self->selectedItems[0]->text);
                 $designer  = VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer'];
 
-                if ($component == 'Form')
+                if ($component == text ('Указатель'))
+                    $designer->clearTypeForCreationOnClick ();
+
+                elseif ($component == 'Form')
                 {
                     $i = substr ($form, 4) + 1;
                     while (isset (VoidStudioAPI::getObjects ('main')['Designer__'. ($form = 'Form'. $i) .'Designer']))
@@ -398,15 +403,19 @@ Form MainForm
                 }
 
     #^ Здесь тупая ошибка: я не могу обратиться к ->items->addRange... т.к. этот метод вызывается от имени
-       Menu__studio_about. Типо, опять фиксить и всё такое, но мне влом пока что
+       Menu__studio_vk. Типо, опять фиксить и всё такое, но мне влом пока что
 
     MenuItem Menu__studio
         ->items->addRange ([Menu__studio_restart, '-', Menu__studio_about, Menu__studio_vk])
 
     MenuItem Menu__project (text ('Проект'))
-        MenuItem Menu__project_run (text ('Запустить'))
-            # image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Run_16x.png'))
+        MenuItem Menu__project_modules (text ('Модули'))
+            ClickEvent:^ function ($self)
+                {
+                    VoidStudioAPI::getObjects ('modules')['MainForm']->showDialog ();
+                }
 
+        MenuItem Menu__project_run (text ('Запустить'))
             ClickEvent:^ function ($self)
                 {
                     VoidStudioAPI::startProject (Designer__FormsList);
@@ -449,10 +458,20 @@ Form MainForm
                 }
 
     MenuItem Menu__project
-        ->items->addRange ([Menu__project_run, Menu__project_stop, Menu__project_compile, '-', Menu__project_open, Menu__project_save])
+        ->items->addRange ([Menu__project_modules, '-', Menu__project_run, Menu__project_stop, Menu__project_compile, '-', Menu__project_open, Menu__project_save])
 
     MainMenu Menu
         ->items->addRange ([Menu__studio, Menu__project])
+
+Timer Project_AutoSave
+    interval: 5 * 60 * 1000
+
+    TickEvent:^ function ($self) use (ToolsPanel__LogList $log)
+        {
+            VoidStudioProjectManager::saveProject (VoidStudioProjectManager::$projectPath .'/'. ($project = basename (VoidStudioProjectManager::$projectPath)) .'.vsp');
+
+            $log->items->add (text ('Автосохранение проекта "'. $project .'"...'));
+        }
 
 #^ И тут тоже достаточно тупая ошибка:
    Я почему-то не могу обратиться к объект, который только что создал
@@ -473,5 +492,9 @@ Form MainForm
 
             $time = round (microtime (true) - $GLOBALS['__debug']['start_time'], 4);
 
+            if (!VoidStudioProjectManager::createProject ())
+                $APPLICATION->close ();
+
             ToolsPanel__LogList->items->add (text ('VoidStudio запущен за '. ($time > 0.5 ? $time : '[мало]') .' секунд'));
+            Project_AutoSave->enabled = true;
         }
