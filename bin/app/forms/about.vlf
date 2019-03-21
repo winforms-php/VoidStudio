@@ -1,5 +1,5 @@
 Form MainForm
-    size: [446, 292]
+    size: [446, 332]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
     formBorderStyle: fbsToolWindow
@@ -54,7 +54,7 @@ Form MainForm
 
         caption: text ('Разработчики:')
 
-    Label Developers__Nikita
+    LinkLabel Developers__Nikita
         bounds: [32, 200, 300, 32]
         autoSize: true
         font: ['Segoe UI Light', 10]
@@ -68,7 +68,7 @@ Form MainForm
                 run ('https://vk.com/technomindlp');
             }
 
-    Label Developers__Andrey
+    LinkLabel Developers__Andrey
         bounds: [32, 224, 300, 32]
         autoSize: true
         font: ['Segoe UI Light', 10]
@@ -81,3 +81,11 @@ Form MainForm
             {
                 run ('https://vk.com/postmessagea');
             }
+
+    Label PHPVersion
+        bounds: [16, 264, 300, 32]
+        autoSize: true
+        font: ['Segoe UI Light', 10]
+        textAlign: alMiddleLeft
+
+        caption: text ('Версия PHP: '. phpversion ())

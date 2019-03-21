@@ -4,15 +4,9 @@ namespace VoidEngine;
 
 function nothing (): void {}
 
-function run (string $path): WFClass
+function run (string $path): WFObject
 {
-    $process = new ObjectType ('System.Diagnostics.Process', 'System');
-    $process->token = 'b77a5c561934e089';
-
-    $process = new WFClass ($process);
-    $process->start ($path);
-
-    return $process;
+    return (new Process)->start ($path);
 }
 
 function vbs_exec (string $code)

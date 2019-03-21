@@ -1,5 +1,5 @@
 Form MainForm
-    size: [340, 256]
+    size: [340, 288]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
     formBorderStyle: fbsToolWindow
@@ -23,7 +23,9 @@ Form MainForm
 
         ->nodes->addRange (array_map (function ($path) {$item = new TreeNode (text (str_replace (ENGINE_DIR, '', $path))); $item->checked = true; return $item;}, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php')))
 
-    TabPage BuildConfigs__Dependency (text ('Настройки'))
+    TabPage BuildConfigs__Dependency (text ('Зависимости'))
+        backgroundColor: clWhite
+
         #^ CheckBox UsingVoidFramework
             bounds: [16, 16, 220, 24]
             caption: text ('Компиляция под VoidFramework')
@@ -44,6 +46,8 @@ Form MainForm
             ->nodes->add (VoidEngineNode)
 
     TabPage BuildConfigs__Main (text ('Главное'))
+        backgroundColor: clWhite
+
         Label EntryPoint
             location: [16, 16]
             font: ['Segoe UI', 12]
@@ -51,12 +55,19 @@ Form MainForm
             caption: text ('Точка входа')
 
         ComboBox FormSelection
-            dropDownStyle: ddDropDownList
             bounds: [16, 48, 220, 16]
 
+            dropDownStyle: ddDropDownList
+            flatStyle: flPopup
+            backgroundColor: clLight
+
         Button CompileProject
-            bounds: [16, 152, 120, 32]
-            flatStyle: flSystem
+            bounds: [16, 184, 120, 32]
+            
+            flatStyle: flFlat
+            flatAppearance->borderColor: clDodgerBlue
+            flatAppearance->mouseOverBackColor: clLight
+            flatAppearance->mouseDownBackColor: clLight + 10
 
             caption: text ('Компилировать')
 

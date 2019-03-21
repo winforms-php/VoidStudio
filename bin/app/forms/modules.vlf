@@ -2,6 +2,7 @@ Form MainForm
     size: [400, 500]
     startPosition: fspCenterScreen
     formBorderStyle: fbsToolWindow
+    backgroundColor: clWhite
 
     caption: text ('Модули')
 
@@ -24,6 +25,8 @@ Form MainForm
         ->items->addRange ([ModulesList__ToolStrip__RemoveModule])
 
     TabPage ModulesList__Scripts (text ('Модули'))
+        backgroundColor: clWhite
+
         ListBox ModulesList__List
             dock: dsFill
             horizontalScrollbar: true
@@ -38,7 +41,12 @@ Form MainForm
 
             Button ModulesList__Add
                 caption: text ('Добавить')
-                bounds: [8, 8, 112, 32]
+                bounds: [8, 8, 128, 32]
+
+                flatStyle: flFlat
+                flatAppearance->borderColor: clDodgerBlue
+                flatAppearance->mouseOverBackColor: clLight
+                flatAppearance->mouseDownBackColor: clLight + 10
 
                 ClickEvent:^ function ($self)
                     {
@@ -54,6 +62,8 @@ Form MainForm
                     }
 
     TabPage ModulesList__Qero (text ('Qero пакеты'))
+        backgroundColor: clWhite
+
         ListBox ModulesList__QeroPackages
             dock: dsFill
             horizontalScrollbar: true
@@ -68,7 +78,12 @@ Form MainForm
 
             Button ModulesList__QeroPackageAdd
                 caption: text ('Добавить')
-                bounds: [8, 8, 112, 32]
+                bounds: [8, 8, 128, 32]
+
+                flatStyle: flFlat
+                flatAppearance->borderColor: clDodgerBlue
+                flatAppearance->mouseOverBackColor: clLight
+                flatAppearance->mouseDownBackColor: clLight + 10
 
                 ClickEvent:^ function ($self)
                     {

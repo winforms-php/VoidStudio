@@ -120,7 +120,10 @@ class VLFInterpreter
                                 {
                                     $propertyValue = $syntaxInfo['info']['property_raw_value'];
 
-                                    self::$objects[$name]->$propertyName = eval ("namespace VoidEngine; return $propertyValue;");
+                                    if (strpos ($propertyName, '->') !== false)
+                                        eval ('namespace VoidEngine; '. $preset .' _c('. self::$objects[$name]->selector .')->'. $propertyName .' = '. $propertyValue .';');
+
+                                    else self::$objects[$name]->$propertyName = eval ("namespace VoidEngine; $preset return $propertyValue;");
                                 }
 
                                 catch (\Throwable $e)
@@ -151,7 +154,7 @@ class VLFInterpreter
                             try
                             {
                                 if (strpos ($methodName, '->') !== false && self::$allow_multimethods_calls)
-                                    eval ('namespace VoidEngine; _c("'. self::$objects[$name]->selector .'")->'. $methodName .' ('. implode (', ', $methodArgs) .');');
+                                    eval ('namespace VoidEngine; _c('. self::$objects[$name]->selector .')->'. $methodName .' ('. implode (', ', $methodArgs) .');');
 
                                 else self::$objects[$name]->$methodName (...$methodArgs);
                             }
@@ -220,7 +223,7 @@ class VLFInterpreter
             $replacement = array_map (function ($object)
             {
                 return Components::componentExists ($object->selector) !== false ? 
-                    '\VoidEngine\_c(\''. $object->selector .'\')' :
+                    '\VoidEngine\_c('. $object->selector .')' :
                     'unserialize (\''. serialize ($object) .'\')';
             }, $objects);
 

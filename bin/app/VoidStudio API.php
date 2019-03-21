@@ -62,7 +62,7 @@ class VoidStudioAPI
         });
     }
 
-    public static function startProject (TabControl $formsList)
+    public static function startProject (TabControl $formsList): ?WFObject
     {
         self::stopProject ();
 
@@ -70,7 +70,7 @@ class VoidStudioAPI
 
         try
         {
-            run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
+            return run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
         }
 
         catch (\Throwable $e)

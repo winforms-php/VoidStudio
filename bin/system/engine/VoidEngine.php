@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.8.3 build-2019/03/20 (major.minor.patch state-y/m/d)
+ * @version     2.9.0 build-2019/03/21 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -47,11 +47,6 @@ require 'common/Constants.php';
 require 'common/Others.php';
 require 'common/Events.php';
 
-if (is_dir ('extensions'))
-    foreach (scandir ('extensions') as $id => $ext)
-        if (is_dir ('extensions/'. $ext) && file_exists ($ext = 'extensions/'. $ext .'/main.php'))
-            require $ext;
-
 require 'components/Component.php';
 require 'components/Control.php';
 require 'components/CommonDialog.php';
@@ -82,6 +77,7 @@ require 'components/ProgressBar.php';
 require 'components/PropertyGrid.php';
 require 'components/Panel.php';
 require 'components/FlowLayoutPanel.php';
+require 'components/TableLayoutPanel.php';
 require 'components/ImageList.php';
 require 'components/GroupBox.php';
 require 'components/ToolStrip.php';
@@ -99,5 +95,10 @@ require 'components/FastColoredTextBox.php';
 require 'components/Scintilla.php';
 require 'components/Designer.php';
 require 'components/EventGrid.php';
+
+if (is_dir ('extensions'))
+    foreach (scandir ('extensions') as $ext)
+        if (is_dir ('extensions/'. $ext) && file_exists ($ext = 'extensions/'. $ext .'/main.php'))
+            require $ext;
 
 ?>

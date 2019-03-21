@@ -8,98 +8,78 @@ Form MainForm
 
     ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
-    SplitContainer ToolsPanel__Container
+    SplitContainer PropertiesPanel__Container
         dock: dsFill
 
-        Orientation: 0
-        SplitterDistance: MainForm->h - 180
+        splitterDistance: 220
 
-    TabPage ToolsPanel__Log (text ('Лог'))
-        ListBox ToolsPanel__LogList
+        # Свойства
+
+        Panel PropertiesPanel (PropertiesPanel__Container->panel1)
             dock: dsFill
+            width: 280
 
-            horizontalScrollbar: true
+            ToolStripMenuItem PropertiesList__ListMenuItem (text ('Сбросить'))
+                image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Undo_16x.png'))
 
-    TabPage ToolsPanel__EvalPHP (text ('Выполнение PHP кода'))
-        FastColoredTextBox ToolsPanel__EvalPHPEditor
-            dock: dsFill
-
-            language: langPHP
-            wordWrap: true
-
-        Button ToolsPanel__EvalPHPButton
-            dock: dsBottom
-
-            text: text ('Выполнить')
-
-            ClickEvent:^ function ($self) use (ToolsPanel__EvalPHPEditor $editor)
-                {
-                    file_put_contents ('system/settings/last_eval.php', $editor->text);
-
-                    eval ($editor->text);
-                }
-
-    TabPage ToolsPanel__EvalCS (text ('Выполнение C# кода'))
-        FastColoredTextBox ToolsPanel__EvalCSEditor
-            dock: dsFill
-
-            language: langCSharp
-            wordWrap: true
-
-        Button ToolsPanel__EvalCSButton
-            dock: dsBottom
-
-            text: text ('Выполнить')
-
-            ClickEvent:^ function ($self) use (ToolsPanel__EvalCSEditor $editor)
-                {
-                    file_put_contents ('system/settings/last_eval.cs', $editor->text);
-
-                    (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ($editor->text, false);
-                }
-
-    TabControl ToolsPanel__ToolsList (ToolsPanel__Container->panel2)
-        dock: dsFill
-
-        ->items->addRange ([ToolsPanel__Log, ToolsPanel__EvalPHP, ToolsPanel__EvalCS])
-
-    Panel PropertiesPanel
-        dock: dsLeft
-        width: 280
-
-        ToolStripMenuItem PropertiesList__ListMenuItem (text ('Сбросить'))
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Undo_16x.png'))
-
-            ClickEvent:^ function ($self)
-                {
-                    c('PropertiesList__List')->resetSelectedProperty ();
-                }
-
-        ContextMenuStrip PropertiesList__ListMenu ()
-            ->items->add (PropertiesList__ListMenuItem)
-
-        TabPage PropertiesList__Page (text ('Свойства'))
-            PropertyGrid PropertiesList__List
-                dock: dsFill
-                contextMenuStrip: PropertiesList__ListMenu
-                
-                PropertyValueChangedEvent:^ function ($self, $args)
+                ClickEvent:^ function ($self)
                     {
-                        $designer    = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
-                        $objectClass = $self->selectedObject->getType ()->toString ();
-                        $newValue    = $args->changedItem->value;
+                        c('PropertiesList__List')->resetSelectedProperty ();
+                    }
 
-                        if ($args->changedItem->label == '(Name)')
+            ContextMenuStrip PropertiesList__ListMenu ()
+                ->items->add (PropertiesList__ListMenuItem)
+
+            TabPage PropertiesList__Page (text ('Свойства'))
+                backgroundColor: clWhite
+
+                PropertyGrid PropertiesList__List
+                    dock: dsFill
+                    contextMenuStrip: PropertiesList__ListMenu
+
+                    PropertyValueChangedEvent:^ function ($self, $args)
                         {
-                            if ($objectClass == 'System.Windows.Forms.Form')
-                            {
-                                $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
-                                $self->selectedObject->name = $args->oldValue;
+                            $designer    = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+                            $objectClass = $self->selectedObject->getType ()->toString ();
+                            $newValue    = $args->changedItem->value;
 
-                                pre (text ('Нельзя переименовывать формы проекта'));
-                            }
-                            
-                            elseif (substr ($newValue, 0, 4) == 'Form')
+                            if ($args->changedItem->label == '(Name)')
+                            {
+                                if ($objectClass == 'System.Windows.Forms.Form')
+                                {
+                                    $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
+                                    $self->selectedObject->name = $args->oldValue;
+
+                                    pre (text ('Нельзя переименовывать формы проекта'));
+                                }
+                                
+                                elseif (substr ($newValue, 0, 4) == 'Form')
+                                    {
+                                        $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
+
+                                        try
+                                        {
+                                            $self->selectedObject->name = $args->oldValue;
+                                        }
+
+                                        catch (\Throwable $e) {}
+
+                                        pre (text ('Объекту нельзя задать название, начинающееся на "Form"'));
+                                    }
+
+                                else try
+                                {
+                                    $designer->renameComponent ($self->selectedObject->selector, $newValue, $args->oldValue);
+
+                                    try
+                                    {
+                                        $self->selectedObject->name = $newValue;
+                                    }
+
+                                    catch (\Throwable $e) {}
+                                }
+
+                                catch (\Throwable $e)
                                 {
                                     $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
 
@@ -110,278 +90,491 @@ Form MainForm
 
                                     catch (\Throwable $e) {}
 
-                                    pre (text ('Объекту нельзя задать название, начинающееся на "Form"'));
+                                    pre (text ('Произошла ошибка при попытке переименования объекта'));
                                 }
 
-                            else try
+                                $components = c('PropertiesPanel__SelectedComponent');
+
+                                $components->items->clear ();
+                                $components->items->addRange (array_keys ($designer->objects));
+
+                                $components->selectedItem = $designer->getComponentName ($self->selectedObject->selector);
+                            }
+                        }
+            
+            ToolStripMenuItem EventsList__ListMenuItem (text ('Удалить'))
+                image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Delete_16x.png'))
+
+                ClickEvent:^ function ($self)
+                    {
+                        $eventsList = c('EventsList__ActiveEvents');
+
+                        Events::removeObjectEvent ($eventsList->selectedObject->selector, $eventsList->selectedGridItem->propertyDescriptor->customProperty->name);
+                        $eventsList->selectedGridItem->propertyDescriptor->customProperty->value = '';
+
+                        $eventsList->refresh ();
+                    }
+
+            ContextMenuStrip EventsList__ListMenu ()
+                ->items->add (EventsList__ListMenuItem)
+
+            TabPage EventsList__Page (text ('События'))
+                backgroundColor: clWhite
+
+                EventGrid EventsList__ActiveEvents
+                    dock: dsFill
+                    toolbarVisible: false
+
+                    contextMenuStrip: EventsList__ListMenu
+
+                    EventClickEvent:^ function ($self, $args)
+                        {
+                            VoidStudioAPI::openEventEditor ($self->selectedObject->selector, $args->customProp->name, VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer']);
+                            
+                            $args->retVal = text ('(добавлено)');
+                        }
+
+            # BUG: неверно подгружаются родители компонентов, приходится их отдельно указывать
+
+            TabControl Properties__Items (PropertiesPanel)
+                dock: dsFill
+                hotTrack: true
+
+                ->items->addRange ([PropertiesList__Page, EventsList__Page])
+
+            ComboBox PropertiesPanel__SelectedComponent (PropertiesPanel)
+                dock: dsTop
+                dropDownStyle: ddDropDownList
+                flatStyle: flPopup
+                backgroundColor: clLight
+
+                ->items->add ('Form1')
+                selectedItem: 'Form1'
+
+                SelectedIndexChangedEvent:^ function ($self)
+                    {
+                        try
+                        {
+                            $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+
+                            try
                             {
-                                $designer->renameComponent ($self->selectedObject->selector, $newValue, $args->oldValue);
-
-                                try
-                                {
-                                    $self->selectedObject->name = $newValue;
-                                }
-
-                                catch (\Throwable $e) {}
+                                PropertiesList__List->selectedObject = $designer->getComponentByName ($self->selectedItem);
                             }
 
                             catch (\Throwable $e)
                             {
-                                $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
+                                if ($self->selectedItem)
+                                    $designer->removeComponentHistoryByName ($self->selectedItem);
 
-                                try
-                                {
-                                    $self->selectedObject->name = $args->oldValue;
-                                }
+                                $self->items->clear ();
+                                $self->items->addRange (array_keys ($designer->objects));
+                                $self->selectedItem = $self->items[0];
+                            }
+                        }
 
-                                catch (\Throwable $e) {}
+                        catch (\Throwable $e) {}
+                    }
 
-                                pre (text ('Произошла ошибка при попытке переименования объекта'));
+                SelectionChangeCommittedEvent:^ function ($self)
+                    {
+                        try
+                        {
+                            $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+
+                            try
+                            {
+                                $designer->setSelectedComponents ($designer->getComponentByName ($self->selectedItem));
+
                             }
 
-                            $components = c('PropertiesPanel__SelectedComponent');
+                            catch (\Throwable $e)
+                            {
+                                if ($self->selectedItem)
+                                    $designer->removeComponentHistoryByName ($self->selectedItem);
 
-                            $components->items->clear ();
-                            $components->items->addRange (array_keys ($designer->objects));
-
-                            $components->selectedItem = $designer->getComponentName ($self->selectedObject->selector);
+                                $self->items->clear ();
+                                $self->items->addRange (array_keys ($designer->objects));
+                                $self->selectedItem = $self->items[0];
+                            }
                         }
-                    }
-        
-        ToolStripMenuItem EventsList__ListMenuItem (text ('Удалить'))
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Delete_16x.png'))
 
-            ClickEvent:^ function ($self)
-                {
-                    $eventsList = c('EventsList__ActiveEvents');
-
-                    Events::removeObjectEvent ($eventsList->selectedObject->selector, $eventsList->selectedGridItem->propertyDescriptor->customProperty->name);
-                    $eventsList->selectedGridItem->propertyDescriptor->customProperty->value = '';
-
-                    $eventsList->refresh ();
-                }
-
-        ContextMenuStrip EventsList__ListMenu ()
-            ->items->add (EventsList__ListMenuItem)
-
-        TabPage EventsList__Page (text ('События'))
-            EventGrid EventsList__ActiveEvents
-                dock: dsFill
-                toolbarVisible: false
-
-                contextMenuStrip: EventsList__ListMenu
-
-                EventClickEvent:^ function ($self, $args)
-                    {
-                        VoidStudioAPI::openEventEditor ($self->selectedObject->selector, $args->customProp->name, VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer']);
-                        
-                        $args->retVal = text ('(добавлено)');
+                        catch (\Throwable $e) {}
                     }
 
-        TabControl Properties__Items
+        # Компоненты и дизайнер
+
+        SplitContainer ComponentsPanel__Contrainer (PropertiesPanel__Container->panel2)
             dock: dsFill
 
-            ->items->addRange ([PropertiesList__Page, EventsList__Page])
+            splitterDistance: MainForm->w - PropertiesPanel__Container->splitterDistance - 220
 
-        ComboBox PropertiesPanel__SelectedComponent
-            dock: dsTop
-            dropDownStyle: ddDropDownList
+            # Лог и дизайнер
 
-            ->items->add ('Form1')
-            selectedItem: 'Form1'
+            SplitContainer ToolsPanel__Container (ComponentsPanel__Contrainer->panel1)
+                dock: dsFill
 
-            SelectedIndexChangedEvent:^ function ($self)
-                {
-                    try
-                    {
-                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+                orientation: 0
+                splitterDistance: MainForm->h - 180
+                panel2MinSize: 0
 
-                        try
+                TabPage Designer__Form1 (text ('Form1'))
+                    backgroundColor: clWhite
+
+                TabControl Designer__FormsList (ToolsPanel__Container->panel1)
+                    dock: dsFill
+                    hotTrack: true
+
+                    ->items->add (Designer__Form1)
+
+                    SelectedIndexChangedEvent:^ function ($self) use (PropertiesPanel__SelectedComponent $components, EventsList__ActiveEvents $eventsList)
                         {
-                            PropertiesList__List->selectedObject = $designer->getComponentByName ($self->selectedItem);
+                            if ($self->items->count > 0)
+                            {
+                                $designer = VoidStudioAPI::getObjects ('main')['Designer__'. ($tab = $self->selectedTab->text) .'Designer'];
+                                $designer->focus ();
+
+                                $components->items->clear ();
+                                $components->items->addRange (array_keys ($designer->objects));
+
+                                $components->selectedItem = $tab;
+                                $designer->setSelectedComponents ($designer->form);
+                            }
                         }
 
-                        catch (\Throwable $e)
-                        {
-                            if ($self->selectedItem)
-                                $designer->removeComponentHistoryByName ($self->selectedItem);
+                VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
+                    ->initDesigner ()
 
-                            $self->items->clear ();
-                            $self->items->addRange (array_keys ($designer->objects));
-                            $self->selectedItem = $self->items[0];
+                TabPage ToolsPanel__Log (text ('Лог'))
+                    ListBox ToolsPanel__LogList
+                        dock: dsFill
+
+                        horizontalScrollbar: true
+
+                TabPage ToolsPanel__EvalPHP (text ('Выполнение PHP кода'))
+                    FastColoredTextBox ToolsPanel__EvalPHPEditor
+                        dock: dsFill
+
+                        language: langPHP
+                        wordWrap: true
+
+                    Button ToolsPanel__EvalPHPButton
+                        dock: dsBottom
+                        height: 24
+
+                        flatStyle: flFlat
+                        flatAppearance->borderColor: clDodgerBlue
+                        flatAppearance->mouseOverBackColor: clLight
+                        flatAppearance->mouseDownBackColor: clLight + 10
+
+                        text: text ('Выполнить')
+
+                        ClickEvent:^ function ($self) use (ToolsPanel__EvalPHPEditor $editor)
+                            {
+                                file_put_contents ('system/settings/last_eval.php', $editor->text);
+
+                                eval ($editor->text);
+                            }
+
+                TabPage ToolsPanel__EvalCS (text ('Выполнение C# кода'))
+                    FastColoredTextBox ToolsPanel__EvalCSEditor
+                        dock: dsFill
+
+                        language: langCSharp
+                        wordWrap: true
+
+                    Button ToolsPanel__EvalCSButton
+                        dock: dsBottom
+                        height: 24
+
+                        flatStyle: flFlat
+                        flatAppearance->borderColor: clDodgerBlue
+                        flatAppearance->mouseOverBackColor: clLight
+                        flatAppearance->mouseDownBackColor: clLight + 10
+
+                        text: text ('Выполнить')
+
+                        ClickEvent:^ function ($self) use (ToolsPanel__EvalCSEditor $editor)
+                            {
+                                file_put_contents ('system/settings/last_eval.cs', $editor->text);
+
+                                (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ($editor->text, false);
+                            }
+
+                TabControl ToolsPanel__ToolsList (ToolsPanel__Container->panel2)
+                    dock: dsFill
+                    alignment: 1
+
+                    ->items->addRange ([ToolsPanel__Log, ToolsPanel__EvalPHP, ToolsPanel__EvalCS])
+
+            # Компоненты
+
+            ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
+                width: 212
+
+            ListView ComponentsList (ComponentsPanel__Contrainer->panel2)
+                dock: dsFill
+
+                fullRowSelect: true
+                multiselect: false
+                headerStyle: 1
+                view: vwDetails
+
+                ->columns->add (ComponentsNamesColumn)
+
+                ClickEvent:^ function ($self) use (Designer__FormsList $formsList)
+                    {
+                        $component = ltrim ($self->selectedItems[0]->text);
+                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $formsList->selectedTab->text .'Designer'];
+
+                        if ($component == text ('Указатель'))
+                            $designer->clearTypeForCreationOnClick ();
+
+                        elseif ($component != 'Form')
+                        {
+                            $designer->setTypeForCreationOnClick (VoidEngine::objectType (new ObjectType ("System.Windows.Forms.$component")));
+
+                            $i = 1;
+                            while (isset ($designer->objects[$name = $component . $i]))
+                                ++$i;
+
+                            $GLOBALS['new_component'] = [
+                                $name,
+                                new ObjectType ("System.Windows.Forms.$component")
+                            ];
                         }
                     }
 
-                    catch (\Throwable $e) {}
-                }
-
-            SelectionChangeCommittedEvent:^ function ($self)
-                {
-                    try
+                DoubleClickEvent:^ function ($self) use (Designer__FormsList $formsList)
                     {
-                        $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+                        $form      = $formsList->selectedTab->text;
+                        $component = ltrim ($self->selectedItems[0]->text);
+                        $designer  = VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer'];
 
-                        try
+                        if ($component == text ('Указатель'))
+                            $designer->clearTypeForCreationOnClick ();
+
+                        elseif ($component == 'Form')
                         {
-                            $designer->setSelectedComponents ($designer->getComponentByName ($self->selectedItem));
+                            $i = substr ($form, 4) + 1;
+                            while (isset (VoidStudioAPI::getObjects ('main')['Designer__'. ($form = 'Form'. $i) .'Designer']))
+                                ++$i;
 
+                            $page = new TabPage ($form);
+                            $page->backgroundColor = clWhite;
+
+                            $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, $formsList);
+
+                            $designer->initDesigner ();
+
+                            $formsList->items->add ($page);
+                            $formsList->selectedTab = $page;
+
+                            $selector = $designer->form->selector;
                         }
 
-                        catch (\Throwable $e)
+                        else
                         {
-                            if ($self->selectedItem)
-                                $designer->removeComponentHistoryByName ($self->selectedItem);
+                            $i = 1;
+                            while (isset ($designer->objects[$name = $component . $i]))
+                                ++$i;
 
-                            $self->items->clear ();
-                            $self->items->addRange (array_keys ($designer->objects));
-                            $self->selectedItem = $self->items[0];
+                            $selector = $designer->createComponent (new ObjectType ("System.Windows.Forms.$component"), $name);
+
+                            try
+                            {
+                                VoidEngine::setProperty ($selector, 'Text', $name);
+                            }
+
+                            catch (\Throwable $e) {}
                         }
+
+                        $designer->clearTypeForCreationOnClick ();
+                        $designer->setSelectedComponents ($selector);
                     }
+            
+            # Средство диагностики
 
-                    catch (\Throwable $e) {}
-                }
+            Panel DiagnosticToolkit (ComponentsPanel__Contrainer->panel2)
+                dock: dsFill
+                visible: false
 
-    TabPage Designer__Form1 (text ('Form1'))
+                backgroundColor: clLight
 
-    TabControl Designer__FormsList (ToolsPanel__Container->panel1)
-        dock: dsFill
+                Label DiagnosticToolkit__Caption
+                    bounds: [16, 16, 260, 24]
+                    font: ['Segoe UI', 11]
 
-        ->items->add (Designer__Form1)
+                    caption: text ('Средство диагностики')
 
-        SelectedIndexChangedEvent:^ function ($self) use (PropertiesPanel__SelectedComponent $components, EventsList__ActiveEvents $eventsList)
-            {
-                if ($self->items->count > 0)
-                {
-                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. ($tab = $self->selectedTab->text) .'Designer'];
-                    $designer->focus ();
+                Label DiagnosticToolkit__UpTime
+                    bounds: [16, 48, 260, 16]
+                    font: ['Segoe UI', 9]
 
-                    $components->items->clear ();
-                    $components->items->addRange (array_keys ($designer->objects));
+                    caption: text ('Пройдено времени: 0 секунд')
 
-                    $components->selectedItem = $tab;
-                    $designer->setSelectedComponents ($designer->form);
-                }
-            }
+                Label DiagnosticToolkit__MemoryUsage
+                    bounds: [16, 64, 260, 16]
+                    font: ['Segoe UI', 9]
 
-    Panel ToolsList__Panel (ToolsPanel__Container->panel1)
+                    caption: text ('Использование памяти: 0 Мб')
+
+                Label DiagnosticToolkit__MemoryUsagePeak
+                    bounds: [16, 80, 260, 16]
+                    font: ['Segoe UI', 9]
+
+                    caption: text ('Пик использования памяти: 0 Мб')
+
+                Timer DiagnosticToolkit__Ticker ()
+                    interval: 1000
+
+                    TickEvent:^ function ($self) use (DiagnosticToolkit $diagnostic, DiagnosticToolkit__UpTime $upTime, DiagnosticToolkit__MemoryUsage $memory, DiagnosticToolkit__MemoryUsagePeak $memoryPeak)
+                        {
+                            $diagnostic->helpStorage->refresh ();
+                            
+                            if ($diagnostic->helpStorage->hasExited)
+                                $self->enabled = false;
+
+                            else
+                            {
+                                $elapsed = time () - $self->helpStorage;
+                                
+                                $upTime->caption = text ('Пройдено времени: '. (
+                                    $elapsed >= 60 ?
+                                        ($m = (int)($elapsed / 60)) .':'. (
+                                            strlen ($s = $elapsed - $m * 60) == 1 ?
+                                                '0'. $s :
+                                                $s
+                                        ) .' минут' :
+                                        $elapsed .' секунд'
+                                ));
+
+                                $memory->caption = text ('Использование памяти: '. round (VoidEngine::getProperty ($diagnostic->helpStorage->selector, ['PagedMemorySize64', 'double']) / 1024 / 1024, 2) .' Мб');
+
+                                $memoryPeak->caption = text ('Пик использования памяти: '. round (VoidEngine::getProperty ($diagnostic->helpStorage->selector, ['PeakPagedMemorySize64', 'double']) / 1024 / 1024, 2) .' Мб');
+                            }
+                        }
+
+    Panel Footer
+        dock: dsBottom
+        height: 20
+
+        backgroundColor: clMediumPurple
+
+        PictureBox Footer__Icon
+            bounds: [4, 2, 16, 16]
+
+            imageLocation: text (APP_DIR .'/system/icons/Box_16x.png')
+
+        Label Footer__Status
+            bounds: [24, 2, Footer->width - 24, 18]
+            anchor: acTop | acBottom | acLeft | acRight
+
+            foregroundColor: clWhite
+            font: ['Segoe UI', 9]
+            # textAlign: alMiddleLeft
+
+            caption: text ('Запуск среды...')
+
+    Panel Header
         dock: dsTop
-        height: 32
+        height: 28
 
-        Button ToolsList__Start
-            bounds: [8, 4, 88, 24]
+        Button ToolsList__SaveProject
+            bounds: [8, 2, 32, 24]
+
             flatStyle: flFlat
+            flatAppearance->borderColor: clWhite
+            flatAppearance->mouseOverBackColor: clLight
+            flatAppearance->mouseDownBackColor: clLight + 10
+
+            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Save_16x.png'))
+
+            ClickEvent:^ function ($self) use (Footer__Status $status)
+                {
+                    $status->caption = text ('Сохранение проекта...');
+
+                    VoidStudioProjectManager::saveProject (VoidStudioProjectManager::$projectPath .'/'. basename (VoidStudioProjectManager::$projectPath) .'.vsp');
+
+                    $status->caption = text ('Готово');
+                }
+
+        Button ToolsList__ProjectRunner
+            bounds: [40, 2, 88, 24]
+
+            flatStyle: flFlat
+            flatAppearance->borderColor: clWhite
+            flatAppearance->mouseOverBackColor: clLight
+            flatAppearance->mouseDownBackColor: clLight + 10
 
             caption: text (' Запустить')
-            imageAlign: alMiddleRight
-            textAlign: alMiddleLeft
+            imageAlign: alMiddleLeft
+            textAlign: alMiddleRight
 
             image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Run_16x.png'))
 
-            ClickEvent:^ function ($self)
+            ClickEvent:^ function ($self) use (Footer $footer, Footer__Status $status, DiagnosticToolkit $diagnostic, DiagnosticToolkit__Ticker $ticker, ComponentsList $components, PropertiesPanel__Container $properties)
                 {
-                    VoidStudioAPI::startProject (Designer__FormsList);
-                }
-
-        Button ToolsList__Stop
-            bounds: [104, 4, 96, 24]
-            flatStyle: flFlat
-
-            caption: text (' Остановить')
-            imageAlign: alMiddleRight
-            textAlign: alMiddleLeft
-
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Stop_16x.png'))
-
-            ClickEvent:^ function ($self)
-                {
-                    VoidStudioAPI::stopProject ();
-                }
-
-    VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
-        ->initDesigner ()
-
-    ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
-        width: 212
-
-    ListView ComponentsList
-        dock: dsRight
-        width: 240
-
-        fullRowSelect: true
-        multiselect: false
-        headerStyle: 1
-        view: vwDetails
-
-        ->columns->add (ComponentsNamesColumn)
-
-        ClickEvent:^ function ($self) use (Designer__FormsList $formsList)
-            {
-                $component = ltrim ($self->selectedItems[0]->text);
-                $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $formsList->selectedTab->text .'Designer'];
-
-                if ($component == text ('Указатель'))
-                    $designer->clearTypeForCreationOnClick ();
-
-                elseif ($component != 'Form')
-                {
-                    $designer->setTypeForCreationOnClick (VoidEngine::objectType (new ObjectType ("System.Windows.Forms.$component")));
-
-                    $i = 1;
-                    while (isset ($designer->objects[$name = $component . $i]))
-                        ++$i;
-
-                    $GLOBALS['new_component'] = [
-                        $name,
-                        new ObjectType ("System.Windows.Forms.$component")
-                    ];
-                }
-            }
-
-        DoubleClickEvent:^ function ($self) use (Designer__FormsList $formsList)
-            {
-                $form      = $formsList->selectedTab->text;
-                $component = ltrim ($self->selectedItems[0]->text);
-                $designer  = VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer'];
-
-                if ($component == text ('Указатель'))
-                    $designer->clearTypeForCreationOnClick ();
-
-                elseif ($component == 'Form')
-                {
-                    $i = substr ($form, 4) + 1;
-                    while (isset (VoidStudioAPI::getObjects ('main')['Designer__'. ($form = 'Form'. $i) .'Designer']))
-                        ++$i;
-
-                    $page     = new TabPage ($form);
-                    $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, $formsList);
-
-                    $designer->initDesigner ();
-
-                    $formsList->items->add ($page);
-                    $formsList->selectedTab = $page;
-
-                    $selector = $designer->form->selector;
-                }
-
-                else
-                {
-                    $i = 1;
-                    while (isset ($designer->objects[$name = $component . $i]))
-                        ++$i;
-
-                    $selector = $designer->createComponent (new ObjectType ("System.Windows.Forms.$component"), $name);
-
-                    try
+                    if ($self->caption == text (' Запустить'))
                     {
-                        VoidEngine::setProperty ($selector, 'Text', $name);
+                        $status->backgroundColor = clDarkOrange;
+                        $footer->backgroundColor = clDarkOrange;
+                        $status->caption = text ('Запуск проекта...');
+
+                        $process = VoidStudioAPI::startProject (Designer__FormsList);
+
+                        $diagnostic->visible = true;
+                        $components->visible = false;
+
+                        $self->helpStorage = $properties->splitterDistance;
+                        $properties->panel1MinSize    = 0;
+                        $properties->splitterDistance = 0;
+
+                        $status->caption = text ('Готово');
+                        $self->caption   = text (' Остановить');
+
+                        $self->width = 96;
+                        $self->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Stop_16x.png'));
+
+                        c('ProjectStatusChecker')->enabled = true;
+                        $diagnostic->helpStorage = $process;
+                        $ticker->helpStorage = time ();
+                        $ticker->enabled = true;
                     }
 
-                    catch (\Throwable $e) {}
+                    else
+                    {
+                        $status->caption = text ('Остановка проекта...');
+                        $ticker->enabled = false;
+
+                        VoidStudioAPI::stopProject ();
+                        
+                        $diagnostic->visible = false;
+                        $components->visible = true;
+
+                        $properties->panel1MinSize    = 25;
+                        $properties->splitterDistance = $self->helpStorage;
+
+                        $status->backgroundColor = clMediumPurple;
+                        $footer->backgroundColor = clMediumPurple;
+                        $status->caption = text ('Готово');
+                        $self->caption   = text (' Запустить');
+
+                        $self->width = 88;
+                        $self->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Run_16x.png'));
+
+                        c('ProjectStatusChecker')->enabled = false;
+                    }
                 }
 
-                $designer->clearTypeForCreationOnClick ();
-                $designer->setSelectedComponents ($selector);
-            }
+        Timer ProjectStatusChecker ()
+            interval: 500
+
+            TickEvent:^ function ($self) use (ToolsList__ProjectRunner $runner)
+                {
+                    if ($runner->caption == text (' Остановить') && (new Process)->getProcessesByName ('vstmpprj')->count == 0)
+                        $runner->performClick ();
+                }
 
     MenuItem Menu__studio (text ('Среда'))
         MenuItem Menu__studio_restart (text ('Перезапустить'))
@@ -403,7 +596,7 @@ Form MainForm
                 }
 
     #^ Здесь тупая ошибка: я не могу обратиться к ->items->addRange... т.к. этот метод вызывается от имени
-       Menu__studio_vk. Типо, опять фиксить и всё такое, но мне влом пока что
+        Menu__studio_vk. Типо, опять фиксить и всё такое, но мне влом пока что
 
     MenuItem Menu__studio
         ->items->addRange ([Menu__studio_restart, '-', Menu__studio_about, Menu__studio_vk])
@@ -413,18 +606,6 @@ Form MainForm
             ClickEvent:^ function ($self)
                 {
                     VoidStudioAPI::getObjects ('modules')['MainForm']->showDialog ();
-                }
-
-        MenuItem Menu__project_run (text ('Запустить'))
-            ClickEvent:^ function ($self)
-                {
-                    VoidStudioAPI::startProject (Designer__FormsList);
-                }
-
-        MenuItem Menu__project_stop (text ('Остановить'))
-            ClickEvent:^ function ($self)
-                {
-                    VoidStudioAPI::stopProject ();
                 }
 
         MenuItem Menu__project_compile (text ('Компилировать'))
@@ -458,20 +639,20 @@ Form MainForm
                 }
 
     MenuItem Menu__project
-        ->items->addRange ([Menu__project_modules, '-', Menu__project_run, Menu__project_stop, Menu__project_compile, '-', Menu__project_open, Menu__project_save])
+        ->items->addRange ([Menu__project_modules, '-', Menu__project_compile, '-', Menu__project_open, Menu__project_save])
 
     MainMenu Menu
         ->items->addRange ([Menu__studio, Menu__project])
 
-Timer Project_AutoSave
-    interval: 5 * 60 * 1000
+    Timer Project_AutoSave ()
+        interval: 5 * 60 * 1000
 
-    TickEvent:^ function ($self) use (ToolsPanel__LogList $log)
-        {
-            VoidStudioProjectManager::saveProject (VoidStudioProjectManager::$projectPath .'/'. ($project = basename (VoidStudioProjectManager::$projectPath)) .'.vsp');
+        TickEvent:^ function ($self) use (ToolsPanel__LogList $log)
+            {
+                VoidStudioProjectManager::saveProject (VoidStudioProjectManager::$projectPath .'/'. ($project = basename (VoidStudioProjectManager::$projectPath)) .'.vsp');
 
-            $log->items->add (text ('Автосохранение проекта "'. $project .'"...'));
-        }
+                $log->items->add (text ('Автосохранение проекта "'. $project .'"...'));
+            }
 
 #^ И тут тоже достаточно тупая ошибка:
    Я почему-то не могу обратиться к объект, который только что создал
@@ -497,4 +678,6 @@ Form MainForm
 
             ToolsPanel__LogList->items->add (text ('VoidStudio запущен за '. ($time > 0.5 ? $time : '[мало]') .' секунд'));
             Project_AutoSave->enabled = true;
+
+            Footer__Status->caption = text ('Готово');
         }

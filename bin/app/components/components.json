@@ -35,6 +35,7 @@
     "Панели": [
         "Panel",
         "FlowLayoutPanel",
+        "TableLayoutPanel",
         "GroupBox",
         "SplitContainer",
         "TabControl",
