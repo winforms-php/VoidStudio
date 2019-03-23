@@ -4,9 +4,9 @@ namespace VoidEngine;
 
 function nothing (): void {}
 
-function run (string $path): WFObject
+function run (string $path, ...$args): WFObject
 {
-    return (new Process)->start ($path);
+    return (new Process)->start ($path, ...$args);
 }
 
 function vbs_exec (string $code)
@@ -137,6 +137,11 @@ function basenameNoExt (string $path): string
 function file_ext (string $path): string
 {
     return strtolower (pathinfo ($path, PATHINFO_EXTENSION));
+}
+
+function filepathNoExt (string $path): string
+{
+    return dirname ($path) .'/'. basenameNoExt ($path);
 }
 
 function array_first (array $array)

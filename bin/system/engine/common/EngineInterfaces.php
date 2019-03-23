@@ -549,6 +549,10 @@ class Items extends \ArrayObject
             case 'selector':
                 return $this->selector;
             break;
+
+            default:
+                return EngineAdditions::coupleSelector (VoidEngine::getProperty ($this->selector, $name), $this->selector);
+            break;
 		}
     }
 	
@@ -614,6 +618,17 @@ class Items extends \ArrayObject
         for ($i = 0; $i < $size; ++$i)
             $callback ($i, EngineAdditions::coupleSelector (VoidEngine::getArrayValue ($this->selector, $type !== null ? [$i, $type] : $i), $this->selector));
     }
+
+    public function __call ($method, $args)
+	{
+        $args = array_map (function ($arg)
+        {
+            return ($arg instanceof WFObject || $arg instanceof Items) ?
+                $arg->selector : $arg;
+        }, $args);
+
+        return EngineAdditions::coupleSelector (VoidEngine::callMethod ($this->selector, $method, ...$args), $this->selector);
+	}
 }
 
 class ObjectType

@@ -18,9 +18,13 @@ try
 
 catch (\Throwable $e) {}
 
+if (date ('m/d') == '08/18')
+    messageBox (text ("Привет, друзья!\nСегодня знаменательный день: день рождения проекта WinForms PHP!\nС момента его появления прошло уже ". (date ('Y') - 2018) ." лет!\n\nВот такие дела. Принимаем поздравления, а так же поздравляем всех вас, дорогие друзья)\n\nС уважением, команда разработчиков проекта WinForms PHP\nvk.com/winforms"), text ('Уведомление'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Information'));
+
 class VoidStudioAPI
 {
     public static $objects = [];
+    public static $project;
 
     public static function addObjects (string $group, array $objects)
     {
@@ -55,22 +59,30 @@ class VoidStudioAPI
 
     public static function stopProject ()
     {
-        (new Process)->getProcessesByName ('vstmpprj')->foreach (function ($index, $process)
+        /*(new Process)->getProcessesByName ('vstmpprj')->foreach (function ($index, $process)
         {
             $process->kill ();
             $process->waitForExit ();
-        });
+        });*/
+
+        if (self::$project instanceof WFObject && !self::$project->hasExited)
+        {
+            self::$project->kill ();
+            self::$project->waitForExit ();
+        }
     }
 
-    public static function startProject (TabControl $formsList): ?WFObject
+    public static function startProject (TabControl $formsList, bool $debug = true): ?WFObject
     {
         self::stopProject ();
 
-        VoidStudioBuilder::compileProject (getenv ('Temp') .'/vstmpprj.exe', $formsList->items[0]->text, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php'), false);
-
         try
         {
-            return run (getenv ('Temp') .'/vstmpprj/vstmpprj.exe');
+            VoidStudioBuilder::compileProject (VoidStudioProjectManager::$projectPath .'/build.exe', $formsList->items[0]->text, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php'), false, false, $debug);
+
+            self::$project = run (VoidStudioProjectManager::$projectPath .'/build/build.exe');
+
+            return self::$project;
         }
 
         catch (\Throwable $e)
@@ -80,9 +92,65 @@ class VoidStudioAPI
     }
 }
 
+class VoidStudioDebugger
+{
+    public $process;
+    protected $lastTimestamp = 0;
+
+    public function __construct (WFObject $process)
+    {
+        if ($process->getType ()->toString () == 'System.Diagnostics.Process')
+            $this->process = $process;
+
+        else throw new Exception ('$process argument must be an "Process" object');
+    }
+
+    public function dump (string $savePath, string $properties = '', bool $waitForExit = true)
+    {
+        $process = run (text ('"'. APP_DIR .'/system/procdump/procdump.exe"'), text ($properties .' '. $this->process->id .' "'. filepathNoExt ($savePath) .'"'));
+
+        if ($waitForExit)
+            while (!$process->hasExited)
+                usleep (200);
+    }
+
+    public function debugRequest (string $command, array $arguments = [])
+    {
+        file_put_contents (text (VoidStudioProjectManager::$projectPath .'/build/__debug_request'), json_encode ([
+            'timestamp' => time (),
+            'command'   => $command,
+            'arguments' => $arguments
+        ], JSON_PRETTY_PRINT));
+    }
+
+    public function readDebugAnswer (bool $wait = false)
+    {
+        $file = text (VoidStudioProjectManager::$projectPath .'/build/__debug_answer');
+
+        if ($wait)
+            while (!file_exists ($file))
+                usleep (100);
+
+        if (file_exists ($file))
+        {
+            $answer = json_decode (file_get_contents ($file), true);
+            unlink ($file);
+
+            if ($answer['timestamp'] > $this->lastTimestamp)
+            {
+                $this->lastTimestamp = $answer['timestamp'];
+
+                return $answer['data'];
+            }
+        }
+
+        return false;
+    }
+}
+
 class VoidStudioProjectManager
 {
-    static $projectPath = '';
+    public static $projectPath = '';
 
     public static function createProject (string $name = 'default'): bool
     {
@@ -230,6 +298,8 @@ class VoidStudioProjectManager
         $objects['PropertiesPanel__SelectedComponent']->items->addRange (array_keys ($designer->objects));
         $objects['PropertiesPanel__SelectedComponent']->selectedItem = $formName;
 
+        VoidStudioAPI::getObjects ('main')['MainForm']->caption = basenameNoExt ($file) .' - VoidStudio';
+
         $objects['PropertiesList__List']->selectedObject = $designer->form;
         $designer->focus ();
     }
@@ -237,7 +307,7 @@ class VoidStudioProjectManager
 
 class VoidStudioBuilder
 {
-    public static function compileProject (string $save, string $enteringPoint, array $references, bool $withVoidFramework = false, bool $printSuccessCompile = false): array
+    public static function compileProject (string $save, string $enteringPoint, array $references, bool $withVoidFramework = false, bool $printSuccessCompile = false, bool $debug = false): array
     {
         $savePath   = text (dirname ($save) .'/'. basenameNoExt ($save));
         $strClass   = (new WFClass ('System.String', 'mscorlib'))->selector;
@@ -334,7 +404,7 @@ return $t;
                     $module = substr ($module, 0, -2);
 
                 return "\$module = <<<'MODULE'\n$module\nMODULE;\neval (\$module);";
-            }, glob (VoidStudioProjectManager::$projectPath .'/modules/*.php'))),
+            }, array_merge (glob (VoidStudioProjectManager::$projectPath .'/modules/*.php'), $debug ? [APP_DIR .'/system/debug/DebugHook.php'] : []))),
 
             '%entering_point%' => $enteringPoint,
             '%author_id%'      => sha1 (shell_exec ('wmic csproduct'))

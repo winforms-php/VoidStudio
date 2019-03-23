@@ -54,6 +54,7 @@ class WinAPI
             int CreateWindowExA (char* dwExStyle, char* lpClassName, char* lpWindowName, char* dwStyle, int X, int Y, int nWidth, int nHeight, int hWndParent, int hMenu, int hInstance, int lpParam);
             int DestroyWindow (int hWnd);
             int GetTopWindow (int hWnd);
+            bool SetForegroundWindow (int hWnd);
             int IsWindowEnabled (int hWnd);
             int IsWindow (int hWnd);
             int IsWindowVisible (int hWnd);
@@ -72,7 +73,7 @@ class WinAPI
             int ActivateKeyboardLayout (int hkl, int Flags);
             int GetWindowThreadProcessId (int hWnd, int lpdwProcessId);
 			int GetKeyboardLayout (int idThread);
-        ', 'user32.dll');
+        ', 'User32.dll');
     }
 
     public function __call ($method, $args)

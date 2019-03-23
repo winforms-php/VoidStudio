@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.9.0 build-2019/03/21 (major.minor.patch state-y/m/d)
+ * @version     2.10.0 build-2019/03/23 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -91,6 +91,7 @@ require 'components/TreeView.php';
 require 'components/TabControl.php';
 require 'components/WebBrowser.php';
 require 'components/SplitContainer.php';
+require 'components/Chart.php';
 require 'components/FastColoredTextBox.php';
 require 'components/Scintilla.php';
 require 'components/Designer.php';

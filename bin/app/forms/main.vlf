@@ -11,6 +11,7 @@ Form MainForm
     SplitContainer PropertiesPanel__Container
         dock: dsFill
 
+        panel1MinSize: 0
         splitterDistance: 220
 
         # Свойства
@@ -35,7 +36,11 @@ Form MainForm
 
                 PropertyGrid PropertiesList__List
                     dock: dsFill
-                    contextMenuStrip: PropertiesList__ListMenu
+                    backgroundColor: clWhite
+                    helpBackColor: clWhite
+                    helpBorderColor: clWhite
+
+                    controls[2]->contextMenuStrip: c('PropertiesList__ListMenu')
 
                     PropertyValueChangedEvent:^ function ($self, $args)
                         {
@@ -124,8 +129,11 @@ Form MainForm
                 EventGrid EventsList__ActiveEvents
                     dock: dsFill
                     toolbarVisible: false
+                    backgroundColor: clWhite
+                    helpBackColor: clWhite
+                    helpBorderColor: clWhite
 
-                    contextMenuStrip: EventsList__ListMenu
+                    controls[2]->contextMenuStrip: c('EventsList__ListMenu')
 
                     EventClickEvent:^ function ($self, $args)
                         {
@@ -207,6 +215,7 @@ Form MainForm
         SplitContainer ComponentsPanel__Contrainer (PropertiesPanel__Container->panel2)
             dock: dsFill
 
+            panel2MinSize: 0
             splitterDistance: MainForm->w - PropertiesPanel__Container->splitterDistance - 220
 
             # Лог и дизайнер
@@ -425,10 +434,105 @@ Form MainForm
 
                     caption: text ('Пик использования памяти: 0 Мб')
 
+                ChartArea DiagnosticToolkit__MemoryUsageGraphArea ()
+                    axes[0]->majorGrid->enabled: false
+                    axes[1]->majorGrid->enabled: false
+                    axes[0]->labelStyle->enabled: false
+
+                    backColor: clLight
+
+                Series DiagnosticToolkit__MemoryUsageGraphSeries ()
+                    chartType: 15
+
+                Chart DiagnosticToolkit__MemoryUsageGraph (DiagnosticToolkit)
+                    bounds: [16, 120, DiagnosticToolkit->w - 32, 112]
+                    anchor: acTop | acLeft | acRight
+
+                    backgroundColor: clLight
+
+                    ->chartAreas->add (DiagnosticToolkit__MemoryUsageGraphArea)
+                    ->series->add (DiagnosticToolkit__MemoryUsageGraphSeries)
+
+                Button DiagnosticToolkit__MemoryScreenshot (DiagnosticToolkit)
+                    bounds: [16, 248, 168, 24]
+                    backgroundColor: clWhite
+
+                    flatStyle: flFlat
+                    flatAppearance->borderColor: clWhite
+                    flatAppearance->mouseOverBackColor: clLight
+                    flatAppearance->mouseDownBackColor: clLight + 10
+
+                    caption: text (' Сделать снимок памяти')
+                    imageAlign: alMiddleLeft
+                    textAlign: alMiddleRight
+
+                    image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Camera_16x.png'))
+
+                    ClickEvent:^ function ($self) use (DiagnosticToolkit $diagnostic)
+                        {
+                            $save = new SaveFileDialog;
+                            $save->filter = 'Memory dump file (*.dmp)|*.dmp';
+
+                            if ($save->execute ())
+                            {
+                                $file = $save->fileName;
+                                $prop = '-mm';
+
+                                switch (c('DiagnosticToolkit__MemoryScreenshotSetting')->selectedItem)
+                                {
+                                    case text ('Улучшенный'):
+                                        $prop = '-mp';
+                                    break;
+
+                                    case text ('Полный'):
+                                        $prop = '-ma';
+                                    break;
+                                }
+
+                                c('Footer__Status')->caption = text ('Создание снимка памяти проекта...');
+                                c('ToolsList__ProjectRunner')->helpStorage[1]->dump ($file, $prop);
+                                c('Footer__Status')->caption = text ('Готово');
+                            }
+                        }
+
+                ComboBox DiagnosticToolkit__MemoryScreenshotSetting (DiagnosticToolkit)
+                    bounds: [16, 282, 168, 24]
+                    dropDownStyle: ddDropDownList
+                    flatStyle: flPopup
+                    backgroundColor: clWhite
+
+                    ->items->addRange ([text ('Стандартный'), text ('Улучшенный'), text ('Полный')])
+                    selectedItem: text ('Стандартный')
+
+                Panel DiagnosticToolkit__DebugPanel (DiagnosticToolkit)
+                    bounds: [8, 322, DiagnosticToolkit->w - 16, DiagnosticToolkit->h - (DiagnosticToolkit__MemoryScreenshotSetting->y + DiagnosticToolkit__MemoryScreenshotSetting->h + 32)]
+                    anchor: acTop | acLeft | acRight | acBottom
+                    borderStyle: 1
+
+                    Button DebugPanel__ViewObjects
+                        bounds: [8, 8, 168, 24]
+                        backgroundColor: clWhite
+
+                        flatStyle: flFlat
+                        flatAppearance->borderColor: clWhite
+                        flatAppearance->mouseOverBackColor: clLight
+                        flatAppearance->mouseDownBackColor: clLight + 10
+
+                        caption: text (' Обозреватель объектов')
+                        imageAlign: alMiddleLeft
+                        textAlign: alMiddleRight
+
+                        image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/StackTrace_16x.png'))
+
+                        ClickEvent:^ function ($self)
+                            {
+                                VoidStudioAPI::getObjects ('diagnostic')['MainForm']->showDialog ();
+                            }
+
                 Timer DiagnosticToolkit__Ticker ()
                     interval: 1000
 
-                    TickEvent:^ function ($self) use (DiagnosticToolkit $diagnostic, DiagnosticToolkit__UpTime $upTime, DiagnosticToolkit__MemoryUsage $memory, DiagnosticToolkit__MemoryUsagePeak $memoryPeak)
+                    TickEvent:^ function ($self) use (DiagnosticToolkit $diagnostic, DiagnosticToolkit__UpTime $upTime, DiagnosticToolkit__MemoryUsage $memory, DiagnosticToolkit__MemoryUsagePeak $memoryPeak, DiagnosticToolkit__MemoryUsageGraph $graph)
                         {
                             $diagnostic->helpStorage->refresh ();
                             
@@ -449,9 +553,25 @@ Form MainForm
                                         $elapsed .' секунд'
                                 ));
 
-                                $memory->caption = text ('Использование памяти: '. round (VoidEngine::getProperty ($diagnostic->helpStorage->selector, ['PagedMemorySize64', 'double']) / 1024 / 1024, 2) .' Мб');
+                                $memory->caption = text ('Использование памяти: '. ($memoryUsage = round (VoidEngine::getProperty ($diagnostic->helpStorage->selector, ['PagedMemorySize', 'double']) / 1024 / 1024, 2)) .' Мб');
 
-                                $memoryPeak->caption = text ('Пик использования памяти: '. round (VoidEngine::getProperty ($diagnostic->helpStorage->selector, ['PeakPagedMemorySize64', 'double']) / 1024 / 1024, 2) .' Мб');
+                                $memoryPeak->caption = text ('Пик использования памяти: '. round (VoidEngine::getProperty ($diagnostic->helpStorage->selector, ['PeakPagedMemorySize', 'double']) / 1024 / 1024, 2) .' Мб');
+
+                                //if ($elapsed <= 10)
+                                
+                                $graph->series[0]->points->addXY ($elapsed, $memoryUsage);
+
+                                if (c('ToolsList__ProjectRunner')->helpStorage[1]->readDebugAnswer () == 'beginJunkCatching')
+                                    $graph->series[0]->points[$elapsed - 1]->color = clYellow;
+
+                                /*else
+                                {
+                                    for ($i = 1; $i < 10; ++$i)
+                                        $graph->series[0]->points->setItem ($i - 1, $graph->series[0]->points[$i]);
+                                    
+                                    $graph->series[0]->points->removeAt (9);
+                                    $graph->series[0]->points->addXY (10, $memoryUsage);
+                                }*/
                             }
                         }
 
@@ -459,7 +579,7 @@ Form MainForm
         dock: dsBottom
         height: 20
 
-        backgroundColor: clMediumPurple
+        backgroundColor: clPurple
 
         PictureBox Footer__Icon
             bounds: [4, 2, 16, 16]
@@ -480,8 +600,33 @@ Form MainForm
         dock: dsTop
         height: 28
 
-        Button ToolsList__SaveProject
+        Button ToolsList__OpenProject
             bounds: [8, 2, 32, 24]
+
+            flatStyle: flFlat
+            flatAppearance->borderColor: clWhite
+            flatAppearance->mouseOverBackColor: clLight
+            flatAppearance->mouseDownBackColor: clLight + 10
+
+            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Open_16x.png'))
+
+            ClickEvent:^ function ($self) use (Footer__Status $status)
+                {
+                    $open = new OpenFileDialog;
+                    $open->filter = 'VoidStudio Project file (*.vsp)|*.vsp';
+
+                    if ($open->execute () && is_readable ($file = $open->fileName))
+                    {
+                        $status->caption = text ('Открытие проекта...');
+
+                        VoidStudioProjectManager::openProject ($file);
+
+                        $status->caption = text ('Готово');
+                    }
+                }
+
+        Button ToolsList__SaveProject
+            bounds: [40, 2, 32, 24]
 
             flatStyle: flFlat
             flatAppearance->borderColor: clWhite
@@ -499,8 +644,17 @@ Form MainForm
                     $status->caption = text ('Готово');
                 }
 
+        ComboBox ToolsList__ProjectRunConfig
+            bounds: [88, 4, 88, 24]
+            dropDownStyle: ddDropDownList
+            flatStyle: flPopup
+            backgroundColor: clLight
+
+            ->items->addRange (['Debug', 'Release'])
+            selectedItem: 'Debug'
+
         Button ToolsList__ProjectRunner
-            bounds: [40, 2, 88, 24]
+            bounds: [176, 2, 88, 24]
 
             flatStyle: flFlat
             flatAppearance->borderColor: clWhite
@@ -513,21 +667,29 @@ Form MainForm
 
             image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Run_16x.png'))
 
-            ClickEvent:^ function ($self) use (Footer $footer, Footer__Status $status, DiagnosticToolkit $diagnostic, DiagnosticToolkit__Ticker $ticker, ComponentsList $components, PropertiesPanel__Container $properties)
+            ClickEvent:^ function ($self) use (Footer $footer, Footer__Status $status, Footer__Icon $statusIcon, DiagnosticToolkit $diagnostic, DiagnosticToolkit__Ticker $ticker, ComponentsList $components, PropertiesPanel__Container $properties, ToolsList__ProjectRunConfig $config, DiagnosticToolkit__DebugPanel $debugPanel, DiagnosticToolkit__MemoryUsageGraph $graph)
                 {
                     if ($self->caption == text (' Запустить'))
                     {
                         $status->backgroundColor = clDarkOrange;
                         $footer->backgroundColor = clDarkOrange;
+                        $statusIcon->imageLocation = text (APP_DIR .'/system/icons/Build_16x.png');
                         $status->caption = text ('Запуск проекта...');
 
-                        $process = VoidStudioAPI::startProject (Designer__FormsList);
+                        usleep (100);
+
+                        $process  = VoidStudioAPI::startProject (Designer__FormsList, $isDebug = $config->selectedItem == 'Debug');
+                        $debugger = new VoidStudioDebugger ($process);
+
+                        $graph->series[0]->points->clear ();
 
                         $diagnostic->visible = true;
                         $components->visible = false;
+                        $config->visible     = false;
+                        $debugPanel->visible = $isDebug;
+                        $self->x = $config->x;
 
-                        $self->helpStorage = $properties->splitterDistance;
-                        $properties->panel1MinSize    = 0;
+                        $self->helpStorage = [$properties->splitterDistance, $debugger];
                         $properties->splitterDistance = 0;
 
                         $status->caption = text ('Готово');
@@ -544,26 +706,34 @@ Form MainForm
 
                     else
                     {
+                        $statusIcon->imageLocation = text (APP_DIR .'/system/icons/Box_16x.png');
                         $status->caption = text ('Остановка проекта...');
                         $ticker->enabled = false;
+                        c('ProjectStatusChecker')->enabled = false;
+
+                        VoidStudioAPI::getObjects ('diagnostic')['MainForm']->hide ();
 
                         VoidStudioAPI::stopProject ();
                         
                         $diagnostic->visible = false;
                         $components->visible = true;
+                        $config->visible     = true;
+                        $self->x = $config->x + $config->w;
 
-                        $properties->panel1MinSize    = 25;
-                        $properties->splitterDistance = $self->helpStorage;
+                        try
+                        {
+                            $properties->splitterDistance = $self->helpStorage[0];
+                        }
 
-                        $status->backgroundColor = clMediumPurple;
-                        $footer->backgroundColor = clMediumPurple;
+                        catch (\Throwable $e) {}
+
+                        $status->backgroundColor = clPurple;
+                        $footer->backgroundColor = clPurple;
                         $status->caption = text ('Готово');
                         $self->caption   = text (' Запустить');
 
                         $self->width = 88;
                         $self->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Run_16x.png'));
-
-                        c('ProjectStatusChecker')->enabled = false;
                     }
                 }
 
@@ -572,7 +742,7 @@ Form MainForm
 
             TickEvent:^ function ($self) use (ToolsList__ProjectRunner $runner)
                 {
-                    if ($runner->caption == text (' Остановить') && (new Process)->getProcessesByName ('vstmpprj')->count == 0)
+                    if ($runner->caption == text (' Остановить') && VoidStudioAPI::$project->hasExited)
                         $runner->performClick ();
                 }
 
@@ -680,4 +850,15 @@ Form MainForm
             Project_AutoSave->enabled = true;
 
             Footer__Status->caption = text ('Готово');
+        }
+
+    FormClosingEvent:^ function ($self) use (DiagnosticToolkit $diagnostic)
+        {
+            if ($diagnostic->helpStorage instanceof WFObject)
+            {
+                $diagnostic->helpStorage->refresh ();
+                
+                if (!$diagnostic->helpStorage->hasExited)
+                    $diagnostic->helpStorage->kill ();
+            }
         }
