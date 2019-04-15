@@ -21,11 +21,11 @@
 Требование | Значение
 ------------- | -------------
 Версия **Windows** | ≥ **7**
-Версия **.NET Framework** | ≥ **4.0**
+Версия **.NET Framework** | ≥ **4.5**
 
 ## Установка
 
-Для работы с проектом вы должны иметь **.NET Framework** версии не менее **4.0**. Скачать **.NET Framework** версии **4.7.2** можно на [официальном сайте](https://dotnet.microsoft.com/download/dotnet-framework-runtime/net472).
+Для работы с проектом вы должны иметь **.NET Framework** версии не менее **4.5**. Скачать **.NET Framework** версии **4.7.2** можно на [официальном сайте](https://dotnet.microsoft.com/download/dotnet-framework-runtime/net472).
 
 Для установки скачайте репозиторий и распакуйте папку **bin**. Запуск среды происходит через файл **system/core/WinForms PHP.exe**. После первого запуска среды создастся ярлык **VoidStudio.lnk**.
 
