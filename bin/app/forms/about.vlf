@@ -1,5 +1,5 @@
 Form MainForm
-    size: [446, 332]
+    size: [446, 356]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
     formBorderStyle: fbsToolWindow
@@ -89,3 +89,11 @@ Form MainForm
         textAlign: alMiddleLeft
 
         caption: text ('Версия PHP: '. phpversion ())
+
+    Label EngineVersion
+        bounds: [16, 288, 300, 32]
+        autoSize: true
+        font: ['Segoe UI Light', 10]
+        textAlign: alMiddleLeft
+
+        caption: text ('Версия VoidEngine: '. ENGINE_VERSION)

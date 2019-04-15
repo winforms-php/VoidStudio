@@ -4,28 +4,30 @@ namespace VoidEngine;
 
 class Image extends WFClass
 {
+    public $class     = 'System.Drawing.Image';
+    public $namespace = 'System.Drawing';
+
     public function __construct ()
     {
-        $image = new ObjectType ('System.Drawing.Image');
-        $image->token = 'b03f5f7f11d50a3a';
-
-        parent::__construct ($image);
+        parent::__construct ($this->class);
     }
 
     public function loadFromFile (string $path)
     {
-        return $this->__call ('FromFile', [$path]);
+        return $this->fromFile ($path);
     }
 }
 
 class Icon extends WFObject
 {
+    public $class     = 'System.Drawing.Icon';
+    public $namespace = 'System.Drawing';
+
     public function __construct (string $file)
     {
-        $icon = new ObjectType ('System.Drawing.Icon');
-        $icon->token = 'b03f5f7f11d50a3a';
+        parent::__construct ($this->class);
 
-		parent::__construct ($icon);
+        $this->fromFile ($file);
     }
 
     public function applyToObject (int $selector): void
@@ -39,15 +41,13 @@ class Icon extends WFObject
 	}
 }
 
-class Bitmap extends Component
+class Bitmap extends WFObject
 {
+    public $class     = 'System.Drawing.Bitmap';
+    public $namespace = 'System.Drawing';
+
     public function __construct (string $filename)
     {
-        $bitmap = new ObjectType ('System.Drawing.Bitmap');
-        $bitmap->token = 'b03f5f7f11d50a3a';
-
-        $this->selector = VoidEngine::createObject ($bitmap, [$filename, 'string']);
+        parent::__construct ($this->class, $this->namespace, [$filename, 'string']);
     }
 }
-
-?>

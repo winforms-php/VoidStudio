@@ -20,7 +20,7 @@ class VoidDesigner extends Component
     protected $currentSelectedItem;
     protected $formsList;
 
-    public function __construct (Control $parent, string $formName = 'form', PropertyGrid $propertyGrid, EventGrid $eventsList, ComboBox $currentSelectedItem, TabControl $formsList, $form = null)
+    public function __construct (Component $parent, string $formName = 'form', PropertyGrid $propertyGrid, EventGrid $eventsList, ComboBox $currentSelectedItem, TabControl $formsList, $form = null)
     {
         $this->form = $form === null ? new Form :
             EngineAdditions::coupleSelector ($form);
@@ -33,7 +33,7 @@ class VoidDesigner extends Component
         $this->currentSelectedItem = $currentSelectedItem;
         $this->formsList           = $formsList;
 
-        $this->selector = VoidEngine::createObject (new ObjectType ('WinForms_PHP.FormDesigner4', false, true), $this->form->selector, $formName);
+        $this->selector = VoidEngine::createObject ('WinForms_PHP.FormDesigner4', null, $this->form->selector, $formName);
         Components::addComponent ($this->selector, $this);
 
         $this->form->name = $formName;
@@ -45,7 +45,7 @@ class VoidDesigner extends Component
         }
 
         $this->control = $this->callMethod ('GetControl');
-        $this->objects[$formName] = new ObjectType ('System.Windows.Forms.Form');
+        $this->objects[$formName] = ['System.Windows.Forms.Form', 'System.Windows.Forms'];
 
         VoidEngine::setProperty ($this->control, 'Parent', $parent->selector);
 
@@ -122,11 +122,11 @@ class VoidDesigner extends Component
             $infoItem->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Debug_16x.png'));
             $infoItem->clickEvent = function () use ($self)
             {
-                $self->getSelectedComponents ()->foreach (function ($index, $value) use ($self)
+                $self->getSelectedComponents ()->foreach (function ($value) use ($self)
                 {
                     pre ($value instanceof Component ? $value : $value->toString () ."\nSelector: ". $value->selector);
 
-                    if ($value->getType ()->toString () == 'System.Windows.Forms.Form')
+                    // if ($value->getType ()->toString () == 'System.Windows.Forms.Form')
                         pre ($self->getSharpCode ($self->form->name));
                 });
             };
@@ -138,7 +138,7 @@ class VoidDesigner extends Component
                 $infoItem
             ]);
 
-            $menu->show ($self->form, $self->form->pointToClient (VoidEngine::createObject (new ObjectType ('System.Drawing.Point'), $args->x, $args->y)));
+            $menu->show ($self->form, $self->form->pointToClient (VoidEngine::createObject ('System.Drawing.Point', 'System.Drawing', $args->x, $args->y)));
         };
 
         VoidStudioAPI::addObjects ('main', ['Designer__'. $this->form->name .'Designer' => $this]);
@@ -151,27 +151,33 @@ class VoidDesigner extends Component
 
     public function getSharpCode (string $formName, bool $asObject = false): string
     {
-        return $this->callMethod ($asObject ? ['GetSharpCode', 'object'] : 'GetSharpCode', $formName);
+        $code = $this->callMethod (['GetSharpCode', 'object'], $formName);
+
+        $code = VoidEngine::callMethod ($code, ['Replace', 'object'], 'public class '. $this->form->name .' : '. $this->form->name, 'public class '. $this->form->name .' : System.Windows.Forms.Form');
+        $code = VoidEngine::callMethod ($code, ['Replace', 'object'], '    private ', '    public ');
+
+        return $asObject ?
+            $code : VoidEngine::callMethod ($code, 'ToString');
     }
 
-    public function createComponent (ObjectType $component, string $componentName): int
+    public function createComponent (array $component, string $componentName): int
     {
-        $this->objects[$componentName] = $component; // VoidEngine::objectType ($component)
-        $selector = VoidEngine::createObject ($component);
+        $this->objects[$componentName] = $component;
+        $selector = VoidEngine::createObject (...$component);
 
         $this->callMethod ('AddComponent', $selector, $componentName);
 
         return $selector;
     }
 
-    public function setComponentToHistory (ObjectType $component, string $componentName): void
+    public function setComponentToHistory (array $component, string $componentName): void
     {
         $this->objects[$componentName] = $component;
     }
 
     public function addComponent (int $selector, string $componentName): void
     {
-        $this->objects[$componentName] = new ObjectType (VoidEngine::callMethod (VoidEngine::callMethod ($selector, 'GetType'), 'ToString'));
+        $this->objects[$componentName] = [VoidEngine::callMethod (VoidEngine::callMethod ($selector, 'GetType'), 'ToString'), 'auto'];
 
         $this->callMethod ('AddComponent', $selector, $componentName);
     }
@@ -190,16 +196,12 @@ class VoidDesigner extends Component
 
     public function removeSelected (): void
     {
-        $objects = VoidEngine::callMethod ($this->selector, 'GetSelectedComponents');
-        $size    = VoidEngine::getProperty ($objects, 'Length');
         $toUnset = [];
 
-        for ($i = 0; $i < $size; ++$i)
+        foreach ($this->getSelectedComponents ()->list as $object)
         {
-            $object = VoidEngine::getArrayValue ($objects, $i);
-
-            if (VoidEngine::callMethod (VoidEngine::callMethod ($object, 'GetType'), 'ToString') != 'System.Windows.Forms.Form')
-                $toUnset[] = $this->getComponentName ($object);
+            if ($object->getType ()->toString () != 'System.Windows.Forms.Form')
+                $toUnset[] = $this->getComponentName ($object->selector);
 
             else
             {
@@ -207,21 +209,21 @@ class VoidDesigner extends Component
                 {
                     if (messageBox (text ('Вы действительно хотите удалить форму "'. $this->form->name .'"?'), text ('Подтвердите действие'), enum ('System.Windows.Forms.MessageBoxButtons.YesNo'), enum ('System.Windows.Forms.MessageBoxIcon.Question')) == 6)
                     {
-                        $toUnset[] = $this->getComponentName ($object);
+                        foreach ($this->objects as $name => $obj)
+                            unset ($this->objects[$name]);
 
-                        $this->formsList->items->remove (array_flip ($this->formsList->items->names)[$form = VoidEngine::getProperty ($object, 'Name')]);
+                        unset ($this->formsList->items[array_flip ($this->formsList->items->names)[$form = $this->getComponentName ($object->selector)]]);
 
-                        VoidEngine::callMethod ($this->control, 'Dispose');
-                        $this->form->dispose ();
+                        /*$this->form->dispose ();
+                        VoidEngine::callMethod ($this->control, 'Dispose');*/
                         $this->callMethod ('DeleteSelected');
 
                         $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $this->formsList->selectedTab->text .'Designer'];
                         
-                        $this->propertyGrid->selectedObject = $designer->form->selector;
-                        $designer->setSelectedComponents ($designer->form->selector);
+                        $designer->propertyGrid->selectedObject = $designer->form;
+                        $designer->setSelectedComponents ($designer->form);
 
                         unset (VoidStudioAPI::$objects['main']['Designer__'. $form .'Designer']);
-                        Components::cleanJunk ();
 
                         return;
                     }
@@ -248,8 +250,6 @@ class VoidDesigner extends Component
         $this->currentSelectedItem->items->clear ();
         $this->currentSelectedItem->items->addRange (array_keys ($this->objects));
         $this->currentSelectedItem->selectedItem = $this->form->name;
-
-        Components::cleanJunk ();
     }
 
     public function renameComponent (int $component, string $name, string $fromName = null): void
@@ -290,5 +290,3 @@ class VoidDesigner extends Component
         $this->callMethod ('RemoveProperty', $selector, $name);
     }
 }
-
-?>

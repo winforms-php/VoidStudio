@@ -4,13 +4,15 @@ namespace VoidEngine;
 
 class Control extends Component
 {
-    public function __construct (Control $parent = null, $className)
-	{
+    public $class = 'System.Windows.Forms.Control';
+
+    public function __construct (Component $parent = null, $className = null)
+    {
         parent::__construct ($className);
-        
-		if ($parent)
-			$this->parent = $parent;
-	}
+
+        if ($parent)
+            $this->parent = $parent;
+    }
 	
     public function get_caption (): string
     {
@@ -36,12 +38,9 @@ class Control extends Component
 	{
         $font = array_values ($font);
 
-        $obj = new ObjectType ('System.Drawing.Font');
-        $obj->token = 'b03f5f7f11d50a3a';
-
         $obj = isset ($font[2]) ?
-            VoidEngine::createObject ($obj, $font[0], [$font[1], 'float'], [$font[2], 'System.Drawing.FontStyle, System.Drawing']) :
-            VoidEngine::createObject ($obj, $font[0], [$font[1], 'float']);
+            VoidEngine::createObject ('System.Drawing.Font', 'System.Drawing', $font[0], [$font[1], 'float'], [$font[2], 'System.Drawing.FontStyle, System.Drawing']) :
+            VoidEngine::createObject ('System.Drawing.Font', 'System.Drawing', $font[0], [$font[1], 'float']);
         
 		$this->setProperty ('Font', $obj);
     }
@@ -195,5 +194,3 @@ class Control extends Component
 }
 
 abstract class NoVisual extends Control {}
-
-?>

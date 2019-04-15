@@ -4,9 +4,11 @@ namespace VoidEngine;
 
 class ColorDialog extends CommonDialog
 {
+    public $class = 'System.Windows.Forms.ColorDialog';
+
     public function __construct ()
     {
-        parent::__construct (self::class);
+        parent::__construct ($this->class);
     }
 	
     public function get_color ()
@@ -19,5 +21,3 @@ class ColorDialog extends CommonDialog
         $this->setProperty ('Color', [$color, 'color']);
     }
 }
-
-?>

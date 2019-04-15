@@ -6,11 +6,14 @@ class Component extends WFObject
 {
     public $helpStorage = '';
 
-    public function __construct ($className)
+    public $class     = 'System.Windows.Forms.Component';
+    public $namespace = 'System.Windows.Forms';
+
+    public function __construct ($className = null)
     {
         parent::__construct (
-            is_string ($className) ?
-                'System.Windows.Forms.'. substr ($className, ($pos = strrpos ($className, '\\')) !== false ? $pos + 1 : 0) : $className
+            $className === null ? $this->class : $className,
+            $this->namespace
         );
         
         Components::addComponent ($this->selector, $this);
@@ -19,10 +22,10 @@ class Component extends WFObject
     public function __debugInfo (): array
     {
         return [
-            'description' => $this->__toString (),
-            'selector'    => $this->selector,
-            'name'        => $this->name,
-            'objectInfo'  => json_encode ($this, JSON_PRETTY_PRINT)
+            'description' => @$this->__toString (),
+            'selector'    => @$this->selector,
+            'name'        => @$this->name,
+            'objectInfo'  => @json_encode ($this, JSON_PRETTY_PRINT)
         ];
     }
 
@@ -58,13 +61,6 @@ class Component extends WFObject
                         VoidEngine::removeObjects ($value);
                 }
 
-                elseif ($value instanceof Items)
-                {
-                    $value->clear ();
-                    
-                    VoidEngine::removeObjects ($value->selector);
-                }
-
                 elseif ($value instanceof Component)
                     $value->dispose ();
 
@@ -83,5 +79,3 @@ class Component extends WFObject
         }
     }
 }
-
-?>

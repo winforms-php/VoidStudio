@@ -4,7 +4,6 @@
     "Текст": [
         "Label",
         "LinkLabel",
-        "ToolStripStatusLabel",
         "TextBox",
         "MaskedTextBox",
         "RichTextBox"

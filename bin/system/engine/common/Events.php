@@ -29,14 +29,12 @@ class Events
 
     static function getObjectEvent (int $object, string $eventName)
     {
-        return isset (self::$events[$object][$eventName]) ?
-            self::$events[$object][$eventName] : false;
+        return self::$events[$object][$eventName] ?: false;
     }
 
     static function getObjectEvents (int $object)
     {
-        return isset (self::$events[$object]) ?
-            self::$events[$object] : false;
+        return self::$events[$object] ?: false;
     }
 }
 
@@ -47,5 +45,3 @@ class EventArgs extends WFObject
         $this->selector = $selector;
     }
 }
-
-?>

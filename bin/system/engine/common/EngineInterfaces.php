@@ -7,20 +7,19 @@ class VoidEngine
     /**
      * * Создание объекта
      * 
-     * @param ObjectType $object - объект конфигурации
+     * @param mixed $objectName - полное название объекта
+     * [@param mixed $objectGroup = null] - полное пространство имён объекта
      * [@param mixed ...$args = []] - список аргументов создания
      * 
      * @return int - возвращает указатель на созданный объект
      * 
-     * VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
+     * VoidEngine::createObject ('System.Windows.Forms.Button', 'System.Windows.Forms');
      * 
      */
 
-    public static function createObject (ObjectType $object, ...$args): int
+    public static function createObject ($objectName, $objectGroup = null, ...$args): int
     {
-        return $object->extended ?
-            winforms_createObject ($object->getResourceLine (), null, ...$args) :
-            winforms_createObject (...$object->getResourceLine (), ...$args);
+        return winforms_createObject ($objectName, $objectGroup, ...$args);
     }
 
     /**
@@ -28,8 +27,8 @@ class VoidEngine
      * 
      * @param int ...$selectors - список указателей для удаления
      * 
-     * $button_1 = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
-     * $button_2 = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
+     * $button_1 = VoidEngine::createObject ('System.Windows.Forms.Button', 'System.Windows.Forms');
+     * $button_2 = VoidEngine::createObject ('System.Windows.Forms.Button', 'System.Windows.Forms');
      * 
      * VoidEngine::removeObjects ($button_1, $button_2);
      * 
@@ -60,19 +59,18 @@ class VoidEngine
     /**
      * * Получение указателя на статичный класс
      * 
-     * @param ObjectType $object - объект конфигурации класса
+     * @param mixed $className - полное название класса
+     * [@param mixed $classGroup = null] - полное пространство имён класса
      * 
      * @return int - возвращает указатель на созданный объект
      * 
-     * VoidEngine::createClass (new ObjectType ('System.Windows.Forms.MessageBox'));
+     * VoidEngine::createClass ('System.Windows.Forms.MessageBox');
      * 
      */
 
-    public static function createClass (ObjectType $object): int
+    public static function createClass ($className, $classGroup = null): int
     {
-        return $object->extended ?
-            winforms_getClass ($object->getResourceLine (), null) :
-            winforms_getClass (...$object->getResourceLine ());
+        return winforms_getClass ($className, $classGroup);
     }
 
     /**
@@ -82,7 +80,7 @@ class VoidEngine
      * 
      * @return bool - возвращает true, если объект существует, и false в противном случае
      * 
-     * $button = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
+     * $button = VoidEngine::createObject ('System.Windows.Forms.Button', 'System.Windows.Forms');
      * VoidEngine::removeObjects ($button);
      * 
      * var_dump (VoidEngine::objectExists ($button)); // false
@@ -97,23 +95,16 @@ class VoidEngine
     /**
     * * Создание экземпляра типа объекта
     * 
-    * @param mixed $object - объект конфигурации или полное название объекта
+    * @param mixed $objectName - полное название объекта
+    * [@param mixed $objectGroup = null] - полное пространство имён объекта
     * 
     * @return mixed - возвращает указатель на объект типа объекта или false в случае ошибки
     * 
     */
 
-    public static function objectType ($object)
+    public static function objectType ($objectName, $objectGroup = null)
     {
-        if ($object instanceof ObjectType)
-            $object = $object->getResourceLine ();
-
-        elseif (!is_string ($object))
-            return false;
-
-        return is_array ($object) ?
-            winforms_typeof (...$object) :
-            winforms_typeof ($object, null);
+        return winforms_typeof ($objectName, $objectGroup);
     }
 
     /**
@@ -127,7 +118,7 @@ class VoidEngine
      * 
      * @return mixed - возвращает свойство объекта
      * 
-     * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
+     * $selector = VoidEngine::createObject ('System.Windows.Forms.Button', 'System.Windows.Forms');
      * 
      * pre (VoidEngine::getProperty ($selector, 'Text'));
      * pre (VoidEngine::getProperty ($selector, ['Text', 'string']));
@@ -149,7 +140,7 @@ class VoidEngine
      * @param mixed $value может быть передан в качестве определённого типа через структуру вида
      * [значение, тип]
      * 
-     * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
+     * $selector = VoidEngine::createObject ('System.Windows.Forms.Button', 'System.Windows.Forms');
      * 
      * VoidEngine::setProperty ($selector, 'Text', 'Hello!');
      * VoidEngine::setProperty ($selector, 'Text', ['Hello!', 'string']);
@@ -173,7 +164,7 @@ class VoidEngine
      * 
      * @return mixed - возвращает результат выполнения метода
      * 
-     * $selector = VoidEngine::createClass (new ObjectType ('System.Windows.Forms.MessageBox'));
+     * $selector = VoidEngine::createClass ('System.Windows.Forms.MessageBox', 'System.Windows.Forms');
      * 
      * VoidEngine::callMethod ($selector, 'Show', 'Hello, World!', 'Test Box');
      * VoidEngine::callMethod ($selector, 'Show', ['Hello, World!', 'string'], ['Test Box', 'string']);
@@ -230,14 +221,14 @@ class VoidEngine
      * 
      * @param int $selector - указатель на объект
      * @param string $eventName - название события
-     * [@param string $code = ''] - PHP код без тэгов
+     * @param string $code - PHP код без тэгов
      * 
-     * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
+     * $selector = VoidEngine::createObject ('System.Windows.Forms.Button', 'System.Windows.Forms');
      * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
      * 
      */
 
-    public static function setObjectEvent (int $selector, string $eventName, string $code = ''): void
+    public static function setObjectEvent (int $selector, string $eventName, string $code): void
     {
         if (self::eventExists ($selector, $eventName))
             self::removeObjectEvent ($selector, $eventName);
@@ -254,7 +245,7 @@ class VoidEngine
      * 
      * @return bool - возвращает true в случае существования события
      * 
-     * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
+     * $selector = VoidEngine::createObject ('System.Windows.Forms.Button', 'System.Windows.Forms');
      * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
      * 
      * var_dump ($selector, 'Click'); // true
@@ -272,7 +263,7 @@ class VoidEngine
      * @param int $selector - указатель на объект
      * @param string $eventName - название события
      * 
-     * $selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.Button'));
+     * $selector = VoidEngine::createObject ('System.Windows.Forms.Button', 'System.Windows.Forms');
      * VoidEngine::setObjectEvent ($selector, 'Click', 'VoidEngine\pre (123);');
      * VoidEngine::removeObjectEvent ($selector, 'Click');
      * 
@@ -330,10 +321,18 @@ class VoidEngine
      * [@param string $callSharpCode = '']        - чистый C# код
      * [@param string $declareSharpCode = '']     - C# код с объявлениями классов
      * 
+     * @return array - возвращает список ошибок компиляции
+     * 
      */
 
-    public static function compile (string $savePath, string $iconPath, string $phpCode, string $productDescription = null, string $productName = null, string $productVersion = null, string $companyName = null, string $copyright = null, string $callSharpCode = '', string $declareSharpCode = ''): array
+    public static function compile (string $savePath, string $iconPath, string $phpCode, string $productDescription = null, string $productName = null, string $productVersion = null, string $companyName = null, string $copyright = null, string $callSharpCode = '', string $declareSharpCode = '', WFObject $dictionary = null, WFObject $assemblies = null): array
     {
+        if ($dictionary === null)
+            $dictionary = new WFObject ('System.Collections.Generic.Dictionary`2[System.String,System.String]', null);
+
+        if ($assemblies === null)
+            $assemblies = getNetArray ('System.String');
+
         if ($productName === null)
             $productName = basenameNoExt ($savePath);
 
@@ -349,7 +348,7 @@ class VoidEngine
         if ($copyright === null)
             $copyright = $companyName .' copyright (c) '. date ('Y');
 
-        return winforms_compile ($savePath, $iconPath, $phpCode, $productDescription, $productName, $productVersion, $companyName, $copyright, $callSharpCode, $declareSharpCode);
+        return (new WFClass ('WinForms_PHP.WFCompiler', null))->compile ($savePath, $iconPath, $phpCode, $productDescription, $productName, $productVersion, $companyName, $copyright, $callSharpCode, $declareSharpCode, $dictionary, $assemblies)->names;
     }
 }
 
@@ -360,14 +359,14 @@ class EngineAdditions
         try
         {
             (new WFClass ('System.Reflection.Assembly', 'mscorlib'))->loadFrom ($path);
-
-            return true;
         }
 
         catch (\Throwable $e)
         {
             return false;
         }
+
+        return true;
     }
 
     public static function getProperty (int $selector, string $name): array
@@ -457,74 +456,67 @@ class EngineAdditions
 
     public static function coupleSelector ($value, int $selfSelector = null)
     {
-        if (is_int ($value) && VoidEngine::objectExists ($value) && $value != $selfSelector)
-        {
-            $type = VoidEngine::callMethod ($value, 'GetType');
-
-            if (VoidEngine::getProperty ($type, 'IsArray'))
-                return new Items ($value);
-
-            if (strpos (VoidEngine::callMethod ($type, 'ToString'), 'Collection') !== false)
-                return new Items ($value);
-
-            // Объект можешь иметь класс "System.RuntimeType" у которого нет свойства "IsCollectible"
-
-            try
-            {
-                if (VoidEngine::getProperty ($type, 'IsCollectible'))
-                    return new Items ($value);
-            }
-
-            catch (\Throwable $e)
-            {
-                return new WFObject ($value);
-            }
-        }
-
-        else return $value;
+        return is_int ($value) && VoidEngine::objectExists ($value) && $value != $selfSelector ?
+            new WFObject ($value) : $value;
     }
 
     public static function uncoupleSelector ($value)
     {
-        return ($value instanceof WFObject || $value instanceof Items) ?
+        return $value instanceof WFObject ?
             $value->selector : $value;
     }
 }
 
-class Items extends \ArrayObject
+class WFObject implements \ArrayAccess
 {
     protected $selector;
-	
-	public function __construct (int $selector)
-	{
-		$this->selector = $selector;
+    protected $name;
+
+    public function __construct ($object, ?string $classGroup = 'auto', ...$args)
+    {
+        if (is_string ($object))
+            $this->selector = VoidEngine::createObject ($object, $classGroup == 'auto' ?
+                substr ($object, 0, strrpos ($object, '.')) : $classGroup, ...$args);
+
+        elseif (is_int ($object) && VoidEngine::objectExists ($object))
+            $this->selector = $object;
+
+        else throw new \Exception ('$object parameter must be string or object selector');
     }
     
     public function __get ($name)
 	{
-		switch (strtolower ($name))
-		{
+        if (method_exists ($this, $method = "get_$name"))
+            $value = $this->$method ();
+            
+        elseif (substr ($name, -5) == 'Event')
+            $value = Events::getObjectEvent ($this->selector, substr ($name, 0, -5));
+
+        elseif (property_exists ($this, $name))
+            $value = $this->$name;
+        
+        else switch (strtolower ($name))
+        {
             case 'count':
             case 'length':
-            case 'size':
                 try
                 {
-                    return VoidEngine::getProperty ($this->selector, 'Count');
+                    return $this->getProperty ('Count');
                 }
 
                 catch (\WinFormsException $e)
                 {
-                    return VoidEngine::getProperty ($this->selector, 'Length');
+                    return $this->getProperty ('Length');
                 }
             break;
-				
+
             case 'list':
                 $size = $this->count;
                 $list = [];
                 
 				for ($i = 0; $i < $size; ++$i)
-                    $list[] = VoidEngine::getArrayValue ($this->selector, $i);
-                     
+                    $list[] = EngineAdditions::coupleSelector (VoidEngine::getArrayValue ($this->selector, $i));
+                
                 return $list;
             break;
 
@@ -546,172 +538,10 @@ class Items extends \ArrayObject
                 return $names;
             break;
 
-            case 'selector':
-                return $this->selector;
-            break;
-
             default:
-                return EngineAdditions::coupleSelector (VoidEngine::getProperty ($this->selector, $name), $this->selector);
+                $value = $this->getProperty ($name);
             break;
-		}
-    }
-	
-	public function add ($value)
-	{
-		return $this->offsetSet (null, $value);
-	}
-	
-	public function append ($value)
-	{
-		return $this->offsetSet (null, $value);
-	}
-	
-	public function offsetSet ($index, $value)
-	{
-        return VoidEngine::callMethod ($this->selector, $index === null ? 'Add' : 'Insert', $value instanceof WFObject ? $value->selector : $value);
-	}
-	
-	public function offsetGet ($index)
-	{
-		return EngineAdditions::coupleSelector (VoidEngine::getArrayValue ($this->selector, $index), $this->selector);
-	}
-	
-	public function addRange (array $items): void
-	{
-		array_map ([$this, 'append'], $items);
-	}
-	
-	public function offsetUnset ($index): void
-	{
-		VoidEngine::callMethod ($this->selector, 'RemoveAt', $index);
-	}
-	
-	public function remove ($index): void
-	{
-		$this->offsetUnset ($index);
-	}
-	
-	public function clear (): void
-	{
-		VoidEngine::callMethod ($this->selector, 'Clear');
-	}
-	
-	public function indexOf ($value): int
-	{
-		return VoidEngine::callMethod ($this->selector, 'IndexOf', $value instanceof WFObject ? $value->selector : $value);
-	}
-	
-	public function insert ($index, $value)
-	{
-		return $this->offsetSet ($index, $value);
-	}
-	
-	public function contains ($value): bool
-	{
-		return VoidEngine::callMethod ($this->selector, 'Contains', $value instanceof WFObject ? $value->selector : $value);
-    }
-
-    public function foreach (\Closure $callback, string $type = null)
-    {
-        $size = $this->count;
-
-        for ($i = 0; $i < $size; ++$i)
-            $callback ($i, EngineAdditions::coupleSelector (VoidEngine::getArrayValue ($this->selector, $type !== null ? [$i, $type] : $i), $this->selector));
-    }
-
-    public function __call ($method, $args)
-	{
-        $args = array_map (function ($arg)
-        {
-            return ($arg instanceof WFObject || $arg instanceof Items) ?
-                $arg->selector : $arg;
-        }, $args);
-
-        return EngineAdditions::coupleSelector (VoidEngine::callMethod ($this->selector, $method, ...$args), $this->selector);
-	}
-}
-
-class ObjectType
-{
-    public $extended = false;
-
-    public $version  = '4.0.0.0';
-    public $culture  = 'neutral';
-    public $token    = 'b77a5c561934e089';
-    public $postArgs = [];
-
-    public $className;
-    public $classGroup;
-
-    public $onlyClassInfo;
-
-    public function __construct (string $className, string $classGroup = null, bool $onlyClassInfo = false)
-    {
-        $this->className     = $className;
-        $this->classGroup    = $classGroup;
-        $this->onlyClassInfo = $onlyClassInfo;
-
-        if ($this->classGroup === null)
-            $this->classGroup = substr ($this->className, 0, strrpos ($this->className, '.'));
-    }
-
-    public function getResourceLine ()
-    {
-        if ($this->extended)
-        {
-            if ($this->onlyClassInfo)
-                return $this->classGroup ?
-                    $this->className .', '. $this->classGroup :
-                    $this->className;
-
-            $postArgs = '';
-            $line     = $this->className;
-
-            if (isset ($this->postArgs) && is_array ($this->postArgs))
-                foreach ($this->postArgs as $name => $value)    
-                    $postArgs .= ", $name=$value";
-
-            if ($this->classGroup)
-                $line .= ', '. $this->classGroup;
-
-            return $line .', Version='. $this->version .', Culture='. $this->culture .', PublicKeyToken='. $this->token .$postArgs;
         }
-
-        else return [$this->className, $this->classGroup];
-    }
-}
-
-class WFObject
-{
-    protected $selector;
-    protected $name;
-
-    public function __construct ($object, string $classGroup = null, bool $onlyClassInfo = false, ...$args)
-    {
-        if ($object instanceof ObjectType)
-            $this->selector = VoidEngine::createObject ($object, ...$args);
-
-        elseif (is_string ($object))
-            $this->selector = VoidEngine::createObject (new ObjectType ($object, $classGroup, $onlyClassInfo), ...$args);
-
-        elseif (is_int ($object) && VoidEngine::objectExists ($object))
-            $this->selector = $object;
-
-        else throw new \Exception ('$object parameter must be instance of "VoidEngine\ObjectType", be string or object selector');
-    }
-    
-    public function __get ($name)
-	{
-        if (method_exists ($this, $method = "get_$name"))
-            $value = $this->$method ();
-            
-        elseif (substr ($name, -5) == 'Event')
-            $value = Events::getObjectEvent ($this->selector, substr ($name, 0, -5));
-
-        elseif (property_exists ($this, $name))
-            $value = $this->$name;
-        
-        else $value = $this->getProperty ($name);
 
         return EngineAdditions::coupleSelector ($value, $this->selector);
 	}
@@ -729,7 +559,7 @@ class WFObject
 
             catch (\Throwable $e)
             {
-                return ($value instanceof WFObject || $value instanceof Items) ?
+                return $value instanceof WFObject ?
                     $this->$method ($value->selector) : null;
             }
 
@@ -737,18 +567,90 @@ class WFObject
             Events::setObjectEvent ($this->selector, substr ($name, 0, -5), $value);
         
         else $this->setProperty ($name, EngineAdditions::uncoupleSelector ($value));
-	}
+    }
 	
 	public function __call ($method, $args)
 	{
         $args = array_map (function ($arg)
         {
-            return ($arg instanceof WFObject || $arg instanceof Items) ?
-                $arg->selector : $arg;
+            return EngineAdditions::uncoupleSelector ($arg);
         }, $args);
 
         return EngineAdditions::coupleSelector ($this->callMethod ($method, ...$args), $this->selector);
+    }
+
+    public function addRange (array $values, $assoc = false): void
+    {
+        foreach ($values as $id => $value)
+            $this->offsetSet ($assoc ? $id : null, $value);
+    }
+    
+    public function offsetSet ($index, $value)
+	{
+        return $index === null ?
+            $this->callMethod ('Add', EngineAdditions::uncoupleSelector ($value)) :
+            $this->callMethod ('Insert', $index, EngineAdditions::uncoupleSelector ($value));
+    }
+	
+	public function offsetGet ($index)
+	{
+		return EngineAdditions::coupleSelector (VoidEngine::getArrayValue ($this->selector, $index), $this->selector);
+    }
+	
+	public function offsetUnset ($index): void
+	{
+		$this->callMethod ('RemoveAt', $index);
+    }
+    
+    public function offsetExists ($index): bool
+    {
+        try
+        {
+            $this->offsetGet ($index);
+        }
+
+        catch (\Exception $e)
+        {
+            return false;
+        }
+
+        return true;
+    }
+	
+	public function indexOf ($value): int
+	{
+		return $this->callMethod ('IndexOf', EngineAdditions::uncoupleSelector ($value));
+    }
+    
+    public function lastIndexOf ($value): int
+	{
+		return $this->callMethod ('LastIndexOf', EngineAdditions::uncoupleSelector ($value));
 	}
+	
+	public function contains ($value): bool
+	{
+		return $this->callMethod ('Contains', EngineAdditions::uncoupleSelector ($value));
+    }
+
+    public function foreach (\Closure $callback, string $type = null): void
+    {
+        $size = $this->count;
+
+        for ($i = 0; $i < $size; ++$i)
+            $callback (EngineAdditions::coupleSelector (VoidEngine::getArrayValue ($this->selector, $type !== null ? [$i, $type] : $i), $this->selector), $i);
+    }
+
+    public function where (\Closure $comparator, string $type = null): array
+    {
+        $size   = $this->count;
+        $return = [];
+
+        for ($i = 0; $i < $size; ++$i)
+            if ($comparator ($value = EngineAdditions::coupleSelector (VoidEngine::getArrayValue ($this->selector, $type !== null ? [$i, $type] : $i), $this->selector), $i))
+                $return[] = $value;
+
+        return $return;
+    }
 	
     protected function getProperty ($name)
     {
@@ -815,19 +717,16 @@ class WFClass extends WFObject
 {
     protected $selector;
 
-    public function __construct ($class, string $classGroup = null, bool $onlyClassInfo = false)
+    public function __construct ($class, ?string $classGroup = 'auto')
     {
-        if ($class instanceof ObjectType)
-            $this->selector = VoidEngine::createClass ($class);
-
-        elseif (is_string ($class))
-            $this->selector = VoidEngine::createClass (new ObjectType ($class, $classGroup, $onlyClassInfo));
+        if (is_string ($class))
+            $this->selector = VoidEngine::createClass ($class, $classGroup == 'auto' ?
+                substr ($class, 0, strrpos ($class, '.')) : $classGroup
+            );
 
         elseif (is_int ($class) && VoidEngine::objectExists ($class))
             $this->selector = $class;
 
-        else throw new \Exception ('$class parameter must be instance of "VoidEngine\ObjectType", be string or class selector');
+        else throw new \Exception ('$class parameter must be string or class selector');
     }
 }
-
-?>

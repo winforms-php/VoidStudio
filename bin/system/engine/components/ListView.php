@@ -4,43 +4,28 @@ namespace VoidEngine;
 
 class ListView extends Control
 {
-    protected $items;
-    protected $columns;
-    protected $groups;
-
-    public function __construct (Control $parent = null)
-    {
-        parent::__construct ($parent, self::class);
-
-        $this->items   = new Items ($this->getProperty ('Items'));
-        $this->columns = new Items ($this->getProperty ('Columns'));
-        $this->groups  = new Items ($this->getProperty ('Groups'));
-    }
-
-    public function get_selectedItems ()
-    {
-        return new Items ($this->getProperty ('SelectedItems'));
-    }
+    public $class = 'System.Windows.Forms.ListView';
 }
 
 class ListViewItem extends Control
 {
-    protected $subItems;
+    public $class = 'System.Windows.Forms.ListViewItem';
 
     public function __construct (string $text = '')
     {
-        parent::__construct (null, self::class);
+        parent::__construct (null, $this->class);
 
-        $this->text     = $text;
-        $this->subItems = new Items ($this->getProperty ('SubItems'));
+        $this->text = $text;
     }
 }
 
 class ColumnHeader extends Control
 {
+    public $class = 'System.Windows.Forms.ColumnHeader';
+
     public function __construct (string $text = '')
     {
-        parent::__construct (null, self::class);
+        parent::__construct (null, $this->class);
 
         $this->text = $text;
     }
@@ -48,12 +33,12 @@ class ColumnHeader extends Control
 
 class ListViewGroup extends Control
 {
+    public $class = 'System.Windows.Forms.ListViewGroup';
+
     public function __construct (string $text = '')
     {
-        parent::__construct (null, self::class);
+        parent::__construct (null, $this->class);
 
         $this->header = $text;
     }
 }
-
-?>

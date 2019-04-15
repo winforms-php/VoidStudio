@@ -4,10 +4,7 @@ namespace VoidEngine;
 
 class ProgressBar extends Control
 {
-    public function __construct (Control $parent = null)
-    {
-        parent::__construct ($parent, self::class);
-    }
+    public $class = 'System.Windows.Forms.ProgressBar';
 
     public function get_max ()
     {
@@ -39,5 +36,3 @@ class ProgressBar extends Control
         $this->setProperty ('Value', $position);
     }
 }
-
-?>

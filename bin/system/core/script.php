@@ -15,9 +15,7 @@ elseif (file_exists (FRAMEWORK_DIR .'/engine/VoidEngine.php'))
 
 else message ('VoidEngine not founded');
 
-$app = dirname (CORE_DIR, 2) .'/app/start.php';
+$app = '../../app/start.php';
 
 if (file_exists ($app))
 	require $app;
-
-?>

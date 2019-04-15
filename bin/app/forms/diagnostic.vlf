@@ -29,7 +29,7 @@ Form MainForm
             {
                 $selectors = [];
 
-                c('Components')->selectedItems->foreach (function ($index, $value) use (&$selectors)
+                c('Components')->selectedItems->foreach (function ($value) use (&$selectors)
                 {
                     $selectors[] = $value->subItems[1]->text;
                 });
@@ -48,7 +48,7 @@ Form MainForm
             {
                 $selectors = [];
 
-                c('Components')->selectedItems->foreach (function ($index, $value) use (&$selectors)
+                c('Components')->selectedItems->foreach (function ($value) use (&$selectors)
                 {
                     $selectors[] = $value->subItems[1]->text;
                 });
@@ -65,7 +65,7 @@ Form MainForm
             {
                 $selectors = [];
 
-                c('Components')->selectedItems->foreach (function ($index, $value) use (&$selectors)
+                c('Components')->selectedItems->foreach (function ($value) use (&$selectors)
                 {
                     $selectors[] = $value->subItems[1]->text;
                 });
@@ -78,7 +78,7 @@ Form MainForm
                     c('Components')->selectedItems[0]->remove ();
             }
 
-    ContextMenuStrip Components__ControlMenu
+    ContextMenuStrip Components__ControlMenu ()
         ->items->addRange ([Components__Colorize, Components__UnColorize, '-', Components__Dispose])
 
     ListView Components
@@ -113,7 +113,7 @@ Form MainForm
                         text ((string) $info['objectInfo']),
                         text ($info['status'] == 1 ? 'Доступен' : (
                             $info['status'] == 0 ?
-                                'Недоступен' : 'Невизуальный'
+                                'Недоступен' : 'Не визуальный'
                         ))
                     ]);
 

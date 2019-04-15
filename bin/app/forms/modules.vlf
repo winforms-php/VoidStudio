@@ -1,5 +1,5 @@
 Form MainForm
-    size: [400, 500]
+    size: [400, 300]
     startPosition: fspCenterScreen
     formBorderStyle: fbsToolWindow
     backgroundColor: clWhite
@@ -21,7 +21,7 @@ Form MainForm
                 }
             }
 
-    ContextMenuStrip ModulesList__ToolStrip
+    ContextMenuStrip ModulesList__ToolStrip ()
         ->items->addRange ([ModulesList__ToolStrip__RemoveModule])
 
     TabPage ModulesList__Scripts (text ('Модули'))
@@ -48,7 +48,7 @@ Form MainForm
                 flatAppearance->mouseOverBackColor: clLight
                 flatAppearance->mouseDownBackColor: clLight + 10
 
-                ClickEvent:^ function ($self)
+                ClickEvent:^ function ($self) use (ModulesList__List $modulesList)
                     {
                         $open = new OpenFileDialog;
                         $open->filter = 'PHP file (*.php)|*.php';
@@ -57,7 +57,7 @@ Form MainForm
                         {
                             copy ($file, VoidStudioProjectManager::$projectPath .'/modules/'. basename ($file));
 
-                            c('ModulesList__List')->items->add (basenameNoExt ($file));
+                            $modulesList->items->add (basenameNoExt ($file));
                         }
                     }
 
@@ -95,7 +95,13 @@ Form MainForm
 
         ->items->addRange ([ModulesList__Scripts, ModulesList__Qero])
 
-    ShownEvent:^ function ($self)
+Form MainForm
+    ShownEvent:^ function ($self) use (ModulesList__List $modulesList, ModulesList__QeroPackages $qeroPackages)
         {
-            c('ModulesList__List')->items->addRange (array_map ('VoidEngine\basenameNoExt', glob (VoidStudioProjectManager::$projectPath .'/modules/*.php')));
+            $modulesList->items->addRange (array_map ('VoidEngine\basenameNoExt', glob (VoidStudioProjectManager::$projectPath .'/modules/*.php')));
+
+            if (!file_exists ($file = VoidStudioProjectManager::$projectPath .'/modules/Qero.json'))
+                file_put_contents ($file, '[]');
+
+            $qeroPackages->items->addRange (json_decode (file_get_contents ($file)));
         }

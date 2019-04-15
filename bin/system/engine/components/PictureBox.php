@@ -4,11 +4,13 @@ namespace VoidEngine;
 
 class PictureBox extends Control
 {
+	public $class = 'System.Windows.Forms.PictureBox';
+
 	protected $image;
 	
-	public function __construct (Control $parent = null)
+	public function __construct (Component $parent = null)
 	{
-        parent::__construct ($parent, self::class);
+        parent::__construct ($parent, $this->class);
         
 		$this->image = new PictureBoxImage ($this->selector);
 	}
@@ -16,7 +18,7 @@ class PictureBox extends Control
 
 class PictureBoxImage
 {
-    protected $selector;
+	protected $selector;
     protected $pictureBoxSelector;
     protected $clipboard;
     
@@ -47,5 +49,3 @@ class PictureBoxImage
 		$this->clipboard->setImage (VoidEngine::getProperty ($this->pictureBoxSelector, 'Image'));
 	}
 }
-
-?>

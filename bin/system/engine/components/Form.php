@@ -4,13 +4,7 @@ namespace VoidEngine;
 
 class Form extends Control
 {
-	public function __construct (Control $parent = null)
-	{
-        parent::__construct (null, self::class);
-        
-		if ($parent)
-			$this->parent = $parent;
-	}
+	public $class = 'System.Windows.Forms.Form';
 
 	public function get_icon ()
 	{
@@ -53,10 +47,7 @@ class FormIcon extends Icon
 
     public function loadFromFile (string $file)
 	{
-        $icon = new ObjectType ('System.Drawing.Icon');
-        $icon->token = 'b03f5f7f11d50a3a';
-
-		$icon = VoidEngine::createObject ($icon, text ($file));
+        $icon = VoidEngine::createObject ('System.Drawing.Icon', 'System.Drawing', text ($file));
         
         VoidEngine::setProperty ($this->formSelector, 'Icon', $icon);
 
@@ -64,5 +55,3 @@ class FormIcon extends Icon
 		    $this->selector = $icon;
 	}
 }
-
-?>

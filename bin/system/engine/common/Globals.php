@@ -77,5 +77,3 @@ $SCREEN = new class
         ];
     }
 };
-
-?>

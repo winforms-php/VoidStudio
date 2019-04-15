@@ -6,17 +6,16 @@ EngineAdditions::loadModule ('ScintillaNET.dll');
 
 class Scintilla extends NoVisual
 {
+    public $class     = 'ScintillaNET.Scintilla';
+    public $namespace = 'ScintillaNET';
+
     protected $styles;
 
-    public function __construct (Control $parent = null)
+    public function __construct (Component $parent = null)
 	{
-        $this->selector = VoidEngine::createObject (new ObjectType ('ScintillaNET.Scintilla', 'ScintillaNET', true));
-        Components::addComponent ($this->selector, $this);
+        parent::__construct ($parent, $this->class);
 
         $this->styles = $this->getProperty ('Styles');
-        
-		if ($parent)
-			$this->parent = $parent;
 	}
 
     public function resetSyntax ()
@@ -82,5 +81,3 @@ class Scintilla extends NoVisual
         }
     }
 }
-
-?>

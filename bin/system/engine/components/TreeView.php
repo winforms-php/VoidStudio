@@ -4,14 +4,7 @@ namespace VoidEngine;
 
 class TreeView extends Control
 {
-    protected $nodes;
-
-    public function __construct (Control $parent = null)
-    {
-        parent::__construct ($parent, self::class);
-
-        $this->nodes = new Items ($this->getProperty ('Nodes'));
-    }
+    public $class = 'System.Windows.Forms.TreeView';
 
     public function get_path ()
     {
@@ -31,14 +24,13 @@ class TreeView extends Control
 
 class TreeNode extends Control
 {
-    protected $nodes;
+    public $class = 'System.Windows.Forms.TreeNode';
 
     public function __construct (string $text = '')
     {
-        parent::__construct (null, self::class);
+        parent::__construct (null, $this->class);
 
         $this->text  = $text;
-        $this->nodes = new Items ($this->getProperty ('Nodes'));
     }
 
     public function get_path ()
@@ -46,5 +38,3 @@ class TreeNode extends Control
         return $this->getProperty ('FullPath');
     }
 }
-
-?>

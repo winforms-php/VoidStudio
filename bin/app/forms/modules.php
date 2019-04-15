@@ -16,5 +16,3 @@ $parser = new VLFParser (__DIR__. '/'. $name .'.vlf', [
 // file_put_contents ('SyntaxTree__'. $name .'.json', json_encode ($parser->tree, JSON_PRETTY_PRINT));
 
 VoidStudioAPI::addObjects ($name, VLFInterpreter::run ($parser));
-
-?>

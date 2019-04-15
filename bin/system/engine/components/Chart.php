@@ -4,75 +4,61 @@ namespace VoidEngine;
 
 class Chart extends Control
 {
-	protected $annotations;
-	protected $chartAreas;
-	protected $legends;
-	protected $series;
-	protected $titles;
-
-    public function __construct (Control $parent = null)
-	{
-        $this->selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.DataVisualization.Charting.Chart', 'System.Windows.Forms.DataVisualization'));
-		Components::addComponent ($this->selector, $this);
-
-		$this->annotations = new Items ($this->getProperty ('Annotations'));
-		$this->chartAreas  = new Items ($this->getProperty ('ChartAreas'));
-		$this->legends 	   = new Items ($this->getProperty ('Legends'));
-		$this->series	   = new Items ($this->getProperty ('Series'));
-		$this->titles 	   = new Items ($this->getProperty ('Titles'));
-        
-		if ($parent)
-			$this->parent = $parent;
-	}
+	public $class 	  = 'System.Windows.Forms.DataVisualization.Charting.Chart';
+	public $namespace = 'System.Windows.Forms.DataVisualization';
 }
 
 class Annotation extends Control
 {
+	public $class 	  = 'System.Windows.Forms.DataVisualization.Charting.Annotation';
+	public $namespace = 'System.Windows.Forms.DataVisualization';
+
 	public function __construct ()
 	{
-        $this->selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.DataVisualization.Charting.Annotation', 'System.Windows.Forms.DataVisualization'));
-		Components::addComponent ($this->selector, $this);
+		parent::__construct (null);
 	}
 }
 
 class ChartArea extends Control
 {
-	protected $axes;
+	public $class 	  = 'System.Windows.Forms.DataVisualization.Charting.ChartArea';
+	public $namespace = 'System.Windows.Forms.DataVisualization';
 
 	public function __construct ()
 	{
-        $this->selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.DataVisualization.Charting.ChartArea', 'System.Windows.Forms.DataVisualization'));
-		Components::addComponent ($this->selector, $this);
-
-		$this->axes = new Items ($this->getProperty ('Axes'));
+		parent::__construct (null);
 	}
 }
 
 class Legend extends Control
 {
+	public $class 	  = 'System.Windows.Forms.DataVisualization.Charting.Legend';
+	public $namespace = 'System.Windows.Forms.DataVisualization';
+
 	public function __construct ()
 	{
-        $this->selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.DataVisualization.Charting.Legend', 'System.Windows.Forms.DataVisualization'));
-		Components::addComponent ($this->selector, $this);
+		parent::__construct (null);
 	}
 }
 
 class Series extends Control
 {
+	public $class 	  = 'System.Windows.Forms.DataVisualization.Charting.Series';
+	public $namespace = 'System.Windows.Forms.DataVisualization';
+
 	public function __construct ()
 	{
-        $this->selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.DataVisualization.Charting.Series', 'System.Windows.Forms.DataVisualization'));
-		Components::addComponent ($this->selector, $this);
+		parent::__construct (null);
 	}
 }
 
 class Title extends Control
 {
+	public $class 	  = 'System.Windows.Forms.DataVisualization.Charting.Title';
+	public $namespace = 'System.Windows.Forms.DataVisualization';
+
 	public function __construct ()
 	{
-        $this->selector = VoidEngine::createObject (new ObjectType ('System.Windows.Forms.DataVisualization.Charting.Title', 'System.Windows.Forms.DataVisualization'));
-		Components::addComponent ($this->selector, $this);
+		parent::__construct (null);
 	}
 }
-
-?>

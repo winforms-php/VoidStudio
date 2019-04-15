@@ -65,5 +65,3 @@ foreach ($components as $groupName => $comps)
 }
 
 $componentsList->smallImageList = $imageList;
-
-?>

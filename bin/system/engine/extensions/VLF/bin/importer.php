@@ -46,5 +46,3 @@ class VLFImporter
         return $designers;
     }
 }
-
-?>

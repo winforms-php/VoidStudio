@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.10.0 build-2019/03/23 (major.minor.patch state-y/m/d)
+ * @version     3.0.2 build-2019/04/15 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -29,16 +29,18 @@
 
 namespace VoidEngine;
 
+const ENGINE_VERSION = '3.0.2 build-2019/04/15';
 const ENGINE_DIR = __DIR__;
+
 chdir (ENGINE_DIR);
 
 $GLOBALS['__debug'] = [
     'start_time' => microtime (true)
 ];
 
-$GLOBALS['__message_handler'] = function (...$args)
+$GLOBALS['__ub_write_handler'] = function (...$args)
 {
-    throw new \Exception (...$args);
+    pre (...$args);
 };
 
 require 'common/EngineInterfaces.php';
@@ -101,5 +103,3 @@ if (is_dir ('extensions'))
     foreach (scandir ('extensions') as $ext)
         if (is_dir ('extensions/'. $ext) && file_exists ($ext = 'extensions/'. $ext .'/main.php'))
             require $ext;
-
-?>

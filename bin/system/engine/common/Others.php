@@ -2,9 +2,7 @@
 
 namespace VoidEngine;
 
-function nothing (): void {}
-
-function run (string $path, ...$args): WFObject
+function run (string $path, ...$args)
 {
     return (new Process)->start ($path, ...$args);
 }
@@ -23,22 +21,22 @@ function php_errors_check (string $code): ?array
     try
     {
         eval ('return; '. $code);
-
-        return null;
     }
 
-    catch (\ParseError $e)
+    catch (\Throwable $e)
     {
         return [
             'text' => $e->getMessage (), 
 			'line' => $e->getLine ()
         ];
     }
+
+    return null;
 }
 
-function text (string $text, string $encoding = 'Windows-1251'): string
+function text (string $text): ?string
 {
-    return mb_convert_encoding ($text, $encoding);
+    return winforms_to1251 ($text);
 }
 
 function enum (string $name): array
@@ -47,6 +45,17 @@ function enum (string $name): array
         substr ($name, strrpos ($name, '.') + 1),
         ($name = substr ($name, 0, strrpos ($name, '.'))) .', '. substr ($name, 0, strrpos ($name, '.'))
     ];
+}
+
+function getNetArray (string $type, array $items = []): WFObject
+{
+    $array = (new WFClass ('System.Array', null))
+        ->createInstance (VoidEngine::objectType ($type), $size = sizeof ($items));
+
+    for ($i = 0; $i < $size; ++$i)
+        $array[$i] = array_shift ($items);
+    
+    return $array;
 }
 
 function dir_create (string $path): void
@@ -113,10 +122,7 @@ function dir_copy (string $from, string $to): bool
 
 function getARGBColor (string $color)
 {
-    $converter = new ObjectType ('System.Drawing.ColorTranslator');
-    $converter->token = 'b03f5f7f11d50a3a';
-
-    return (new WFClass ($converter))->fromHtml ($color);
+    return (new WFClass ('System.Drawing.ColorTranslator'))->fromHtml ($color);
 }
 
 function replaceSl (string $string): string
@@ -182,49 +188,58 @@ class Components
     static $components = [];
     static $events = [];
 
-    static function addComponent (int $selector, object $object): void
+    public static function addComponent (int $selector, object $object): void
     {
         self::$components[$selector] = $object;
         self::$events[$selector] = [];
     }
 
-    static function getComponent (int $selector)
+    public static function getComponent (int $selector)
     {
         return isset (self::$components[$selector]) ?
             self::$components[$selector] : false;
     }
 
-    static function componentExists (int $selector): bool
+    public static function componentExists (int $selector): bool
     {
         return isset (self::$components[$selector]);
     }
 
-    static function setComponentEvent (int $selector, string $eventName, string $code): void
+    public static function setComponentEvent (int $selector, string $eventName, string $code): void
     {
         self::$events[$selector][$eventName] = $code;
     }
 
-    static function getComponentEvent (int $selector, string $eventName)
+    public static function getComponentEvent (int $selector, string $eventName)
     {
         return isset (self::$events[$selector][$eventName]) ?
             self::$events[$selector][$eventName] : false;
     }
 
-    static function removeComponentEvent (int $selector, string $eventName): void
+    public static function removeComponentEvent (int $selector, string $eventName): void
     {
         unset (self::$events[$selector][$eventName]);
     }
 
-    static function removeComponent (int $selector): void
+    public static function removeComponent (int $selector): void
     {
         unset (self::$components[$selector], self::$events[$selector]);
     }
 
-    static function cleanJunk (): void
+    public static function cleanJunk (): void
     {
+        // TODO: более строгие правила очистки мусорных объектов
+        
         foreach (self::$components as $selector => $object)
         {
-            // TODO: более строгие правила очистки мусорных объектов
+            try
+            {
+                if ($object->getType ()->isSubclassOf (VoidEngine::objectType ('System.Windows.Forms.Form', 'System.Windows.Forms')))
+                    continue;
+            }
+
+            catch (\Exception $e) {}
+            
             VoidEngine::destructObject ($selector);
 
             if (!VoidEngine::objectExists ($selector))
@@ -308,7 +323,7 @@ function c ($name, bool $returnAllSimilarObjects = false)
                     {
                         while (is_object ($parent = _c($object->parent->selector)))
                         {
-                            if ($parent->getType ()->toString () == 'System.Windows.Forms.Form' && $parent->name == $path[0])
+                            if ($parent->getType ()->isSubclassOf (VoidEngine::objectType ('System.Windows.Forms.Form', 'System.Windows.Forms')) && $parent->name == $path[0])
                                 return $objects[$id];
 
                             else $object = $parent;
@@ -366,7 +381,7 @@ function setTimeout (int $timeout, callable $function): Timer
 
 class Clipboard
 {
-    public static function getText (): string
+    public static function getText ()
     {
         return (new WFClass ('System.Windows.Forms.Clipboard'))->getText ();
     }
@@ -378,27 +393,18 @@ class Clipboard
     
     public static function getFiles (): array
     {
-        $array = (new WFClass ('System.Windows.Forms.Clipboard'))->getFileDropList ();
-        $size  = VoidEngine::getProperty ($array, 'Count');
-        $files = [];
-
-        for ($i = 0; $i < $size; ++$i)
-            $files[] = VoidEngine::getArrayValue ($array, $i);
-
-        VoidEngine::removeObjects ($array);
-
-        return $files;
+        return (new WFClass ('System.Windows.Forms.Clipboard'))->getFileDropList ()->list;
     }
     
     public static function setFiles (array $files): void
     {
-        $collection = VoidEngine::createObject (new ObjectType ('System.Collections.Specialized.StringCollection'));
+        $collection = new WFObject ('System.Collections.Specialized.StringCollection');
 
         foreach ($files as $file)
-            VoidEngine::callMethod ($collection, 'Add', (string) $file);
+            $collection->add ((string) $file);
 
         (new WFClass ('System.Windows.Forms.Clipboard'))->setFileDropList ($collection);
-        VoidEngine::removeObjects ($collection);
+        VoidEngine::removeObjects ($collection->selector);
     }
 }
 
@@ -409,7 +415,7 @@ class Cursor
     public function __construct (int $handle = null)
     {
         $handle !== null ?
-            $this->cursor = new WFObject ('System.Windows.Forms.Cursor', null, false, $handle) :
+            $this->cursor = new WFObject ('System.Windows.Forms.Cursor', 'auto', $handle) :
             $this->cursor = new WFClass ('System.Windows.Forms.Cursor');
     }
 
@@ -454,5 +460,3 @@ set_exception_handler (function (...$args)
 {
     pre ($args);
 });
-
-?>

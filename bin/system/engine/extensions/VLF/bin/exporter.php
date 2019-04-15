@@ -326,5 +326,3 @@ final class WFExportedData
         $this->data = $data;
     }
 }
-
-?>

@@ -2,6 +2,8 @@
 
 namespace VoidEngine;
 
+// require 'Qero/Qero.phar';
+
 if (!file_exists (dirname (APP_DIR) .'/VoidStudio.lnk'))
 {
     $link = (new \COM ('WScript.Shell'))->CreateShortcut (text (dirname (APP_DIR) .'/VoidStudio.lnk'));
@@ -30,9 +32,7 @@ class VoidStudioAPI
     {
         self::$objects[$group] = array_merge
         (
-            isset (self::$objects[$group]) ?
-                self::$objects[$group] : [],
-
+            self::$objects[$group] ?? [],
             $objects
         );
     }
@@ -59,12 +59,6 @@ class VoidStudioAPI
 
     public static function stopProject ()
     {
-        /*(new Process)->getProcessesByName ('vstmpprj')->foreach (function ($index, $process)
-        {
-            $process->kill ();
-            $process->waitForExit ();
-        });*/
-
         if (self::$project instanceof WFObject && !self::$project->hasExited)
         {
             self::$project->kill ();
@@ -78,17 +72,19 @@ class VoidStudioAPI
 
         try
         {
-            VoidStudioBuilder::compileProject (VoidStudioProjectManager::$projectPath .'/build.exe', $formsList->items[0]->text, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php'), false, false, $debug);
+            VoidStudioBuilder::compileProject (VoidStudioProjectManager::$projectPath .'/build.exe', $formsList->items[0]->text, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php'), [], false, $debug);
 
             self::$project = run (VoidStudioProjectManager::$projectPath .'/build/build.exe');
-
-            return self::$project;
         }
 
         catch (\Throwable $e)
         {
-            messageBox (text ('Нельзя сохранить проект или произошла ошибка компиляции'), text ('Ошибка запуска проекта'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));
+            messageBox (text ('Нельзя сохранить проект или произошла ошибка компиляции' ."\n\nПодробнее:\n\n". print_r ($e, true)), text ('Ошибка запуска проекта'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));
+
+            return null;
         }
+
+        return self::$project;
     }
 }
 
@@ -102,7 +98,7 @@ class VoidStudioDebugger
         if ($process->getType ()->toString () == 'System.Diagnostics.Process')
             $this->process = $process;
 
-        else throw new Exception ('$process argument must be an "Process" object');
+        else throw new \Exception ('$process argument must be an "Process" object');
     }
 
     public function dump (string $savePath, string $properties = '', bool $waitForExit = true)
@@ -170,6 +166,7 @@ class VoidStudioProjectManager
         self::$projectPath = $dir;
 
         VoidStudioAPI::getObjects ('main')['MainForm']->caption = $name .' - VoidStudio';
+        VoidStudioAPI::getObjects ('main')['ToolsPanel__LogList']->items->add (text ('Проект "'. $name .'" успешно создан'));
 
         dir_create ($dir .'/modules');
 
@@ -200,19 +197,21 @@ class VoidStudioProjectManager
 
         if (replaceSl (self::$projectPath) != replaceSl (dirname ($file)))
             dir_copy (self::$projectPath .'/modules', dirname ($file) .'/modules');
+
+        VoidStudioAPI::getObjects ('main')['ToolsPanel__LogList']->items->add (text ('Проект успешно сохранён'));
     }
 
     public static function openProject (string $file): void
     {
         messageBox (text ('В настоящий момент пересматривается алгоритм открытия проектов, поэтому возможны многочисленные баги (в т.ч. невозможность компиляции открытого проекта)'. "\n\nБудет исправлено в ближайшее время\nС уважением, разработчики проекта WinForms PHP"), text ('Предупреждение об ошибках'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Warning'));
 
-        self::$projectPath = dirname ($file);
+        self::$projectPath = dirname ($file); 
 
         $info    = unserialize (gzinflate (file_get_contents ($file)));
         $objects = VoidStudioAPI::getObjects ('main');
 
         $objects['PropertiesList__List']->selectedObject = null;
-        $objects['Designer__FormsList']->items->foreach (function ($index, $value)
+        $objects['Designer__FormsList']->items->foreach (function ($value)
         {
             try
             {
@@ -231,9 +230,7 @@ class VoidStudioProjectManager
 
         foreach ($info['forms'] as $formName => $form)
         {
-            $sourceForm = (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ("using System;\nusing System.Windows.Forms;\nusing System.Reflection;\nusing System.Linq;\nusing System.ComponentModel;\n\npublic class CodeEvaler\n{\n\tpublic object EvalCode ()\n\t{\n\t\tForm form = new $formName ();\n\n\t\tVoidControlsParser.parseControls (\"$formName\", (Control) form);\n\n\t\treturn form;\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". str_replace ('private ', 'public ', (string)($form)), true);
-
-            // pre ("using System;\nusing System.Windows.Forms;\nusing System.Reflection;\nusing System.Linq;\nusing System.ComponentModel;\n\npublic class CodeEvaler\n{\n\tpublic object EvalCode ()\n\t{\n\t\tForm form = new $formName ();\n\n\t\tVoidControlsParser.parseControls (\"$formName\", (Control) form);\n\n\t\treturn form;\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". str_replace ('private ', 'public ', (string)($form)));
+            $sourceForm = (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ("using System;\nusing System.Windows.Forms;\nusing System.Reflection;\nusing System.Linq;\nusing System.ComponentModel;\n\npublic class CodeEvaler\n{\n\tpublic object EvalCode ()\n\t{\n\t\tForm form = new $formName ();\n\n\t\tVoidControlsParser.parseControlsForOpening (\"$formName\", (Control) form);\n\n\t\treturn form;\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". (string)($form), true);
 
             $form = $GLOBALS['__underConstruction'][$formName];
             unset ($GLOBALS['__underConstruction'], $form[$formName]);
@@ -244,18 +241,15 @@ class VoidStudioProjectManager
                 if (!isset ($formObjects[$name]))
                     unset ($form[$name]);
 
-            // $sourceForm->isMdiContainer = true;
+            $page = new TabPage ($formName);
+            $page->backgroundColor = clWhite;
 
-            $page     = new TabPage ($formName);
             $designer = new VoidDesigner ($page, $formName, $objects['PropertiesList__List'], $objects['EventsList__ActiveEvents'], $objects['PropertiesPanel__SelectedComponent'], $objects['Designer__FormsList'], $sourceForm);
             $designer->initDesigner ();
-
-            // $controlIndex = 0;
 
             foreach ($form as $name => $selector)
             {
                 $designer->addComponent ($selector, $name);
-                // $designer->form->controls[$controlIndex++] = $selector;
 
                 if (isset ($info['events'][$formName][$name]))
                     foreach ($info['events'][$formName][$name] as $eventName => $event)
@@ -264,21 +258,6 @@ class VoidStudioProjectManager
                         VoidEngine::setObjectEvent ($selector, $eventName, $event);
                     }
             }
-
-            /*(new Items ($sourceForm->controls->selector))->foreach (function ($index, $control) use ($info, $formName, $designer)
-            {
-                $selector = $control->selector;
-                $name     = $control->name;
-
-                $designer->addComponent ($selector, $name);
-
-                if (isset ($info['events'][$formName][$name]))
-                    foreach ($info['events'][$formName][$name] as $eventName => $event)
-                    {
-                        Events::reserveObjectEvent ($selector, $eventName);
-                        VoidEngine::setObjectEvent ($selector, $eventName, $event);
-                    }
-            });*/
 
             if (isset ($info['events'][$formName][$formName]))
                 foreach ($info['events'][$formName][$formName] as $eventName => $event)
@@ -290,7 +269,7 @@ class VoidStudioProjectManager
             $objects['Designer__FormsList']->items->add ($page);
         }
 
-        Components::cleanJunk ();
+        // Components::cleanJunk ();
 
         $objects['Designer__FormsList']->selectedTab = $page;
 
@@ -307,12 +286,18 @@ class VoidStudioProjectManager
 
 class VoidStudioBuilder
 {
-    public static function compileProject (string $save, string $enteringPoint, array $references, bool $withVoidFramework = false, bool $printSuccessCompile = false, bool $debug = false): array
+    public static function compileProject (string $save, string $enteringPoint, array $references, array $settings = [], bool $printSuccessCompile = false, bool $debug = false): array
     {
         $savePath   = text (dirname ($save) .'/'. basenameNoExt ($save));
         $strClass   = (new WFClass ('System.String', 'mscorlib'))->selector;
         $globalCode = new WFObject (VoidEngine::callMethod ($strClass, ['Concat', 'object'], file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n"));
         $forms      = [];
+
+        for ($i = 0; $i < 5; ++$i)
+            if (!isset ($settings[$i]) || !strlen (trim ($settings[$i])))
+                $settings[$i] = null;
+
+        $settings = array_slice ($settings, 0, 5);
 
         foreach (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names as $id => $item)
         {
@@ -332,7 +317,7 @@ class VoidStudioBuilder
                         {
                             $eventStr = VoidEngine::callMethod ($strClass, ['Concat', 'object'], $event);
                             
-                            $eventStr = '        '. $name .'.'. $eventName .' += (sender, e) => WinForms_PHP.Program.CallEvent (WinForms_PHP.Program.HashByObject ('. $name .'), @"namespace VoidEngine; $self = _c($self); $args = isset ($args) && is_int ($args) && VoidEngine::objectExists ($args) ? new EventArgs ($args) : null; " + WinForms_PHP.Program.getResource ("'. VoidEngine::exportObject ($eventStr) .'"), e);';
+                            $eventStr = '        '. $name .'.'. $eventName .' += (sender, e) => WinForms_PHP.ZendProgram.CallEvent (WinForms_PHP.ZendProgram.HashByObject ('. $name .'), @"namespace VoidEngine; $self = _c($self); $args = isset ($args) && is_int ($args) && VoidEngine::objectExists ($args) ? new EventArgs ($args) : null; " + WinForms_PHP.ZendProgram.getResource ("'. VoidEngine::exportObject ($eventStr) .'"), e);';
 
                             $globalCode = new WFObject (VoidEngine::callMethod ($globalCode->selector, ['Replace', 'object'], $str, substr ($str, 0, $pos). $eventStr .substr ($str, $pos)));
                         }
@@ -345,52 +330,10 @@ class VoidStudioBuilder
         unlink ($savePath .'/script.php');
         unlink ($savePath .'/WinForms PHP.exe');
 
-/*
-
-$t = VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/Icon.ico'), 'namespace VoidEngine;
-
-'. VoidStudioBuilder::generateCode ($references) .'
-
-if (isset ($GLOBALS[\'__underConstruction\']))
-{
-    foreach ($GLOBALS[\'__underConstruction\'] as $group => $objects)
-        foreach ($objects as $name => $selector)
-        {
-            $object = new WFObject ($selector);
-
-            try
-            {
-                $object->name = $name;
-            }
-
-            catch (\Throwable $e) {}
-
-            Components::addComponent ($selector, $object);
-        }
-
-    $enteringPoint = $GLOBALS[\'__underConstruction\'][\''. $enteringPoint .'\'][\''. $enteringPoint .'\'];
-    unset ($GLOBALS[\'__underConstruction\']);
-
-    $APPLICATION->run ($enteringPoint);
-}
-
-else throw new \Exception (\'Objects not initialized\');', null, null, null, null, null, str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
-    '%forms%' => implode ('", "', $forms)
-]), $globalCode->selector);
-
-pre ($t);
-pre ((string) $globalCode);
-
-return $t;
-
-*/
-
         $errors = VoidEngine::compile ($savePath .text ('/'. basename ($save)), text (APP_DIR .'/system/icons/Icon.ico'), str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.php'), [
-            '%VoidEngine%'     => $withVoidFramework ?
-                file_get_contents (APP_DIR .'/system/presets/compile_framework_preset.php') :
-                VoidStudioBuilder::generateCode ($references),
+            '%VoidEngine%' => VoidStudioBuilder::generateCode ($references),
 
-            '%modules%' => implode ("\n", array_map (function ($module)
+            '%modules%' => (file_exists ($modulesFile = VoidStudioProjectManager::$projectPath .'/modules/Qero.json') && sizeof ($modules = json_decode (file_get_contents ($modulesFile))) ? "require 'qero-packages/autoload.php';\n\n" : "\n\n"). implode ("\n", array_map (function ($module)
             {
                 $module = trim (file_get_contents ($module));
 
@@ -403,14 +346,27 @@ return $t;
                 if (substr ($module, -2) == '?>')
                     $module = substr ($module, 0, -2);
 
-                return "\$module = <<<'MODULE'\n$module\nMODULE;\neval (\$module);";
+                return "\$module = <<<'__MODULE'\n\n$module\n\n__MODULE;\n\neval (\$module);";
             }, array_merge (glob (VoidStudioProjectManager::$projectPath .'/modules/*.php'), $debug ? [APP_DIR .'/system/debug/DebugHook.php'] : []))),
 
             '%entering_point%' => $enteringPoint,
             '%author_id%'      => sha1 (shell_exec ('wmic csproduct'))
-        ]), null, null, null, null, null, str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
+        ]), $settings[0], $settings[1], $settings[2], $settings[3], $settings[4], str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
             '%forms%' => join ('", "', $forms)
         ]), $globalCode);
+
+        if (isset ($modules) && sizeof ($modules) > 0)
+        {
+            dir_delete (APP_DIR .'/Qero/qero-packages');
+
+            $manager = new \Qero\PackagesManager\PackagesManager;
+
+            foreach ($modules as $package)
+                $manager->installPackage ($package);
+
+            dir_copy (APP_DIR .'/Qero/qero-packages', $savePath .'/qero-packages');
+            dir_delete (APP_DIR .'/Qero/qero-packages');
+        }
 
         /*pre ($errors);
         pre ($globalCode->toString ());*/
@@ -436,9 +392,8 @@ return $t;
 
     public static function appendDesignerData (int $code, VoidDesigner $designer): WFObject
     {
-        $strClass = (new WFClass ('System.String', 'mscorlib'))->selector;
-        $code     = new WFObject ($code);
-        $offset   = 0;
+        $code   = new WFObject ($code);
+        $offset = 0;
 
         while (($pos = strpos ($code, ')(resources.GetObject("', $offset)) !== false)
         {
@@ -452,7 +407,7 @@ return $t;
             foreach (array_slice ($property, 1) as $path)
                 $object = VoidEngine::getProperty ($object, $path);
 
-            $code = new WFObject (VoidEngine::callMethod ($code->selector, ['Replace', 'object'], substr ($code, $pos + 2, $end - $pos), 'WinForms_PHP.Program.getResource ("'. VoidEngine::exportObject ($object) .'")'));
+            $code = new WFObject (VoidEngine::callMethod ($code->selector, ['Replace', 'object'], substr ($code, $pos + 2, $end - $pos), 'WinForms_PHP.ZendProgram.getResource ("'. VoidEngine::exportObject ($object) .'")'));
         }
 
         return $code;
@@ -467,7 +422,7 @@ return $t;
             {
                 return substr ($line, 0, 7) != 'require' ?
                     $line : '';
-            }, file ($path)), 1, -1));
+            }, file ($path)), 1));
 
         return $removeNamespaces ?
             preg_replace ('/namespace [a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*;/', '', $code) : $code;
@@ -503,5 +458,3 @@ return $t;
         return $references;
     }
 }
-
-?>

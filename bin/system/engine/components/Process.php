@@ -4,12 +4,12 @@ namespace VoidEngine;
 
 class Process extends Component
 {
+	public $class 	  = 'System.Diagnostics.Process';
+	public $namespace = 'System';
+
 	public function __construct (int $pid = null)
 	{
-        $obj = new ObjectType ('System.Diagnostics.Process', 'System');
-		$obj->token = 'b77a5c561934e089';
-		
-		$this->selector = VoidEngine::createClass ($obj);
+        $this->selector = VoidEngine::createClass ($this->class, 'System');
 
 		if ($pid !== null)
             $this->selector = $pid == getmypid () ?
@@ -17,11 +17,6 @@ class Process extends Component
                 VoidEngine::callMethod ($this->selector, 'GetProcessById', $pid);
 
 		Components::addComponent ($this->selector, $this);
-	}
-
-	public function getProcessesByName (string $name)
-	{
-		return new Items (VoidEngine::callMethod ($this->selector, 'GetProcessesByName', $name));
 	}
 	
 	public static function getProcessById (int $pid)
@@ -34,5 +29,3 @@ class Process extends Component
 		return new self (getmypid ());
 	}
 }
-
-?>

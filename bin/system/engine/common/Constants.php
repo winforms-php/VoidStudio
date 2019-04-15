@@ -2,22 +2,13 @@
 
 namespace VoidEngine;
 
-$env   	  = new WFClass ('System.Environment', 'mscorlib');
-$array 	  = $env->getCommandLineArgs ();
-$size 	  = $array->length;
-$selector = $array->selector;
+$env 	= new WFClass ('System.Environment', 'mscorlib');
+$params = $env->getCommandLineArgs ()->list;
 
-for ($i = 0; $i < $size; ++$i)
-    $params[] = VoidEngine::getArrayValue ($selector, $i);
-
-VoidEngine::removeObjects ($selector);
-
-$converter = new ObjectType ('System.Drawing.ColorTranslator');
-$converter->token = 'b03f5f7f11d50a3a';
-$converter = new WFClass ($converter);
+$converter = new WFClass ('System.Drawing.ColorTranslator');
 
 $constants = [
-	# Информация о программе
+	# Информация об окружении
 	
 	'EXE_NAME'     => $APPLICATION->executablePath,
 	'DOC_ROOT'     => dirname ($APPLICATION->executablePath),
@@ -352,6 +343,4 @@ foreach ($constants as $constantName => $constantValue)
 
 VoidEngine::removeObjects ($converter->selector);
 
-unset ($constants, $env, $array, $selector, $size, $params, $converter);
-
-?>
+unset ($constants, $env, $params, $converter);

@@ -1,5 +1,5 @@
 Form MainForm
-    size: [340, 288]
+    size: [356, 312]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
     formBorderStyle: fbsToolWindow
@@ -26,17 +26,6 @@ Form MainForm
     TabPage BuildConfigs__Dependency (text ('Зависимости'))
         backgroundColor: clWhite
 
-        #^ CheckBox UsingVoidFramework
-            bounds: [16, 16, 220, 24]
-            caption: text ('Компиляция под VoidFramework')
-
-            checked: false
-
-            ClickEvent:^ function ($self)
-                {
-                    pre (text ('Не рекомендуется использовать'));
-                }
-
         TreeView EngineDependencies
             dock: dsFill
 
@@ -44,6 +33,54 @@ Form MainForm
             checkBoxes: true
 
             ->nodes->add (VoidEngineNode)
+
+    TabPage BuildConfigs__Settings (text ('Настройки'))
+        backgroundColor: clWhite
+
+        Label ProductName__caption
+            location: [16, 16]
+            autoSize: true
+
+            caption: text ('Название проекта')
+
+        TextBox ProductName
+            bounds: [16, 32, 220, 16]
+
+        Label ProductDescription__caption
+            location: [16, 64]
+            autoSize: true
+
+            caption: text ('Описание')
+
+        TextBox ProductDescription
+            bounds: [16, 80, 220, 16]
+
+        Label ProductAuthor__caption
+            location: [16, 112]
+            autoSize: true
+
+            caption: text ('Производитель')
+
+        TextBox ProductAuthor
+            bounds: [16, 128, 220, 16]
+
+        Label ProductVersion__caption
+            location: [16, 160]
+            autoSize: true
+
+            caption: text ('Версия')
+
+        TextBox ProductVersion
+            bounds: [16, 176, 220, 16]
+
+        Label ProductCopyright__caption
+            location: [16, 208]
+            autoSize: true
+
+            caption: text ('Копирайт')
+
+        TextBox ProductCopyright
+            bounds: [16, 224, 220, 16]
 
     TabPage BuildConfigs__Main (text ('Главное'))
         backgroundColor: clWhite
@@ -62,7 +99,7 @@ Form MainForm
             backgroundColor: clLight
 
         Button CompileProject
-            bounds: [16, 184, 120, 32]
+            bounds: [16, 208, 120, 32]
             
             flatStyle: flFlat
             flatAppearance->borderColor: clDodgerBlue
@@ -86,13 +123,13 @@ Form MainForm
                         $references = [];
 
                         if ($dependencies->nodes[0]->checked)
-                            (new Items ($dependencies->nodes[0]->nodes->selector))->foreach (function ($index, $item) use (&$references)
+                            $dependencies->nodes[0]->nodes->foreach (function ($item) use (&$references)
                             {
                                 if ($item->checked)
                                     $references[] = ENGINE_DIR. $item->text;
                             });
 
-                        VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, $references, /*UsingVoidFramework->checked*/ false, true);
+                        VoidStudioBuilder::compileProject ($save, FormSelection->selectedItem, $references, [ProductDescription->text, ProductName->text, ProductVersion->text, ProductAuthor->text, ProductCopyright->text], true);
                         
                         MainForm->hide ();
                     }
@@ -103,4 +140,4 @@ Form MainForm
     TabControl BuildConfigs__ConfigsTabs
         dock: dsFill
 
-        ->items->addRange ([BuildConfigs__Main, BuildConfigs__Dependency])
+        ->items->addRange ([BuildConfigs__Main, BuildConfigs__Settings, BuildConfigs__Dependency])

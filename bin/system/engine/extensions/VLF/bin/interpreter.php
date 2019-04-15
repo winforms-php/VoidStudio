@@ -20,7 +20,7 @@ class VLFInterpreter
      * @return array - возвращает список созданных объектов
      */
 
-    static function run ($syntaxTree, string $resourcesDir = null, array $parent = null): array
+    public static function run ($syntaxTree, string $resourcesDir = null, array $parent = null): array
     {
         if ($syntaxTree instanceof VLFParser)
             $syntaxTree = $syntaxTree->tree;
@@ -135,7 +135,7 @@ class VLFInterpreter
                         }
 
                         elseif (self::$throw_errors)
-                            throw new \Exception ('Setting property to an non-object at line "'. $syntaxInfo['line'] .'". Exception info:'. "\n\n". (string) $e, 0, $e);
+                            throw new \Exception ('Setting property to an non-object at line "'. $syntaxInfo['line']);
                     break;
 
                     case VLF_METHOD_CALL:
@@ -213,7 +213,7 @@ class VLFInterpreter
      * @return string - возвращает форматированную строку
      */
 
-    static function formatLine (string $line, array $objects = []): string
+    public static function formatLine (string $line, array $objects = []): string
     {
         if (sizeof ($objects) > 0)
         {
@@ -267,5 +267,3 @@ class VLFInterpreter
         return $line;
     }
 }
-
-?>

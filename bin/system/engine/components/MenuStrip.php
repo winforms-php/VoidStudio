@@ -4,51 +4,25 @@ namespace VoidEngine;
 
 class MenuStrip extends Component
 {
-    protected $items;
-
-    public function __construct ()
-    {
-        parent::__construct (self::class);
-
-        $this->items = new Items ($this->getProperty ('Items'));
-    }
+    public $class = 'System.Windows.Forms.MenuStrip';
 }
 
 class ContextMenuStrip extends Component
 {
-    protected $items;
-
-    public function __construct ()
-    {
-        parent::__construct (self::class);
-
-        $this->items = new Items ($this->getProperty ('Items'));
-    }
+    public $class = 'System.Windows.Forms.ContextMenuStrip';
 }
-
-/*class ToolStripDropDownMenu extends Component
-{
-    protected $items;
-
-    public function __construct ()
-    {
-        parent::__construct (self::class);
-
-        $this->items = new Items ($this->getProperty ('Items'));
-    }
-}*/
 
 class ToolStripMenuItem extends Control
 {
+    public $class = 'System.Windows.Forms.ToolStripMenuItem';
+
     protected $items;
 
     public function __construct (string $text = '')
     {
-        parent::__construct (null, self::class);
+        parent::__construct (null, $this->class);
 
         $this->text  = $text;
-        $this->items = new Items ($this->getProperty ('DropDownItems'));
+        $this->items = new WFObject ($this->getProperty ('DropDownItems'));
     }
 }
-
-?>
