@@ -1,0 +1,35 @@
+{
+    "github:winforms-php\/VoidFramework": {
+        "name": "winforms-php\/VoidFramework",
+        "full_name": "github:winforms-php\/VoidFramework",
+        "version": "3.4.1",
+        "entry_point": "engine\/VoidEngine.php",
+        "after_install": "after_install.php",
+        "scripts": {
+            "start": "core\/VoidCore.exe"
+        },
+        "basefolder": "winforms-php-VoidFramework-232fa29",
+        "watermark": "232fa29bcfb2eacbab9c129deba9dc612f8c98eb"
+    },
+    "github:winforms-php\/VoidBuilder": {
+        "name": "winforms-php\/VoidBuilder",
+        "full_name": "github:winforms-php\/VoidBuilder",
+        "version": "1.2",
+        "requires": [
+            "KRypt0nn\/ConsoleArgs"
+        ],
+        "entry_point": "VoidBuilder.php",
+        "after_install": "after_install.php",
+        "basefolder": "winforms-php-VoidBuilder-4b3ff5e",
+        "watermark": "4b3ff5e067e45ee89c6077354ad7c1cc7defcd99"
+    },
+    "github:KRypt0nn\/ConsoleArgs": {
+        "name": "KRypt0nn\/ConsoleArgs",
+        "full_name": "github:KRypt0nn\/ConsoleArgs",
+        "version": "1.5",
+        "entry_point": "ConsoleArgs.php",
+        "after_install": "after_install.php",
+        "basefolder": "KRypt0nn-ConsoleArgs-4ac33cf",
+        "watermark": "4ac33cfb8a2703bf92d9aeb4ce353917d3c126a8"
+    }
+}

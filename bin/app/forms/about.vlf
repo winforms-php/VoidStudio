@@ -1,10 +1,10 @@
 Form MainForm
-    size: [446, 356]
+    size: [478, 372]
     startPosition: fspCenterScreen
     backgroundColor: clWhite
     formBorderStyle: fbsToolWindow
 
-    caption: text ('О программе')
+    caption: 'О программе'
 
     ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
@@ -19,7 +19,7 @@ Form MainForm
         font: ['Segoe UI Light', 20]
         textAlign: alMiddleLeft
 
-        caption: text ('VoidStudio © 2018 - 2019')
+        caption: 'VoidStudio © 2018 - 2019'
 
     Label Comment
         bounds: [0, 80, MainForm->w, 24]
@@ -27,7 +27,7 @@ Form MainForm
         textAlign: alMiddleCenter
         foregroundColor: clGray
 
-        caption: text ('как часть проекта')
+        caption: 'как часть проекта'
 
     PictureBox WinFormsPHP__Logo
         bounds: [20, 104, 56, 56]
@@ -52,7 +52,7 @@ Form MainForm
         font: ['Segoe UI Light', 12]
         textAlign: alMiddleLeft
 
-        caption: text ('Разработчики:')
+        caption: 'Разработчики:'
 
     LinkLabel Developers__Nikita
         bounds: [32, 200, 300, 32]
@@ -61,7 +61,7 @@ Form MainForm
         textAlign: alMiddleLeft
         foregroundColor: clGray
 
-        caption: text ('Подвирный Никита')
+        caption: 'Подвирный Никита'
 
         ClickEvent:^ function ($self)
             {
@@ -75,7 +75,7 @@ Form MainForm
         textAlign: alMiddleLeft
         foregroundColor: clGray
 
-        caption: text ('Андрей Кусов')
+        caption: 'Андрей Кусов'
 
         ClickEvent:^ function ($self)
             {
@@ -88,12 +88,19 @@ Form MainForm
         font: ['Segoe UI Light', 10]
         textAlign: alMiddleLeft
 
-        caption: text ('Версия PHP: '. phpversion ())
+        caption: 'Версия PHP: '. phpversion ()
 
     Label EngineVersion
-        bounds: [16, 288, 300, 32]
+        bounds: [16, 296, 300, 32]
         autoSize: true
         font: ['Segoe UI Light', 10]
         textAlign: alMiddleLeft
 
-        caption: text ('Версия VoidEngine: '. ENGINE_VERSION)
+        caption: 'VoidEngine '. ENGINE_VERSION
+
+    Label CoreVersion
+        bounds: [16 + EngineVersion->w, 288, 416 - EngineVersion->w, 32]
+        font: ['Segoe UI Light', 10]
+        textAlign: alMiddleRight
+
+        caption: 'VoidCore '. CORE_VERSION

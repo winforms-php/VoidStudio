@@ -20,8 +20,8 @@ Form MainForm
             dock: dsFill
             width: 280
 
-            ToolStripMenuItem PropertiesList__ListMenuItem (text ('Сбросить'))
-                image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Undo_16x.png'))
+            ToolStripMenuItem PropertiesList__ListMenuItem ('Сбросить')
+                image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Undo_16x.png')
 
                 ClickEvent:^ function ($self)
                     {
@@ -31,7 +31,7 @@ Form MainForm
             ContextMenuStrip PropertiesList__ListMenu ()
                 ->items->add (PropertiesList__ListMenuItem)
 
-            TabPage PropertiesList__Page (text ('Свойства'))
+            TabPage PropertiesList__Page ('Свойства')
                 backgroundColor: clWhite
 
                 PropertyGrid PropertiesList__List
@@ -56,7 +56,7 @@ Form MainForm
                                     $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
                                     $self->selectedObject->name = $args->oldValue;
 
-                                    pre (text ('Нельзя переименовывать формы проекта'));
+                                    pre ('Нельзя переименовывать формы проекта');
                                 }
                                 
                                 elseif (substr ($newValue, 0, 4) == 'Form')
@@ -70,7 +70,7 @@ Form MainForm
 
                                         catch (\Throwable $e) {}
 
-                                        pre (text ('Объекту нельзя задать название, начинающееся на "Form"'));
+                                        pre ('Объекту нельзя задать название, начинающееся на "Form"');
                                     }
 
                                 else try
@@ -96,7 +96,7 @@ Form MainForm
 
                                     catch (\Throwable $e) {}
 
-                                    pre (text ('Произошла ошибка при попытке переименования объекта'));
+                                    pre ('Произошла ошибка при попытке переименования объекта');
                                 }
 
                                 $components = c('PropertiesPanel__SelectedComponent');
@@ -108,8 +108,8 @@ Form MainForm
                             }
                         }
             
-            ToolStripMenuItem EventsList__ListMenuItem (text ('Удалить'))
-                image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Delete_16x.png'))
+            ToolStripMenuItem EventsList__ListMenuItem ('Удалить')
+                image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Delete_16x.png')
 
                 ClickEvent:^ function ($self)
                     {
@@ -118,13 +118,15 @@ Form MainForm
                         Events::removeObjectEvent ($eventsList->selectedObject->selector, $eventsList->selectedGridItem->propertyDescriptor->customProperty->name);
                         $eventsList->selectedGridItem->propertyDescriptor->customProperty->value = '';
 
+                        unset (VoidStudioAPI::$events[$eventsList->selectedObject->selector][$eventsList->selectedGridItem->propertyDescriptor->customProperty->name]);
+
                         $eventsList->refresh ();
                     }
 
             ContextMenuStrip EventsList__ListMenu ()
                 ->items->add (EventsList__ListMenuItem)
 
-            TabPage EventsList__Page (text ('События'))
+            TabPage EventsList__Page ('События')
                 backgroundColor: clWhite
 
                 EventGrid EventsList__ActiveEvents
@@ -140,7 +142,7 @@ Form MainForm
                         {
                             VoidStudioAPI::openEventEditor ($self->selectedObject->selector, $args->customProp->name, VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer']);
                             
-                            $args->retVal = text ('(добавлено)');
+                            $args->retVal = '(добавлено)';
                         }
 
             # BUG: неверно подгружаются родители компонентов, приходится их отдельно указывать
@@ -228,7 +230,7 @@ Form MainForm
                 splitterDistance: MainForm->h - 180
                 panel2MinSize: 0
 
-                TabPage Designer__Form1 (text ('Form1'))
+                TabPage Designer__Form1 ('Form1')
                     backgroundColor: clWhite
 
                 TabControl Designer__FormsList (ToolsPanel__Container->panel1)
@@ -255,12 +257,12 @@ Form MainForm
                 VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
                     ->initDesigner ()
 
-                TabPage ToolsPanel__Log (text ('Лог'))
+                TabPage ToolsPanel__Log ('Лог')
                     ListBox ToolsPanel__LogList
                         dock: dsFill
                         horizontalScrollbar: true
 
-                TabPage ToolsPanel__EvalPHP (text ('Выполнение PHP кода'))
+                TabPage ToolsPanel__EvalPHP ('Выполнение PHP кода')
                     FastColoredTextBox ToolsPanel__EvalPHPEditor
                         dock: dsFill
 
@@ -276,7 +278,7 @@ Form MainForm
                         flatAppearance->mouseOverBackColor: clLight
                         flatAppearance->mouseDownBackColor: clLight + 10
 
-                        text: text ('Выполнить')
+                        text: 'Выполнить'
 
                         ClickEvent:^ function ($self) use (ToolsPanel__EvalPHPEditor $editor)
                             {
@@ -285,7 +287,7 @@ Form MainForm
                                 eval ($editor->text);
                             }
 
-                TabPage ToolsPanel__EvalCS (text ('Выполнение C# кода'))
+                TabPage ToolsPanel__EvalCS ('Выполнение C# кода')
                     FastColoredTextBox ToolsPanel__EvalCSEditor
                         dock: dsFill
 
@@ -301,7 +303,7 @@ Form MainForm
                         flatAppearance->mouseOverBackColor: clLight
                         flatAppearance->mouseDownBackColor: clLight + 10
 
-                        text: text ('Выполнить')
+                        text: 'Выполнить'
 
                         ClickEvent:^ function ($self) use (ToolsPanel__EvalCSEditor $editor)
                             {
@@ -318,7 +320,7 @@ Form MainForm
 
             # Компоненты
 
-            ColumnHeader ComponentsNamesColumn (text ('Название компонента'))
+            ColumnHeader ComponentsNamesColumn ('Название компонента')
                 width: 212
 
             ListView ComponentsList (ComponentsPanel__Contrainer->panel2)
@@ -336,12 +338,23 @@ Form MainForm
                         $component = ltrim ($self->selectedItems[0]->text);
                         $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $formsList->selectedTab->text .'Designer'];
 
-                        if ($component == text ('Указатель'))
+                        if ($component == 'Указатель')
                             $designer->clearTypeForCreationOnClick ();
 
                         elseif ($component != 'Form')
                         {
-                            $designer->setTypeForCreationOnClick (VoidEngine::objectType ("System.Windows.Forms.$component", 'System.Windows.Forms'));
+                            $componentsInfo = json_decode (file_get_contents ('components/componentsInfo.json'), true);
+
+                            $info = isset ($componentsInfo[$component]) ?
+                                [
+                                    $componentsInfo[$component]['class'],
+                                    $componentsInfo[$component]['namespace']
+                                ] : [
+                                    "System.Windows.Forms.$component",
+                                    'System.Windows.Forms'
+                                ];
+
+                            $designer->setTypeForCreationOnClick (VoidEngine::objectType (...$info));
 
                             $i = 1;
                             while (isset ($designer->objects[$name = $component . $i]))
@@ -349,7 +362,7 @@ Form MainForm
 
                             $GLOBALS['new_component'] = [
                                 $name,
-                                ["System.Windows.Forms.$component", 'System.Windows.Forms']
+                                $info
                             ];
                         }
                     }
@@ -360,7 +373,7 @@ Form MainForm
                         $component = ltrim ($self->selectedItems[0]->text);
                         $designer  = VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer'];
 
-                        if ($component == text ('Указатель'))
+                        if ($component == 'Указатель')
                             $designer->clearTypeForCreationOnClick ();
 
                         elseif ($component == 'Form')
@@ -384,11 +397,22 @@ Form MainForm
 
                         else
                         {
+                            $componentsInfo = json_decode (file_get_contents ('components/componentsInfo.json'), true);
+
+                            $info = isset ($componentsInfo[$component]) ?
+                                [
+                                    $componentsInfo[$component]['class'],
+                                    $componentsInfo[$component]['namespace']
+                                ] : [
+                                    "System.Windows.Forms.$component",
+                                    'System.Windows.Forms'
+                                ];
+
                             $i = 1;
                             while (isset ($designer->objects[$name = $component . $i]))
                                 ++$i;
 
-                            $selector = $designer->createComponent (["System.Windows.Forms.$component", 'System.Windows.Forms'], $name);
+                            $selector = $designer->createComponent ($info, $name);
 
                             try
                             {
@@ -414,25 +438,25 @@ Form MainForm
                     bounds: [16, 16, 260, 24]
                     font: ['Segoe UI', 11]
 
-                    caption: text ('Средство диагностики')
+                    caption: 'Средство диагностики'
 
                 Label DiagnosticToolkit__UpTime
                     bounds: [16, 48, 260, 16]
                     font: ['Segoe UI', 9]
 
-                    caption: text ('Пройдено времени: 0 секунд')
+                    caption: 'Пройдено времени: 0 секунд'
 
                 Label DiagnosticToolkit__MemoryUsage
                     bounds: [16, 64, 260, 16]
                     font: ['Segoe UI', 9]
 
-                    caption: text ('Использование памяти: 0 Мб')
+                    caption: 'Использование памяти: 0 МБ'
 
                 Label DiagnosticToolkit__MemoryUsagePeak
                     bounds: [16, 80, 260, 16]
                     font: ['Segoe UI', 9]
 
-                    caption: text ('Пик использования памяти: 0 Мб')
+                    caption: 'Пик использования памяти: 0 МБ'
 
                 ChartArea DiagnosticToolkit__MemoryUsageGraphArea ()
                     axes[0]->majorGrid->enabled: false
@@ -462,11 +486,11 @@ Form MainForm
                     flatAppearance->mouseOverBackColor: clLight
                     flatAppearance->mouseDownBackColor: clLight + 10
 
-                    caption: text (' Сделать снимок памяти')
+                    caption: ' Сделать снимок памяти'
                     imageAlign: alMiddleLeft
                     textAlign: alMiddleRight
 
-                    image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Camera_16x.png'))
+                    image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Camera_16x.png')
 
                     ClickEvent:^ function ($self) use (DiagnosticToolkit $diagnostic)
                         {
@@ -480,18 +504,18 @@ Form MainForm
 
                                 switch (c('DiagnosticToolkit__MemoryScreenshotSetting')->selectedItem)
                                 {
-                                    case text ('Улучшенный'):
+                                    case 'Расширеный':
                                         $prop = '-mp';
                                     break;
 
-                                    case text ('Полный'):
+                                    case 'Полный':
                                         $prop = '-ma';
                                     break;
                                 }
 
-                                c('Footer__Status')->caption = text ('Создание снимка памяти проекта...');
+                                c('Footer__Status')->caption = 'Создание снимка памяти проекта...';
                                 c('ToolsList__ProjectRunner')->helpStorage[1]->dump ($file, $prop);
-                                c('Footer__Status')->caption = text ('Готово');
+                                c('Footer__Status')->caption = 'Готово';
                             }
                         }
 
@@ -501,8 +525,8 @@ Form MainForm
                     flatStyle: flPopup
                     backgroundColor: clWhite
 
-                    ->items->addRange ([text ('Стандартный'), text ('Улучшенный'), text ('Полный')])
-                    selectedItem: text ('Стандартный')
+                    ->items->addRange (['Стандартный', 'Расширеный', 'Полный'])
+                    selectedItem: 'Стандартный'
 
                 Panel DiagnosticToolkit__DebugPanel (DiagnosticToolkit)
                     bounds: [8, 322, DiagnosticToolkit->w - 16, DiagnosticToolkit->h - (DiagnosticToolkit__MemoryScreenshotSetting->y + DiagnosticToolkit__MemoryScreenshotSetting->h + 32)]
@@ -518,11 +542,11 @@ Form MainForm
                         flatAppearance->mouseOverBackColor: clLight
                         flatAppearance->mouseDownBackColor: clLight + 10
 
-                        caption: text (' Обозреватель объектов')
+                        caption: ' Обозреватель объектов'
                         imageAlign: alMiddleLeft
                         textAlign: alMiddleRight
 
-                        image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/StackTrace_16x.png'))
+                        image: (new Image)->loadFromFile (APP_DIR .'/system/icons/StackTrace_16x.png')
 
                         ClickEvent:^ function ($self)
                             {
@@ -550,7 +574,7 @@ Form MainForm
                             {
                                 $elapsed = time () - $self->helpStorage;
                                 
-                                $upTime->caption = text ('Пройдено времени: '. $time = (
+                                $upTime->caption = 'Пройдено времени: '. $time = (
                                     $elapsed >= 60 ?
                                         ($m = (int)($elapsed / 60)) .':'. (
                                             strlen ($s = $elapsed - $m * 60) == 1 ?
@@ -558,13 +582,49 @@ Form MainForm
                                                 $s
                                         ) .' минут' :
                                         $elapsed .' секунд'
-                                ));
+                                );
 
-                                $memory->caption = text ('Использование памяти: '. ($memoryUsage = round (VoidEngine::getProperty ($diagnostic->helpStorage->selector, ['PagedMemorySize', 'double']) / 1024 / 1024, 2)) .' Мб');
+                                $counter = new WFObject ('System.Diagnostics.PerformanceCounter', 'System', 'Process', 'Working Set - Private', $diagnostic->helpStorage->processName);
 
-                                $memoryPeak->caption = text ('Пик использования памяти: '. round (VoidEngine::getProperty ($diagnostic->helpStorage->selector, ['PeakPagedMemorySize', 'double']) / 1024 / 1024, 2) .' Мб');
+                                try
+                                {
+                                    $memory->caption = 'Использование памяти: '. ($memoryUsage = round ($counter->rawValue->toString () / 1024 / 1024, 2)) .' МБ';
+
+                                    $memoryPeak->caption = 'Пик использования памяти: '. max (substr ($memoryPeak->caption, 26, strrpos ($memoryPeak->caption, ' ') - 26), $memoryUsage) .' МБ';
+                                }
+
+                                catch (\Throwable $e) {}
+
+                                $series = $graph->series[0];
                                 
-                                $graph->series[0]->points->addXY ($elapsed, $memoryUsage);
+                                if ($series->points->count < 10)
+                                    $series->points->addY ($memoryUsage);
+
+                                else
+                                {
+                                    $points = [];
+
+                                    $series->points->foreach (function ($item) use (&$points)
+                                    {
+                                        $points[] = $item->YValues[0];
+                                    });
+
+                                    $points[] = $memoryUsage;
+
+                                    $series->points->clear ();
+
+                                    for ($i = 0; $i < 10; ++$i)
+                                    {
+                                        $series->points->addY ($points[$i + 1]);
+                                        $series->points[$i]->XValue = $elapsed - (10 - $i);
+                                    }
+
+                                    /*foreach ($graph->helpStorage as $timestamp => $color)
+                                        if ($timestamp < $elapsed - 10)
+                                            unset ($graph->helpStorage[$timestamp]);
+                                        
+                                        else $series->points[$timestamp]->color = $color;*/
+                                }
 
                                 $data = c('ToolsList__ProjectRunner')->helpStorage[1]->readDebugAnswer ();
 
@@ -572,14 +632,14 @@ Form MainForm
                                     switch ($data['type'])
                                     {
                                         case 'beginJunkCatching':
-                                            $graph->series[0]->points[$elapsed - 1]->color = clYellow;
+                                            // $graph->helpStorage[$elapsed] = clYellow;
                                         break;
 
                                         case 'errorCatched':
                                         case 'exceptionCatched':
-                                            $log->items->add (text ('['. $time .'ы] '. ($text = ($data['type'] == 'errorCatched' ? 'Поймана ошибка' : 'Поймано исключение')) .': '. $data['info'][1] .'. Объекты: '. json_encode ($data['info'][4])));
+                                            $log->items->add ('['. $time .'ы] Поймана ошибка: '. $data['info'][1]);
 
-                                            messageBox (text ($text .' работы программы. Подробнее:'. "\n\n". print_r ($data['info'], /*JSON_PRETTY_PRINT*/ true)), text ('Нарушение работы программы'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));
+                                            messageBox ('Поймана ошибка работы программы. Подробнее:'. "\n\n". print_r ($data['info'], true), 'Нарушение работы программы', enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));
                                         break;
                                     }
                             }
@@ -594,7 +654,7 @@ Form MainForm
         PictureBox Footer__Icon
             bounds: [4, 2, 16, 16]
 
-            imageLocation: text (APP_DIR .'/system/icons/Box_16x.png')
+            imageLocation: APP_DIR .'/system/icons/Box_16x.png'
 
         Label Footer__Status
             bounds: [24, 2, Footer->width - 24, 18]
@@ -604,7 +664,7 @@ Form MainForm
             font: ['Segoe UI', 9]
             # textAlign: alMiddleLeft
 
-            caption: text ('Запуск среды...')
+            caption: 'Запуск среды...'
 
     Panel Header
         dock: dsTop
@@ -618,7 +678,7 @@ Form MainForm
             flatAppearance->mouseOverBackColor: clLight
             flatAppearance->mouseDownBackColor: clLight + 10
 
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Open_16x.png'))
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Open_16x.png')
 
             ClickEvent:^ function ($self) use (Footer $footer, Footer__Status $status)
                 {
@@ -630,14 +690,14 @@ Form MainForm
                         $status->backgroundColor = clRoyalBlue;
                         $footer->backgroundColor = clRoyalBlue;
 
-                        $status->caption = text ('Открытие проекта...');
+                        $status->caption = 'Открытие проекта...';
 
                         VoidStudioProjectManager::openProject ($file);
 
                         $status->backgroundColor = clPurple;
                         $footer->backgroundColor = clPurple;
                         
-                        $status->caption = text ('Готово');
+                        $status->caption = 'Готово';
                     }
                 }
 
@@ -649,15 +709,15 @@ Form MainForm
             flatAppearance->mouseOverBackColor: clLight
             flatAppearance->mouseDownBackColor: clLight + 10
 
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Save_16x.png'))
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Save_16x.png')
 
             ClickEvent:^ function ($self) use (Footer__Status $status)
                 {
-                    $status->caption = text ('Сохранение проекта...');
+                    $status->caption = 'Сохранение проекта...';
 
                     VoidStudioProjectManager::saveProject (VoidStudioProjectManager::$projectPath .'/'. basename (VoidStudioProjectManager::$projectPath) .'.vsp');
 
-                    $status->caption = text ('Готово');
+                    $status->caption = 'Готово';
                 }
 
         ComboBox ToolsList__ProjectRunConfig
@@ -677,22 +737,23 @@ Form MainForm
             flatAppearance->mouseOverBackColor: clLight
             flatAppearance->mouseDownBackColor: clLight + 10
 
-            caption: text (' Запустить')
+            caption: ' Запустить'
             imageAlign: alMiddleLeft
             textAlign: alMiddleRight
 
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Run_16x.png'))
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Run_16x.png')
 
             ClickEvent:^ function ($self) use (Footer $footer, Footer__Status $status, Footer__Icon $statusIcon, DiagnosticToolkit $diagnostic, DiagnosticToolkit__Ticker $ticker, ComponentsList $components, PropertiesPanel__Container $properties, ToolsList__ProjectRunConfig $config, DiagnosticToolkit__DebugPanel $debugPanel, DiagnosticToolkit__MemoryUsageGraph $graph, DebugPanel__ProjectLog $log)
                 {
-                    if ($self->caption == text (' Запустить'))
+                    if ($self->caption == ' Запустить')
                     {
                         $status->backgroundColor = clDarkOrange;
                         $footer->backgroundColor = clDarkOrange;
-                        $statusIcon->imageLocation = text (APP_DIR .'/system/icons/Build_16x.png');
-                        $status->caption = text ('Запуск проекта...');
+                        $statusIcon->imageLocation = APP_DIR .'/system/icons/Build_16x.png';
+                        $status->caption = 'Запуск проекта...';
 
                         $graph->series[0]->points->clear ();
+                        $graph->helpStorage = [];
                         $log->items->clear ();
 
                         $time = microtime (true);
@@ -719,14 +780,14 @@ Form MainForm
                                 VoidStudioAPI::getObjects ('main')['Designer__'. $item->text .'Designer']->control->enabled = false;
                             });
 
-                            $status->caption = text ('Готово');
-                            $self->caption   = text (' Остановить');
+                            $status->caption = 'Готово';
+                            $self->caption   = ' Остановить';
 
                             $time = round (microtime (true) - $time, 4);
-                            $log->items->add (text ('Проект запущен за '. ($time > 0.5 ? $time : '[мало]') .' секунд'));
+                            $log->items->add ('Проект запущен за '. ($time > 0.5 ? $time : '[мало]') .' секунд');
 
                             $self->width = 96;
-                            $self->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Stop_16x.png'));
+                            $self->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Stop_16x.png');
 
                             c('ProjectStatusChecker')->enabled = true;
                             $diagnostic->helpStorage = $process;
@@ -736,20 +797,20 @@ Form MainForm
 
                         else
                         {
-                            $statusIcon->imageLocation = text (APP_DIR .'/system/icons/Box_16x.png');
+                            $statusIcon->imageLocation = APP_DIR .'/system/icons/Box_16x.png';
                             
                             $status->backgroundColor = clPurple;
                             $footer->backgroundColor = clPurple;
 
-                            $status->caption = text ('Готово');
-                            $self->caption   = text (' Запустить');
+                            $status->caption = 'Готово';
+                            $self->caption   = ' Запустить';
                         }
                     }
 
                     else
                     {
-                        $statusIcon->imageLocation = text (APP_DIR .'/system/icons/Box_16x.png');
-                        $status->caption = text ('Остановка проекта...');
+                        $statusIcon->imageLocation = APP_DIR .'/system/icons/Box_16x.png';
+                        $status->caption = 'Остановка проекта...';
                         $ticker->enabled = false;
                         c('ProjectStatusChecker')->enabled = false;
 
@@ -778,11 +839,11 @@ Form MainForm
 
                         $status->backgroundColor = clPurple;
                         $footer->backgroundColor = clPurple;
-                        $status->caption = text ('Готово');
-                        $self->caption   = text (' Запустить');
+                        $status->caption = 'Готово';
+                        $self->caption   = ' Запустить';
 
                         $self->width = 88;
-                        $self->image = (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Run_16x.png'));
+                        $self->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Run_16x.png');
                     }
                 }
 
@@ -791,29 +852,29 @@ Form MainForm
 
             TickEvent:^ function ($self) use (ToolsList__ProjectRunner $runner)
                 {
-                    if ($runner->caption == text (' Остановить') && VoidStudioAPI::$project->hasExited)
+                    if ($runner->caption == ' Остановить' && VoidStudioAPI::$project->hasExited)
                         $runner->performClick ();
                 }
 
-    ToolStripMenuItem Menu__studio (text ('Среда'))
-        ToolStripMenuItem Menu__studio_restart (text ('Перезапустить'))
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Restart_16x.png'))
+    ToolStripMenuItem Menu__studio ('Среда')
+        ToolStripMenuItem Menu__studio_restart ('Перезапустить')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Restart_16x.png')
 
             ClickEvent:^ function ($self)
                 {
                     $APPLICATION->restart ();
                 }
 
-        ToolStripMenuItem Menu__studio_about (text ('О программе'))
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Icon.png'))
+        ToolStripMenuItem Menu__studio_about ('О программе')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Icon.png')
 
             ClickEvent:^ function ($self)
                 {
                     VoidStudioAPI::getObjects ('about')['MainForm']->showDialog ();
                 }
 
-        ToolStripMenuItem Menu__studio_vk (text ('Группа вк'))
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/vk-logo-transparent.png'))
+        ToolStripMenuItem Menu__studio_vk ('Группа вк')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/vk-logo-transparent.png')
 
             ClickEvent:^ function ($self)
                 {
@@ -826,25 +887,25 @@ Form MainForm
     ToolStripMenuItem Menu__studio
         ->items->addRange ([Menu__studio_restart, '-', Menu__studio_about, Menu__studio_vk])
 
-    ToolStripMenuItem Menu__project (text ('Проект'))
-        ToolStripMenuItem Menu__project_modules (text ('Модули'))
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Reference_16x.png'))
+    ToolStripMenuItem Menu__project ('Проект')
+        ToolStripMenuItem Menu__project_modules ('Модули')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Reference_16x.png')
 
             ClickEvent:^ function ($self)
                 {
                     VoidStudioAPI::getObjects ('modules')['MainForm']->showDialog ();
                 }
 
-        ToolStripMenuItem Menu__project_compile (text ('Компилировать'))
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Build_16x.png'))
+        ToolStripMenuItem Menu__project_compile ('Компилировать')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Build_16x.png')
 
             ClickEvent:^ function ($self)
                 {
                     VoidStudioAPI::getObjects ('build')['MainForm']->showDialog ();
                 }
         
-        ToolStripMenuItem Menu__project_open (text ('Открыть'))
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Open_16x.png'))
+        ToolStripMenuItem Menu__project_open ('Открыть')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Open_16x.png')
 
             ClickEvent:^ function ($self)
                 {
@@ -855,8 +916,8 @@ Form MainForm
                         VoidStudioProjectManager::openProject ($file);
                 }
 
-        ToolStripMenuItem Menu__project_save (text ('Сохранить'))
-            image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Save_16x.png'))
+        ToolStripMenuItem Menu__project_save ('Сохранить как')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Save_16x.png')
             
             ClickEvent:^ function ($self)
                 {
@@ -867,7 +928,7 @@ Form MainForm
                     {
                         VoidStudioProjectManager::saveProject ($save);
 
-                        messageBox (text ('Проект успешно сохранён'), text ('Успешное сохранение'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Information'));
+                        messageBox ('Проект успешно сохранён', 'Успешное сохранение', enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Information'));
                     }
                 }
 
@@ -886,7 +947,7 @@ Form MainForm
             {
                 VoidStudioProjectManager::saveProject (VoidStudioProjectManager::$projectPath .'/'. ($project = basename (VoidStudioProjectManager::$projectPath)) .'.vsp');
 
-                $log->items->add (text ('Автосохранение проекта "'. $project .'"...'));
+                $log->items->add ('Автосохранение проекта "'. $project .'"...');
             }
 
 #^ И тут тоже достаточно тупая ошибка:
@@ -908,13 +969,13 @@ Form MainForm
             EventsList__ActiveEvents->selectedObject = Designer__Form1Designer->form;
 
             $time = round (microtime (true) - $GLOBALS['__debug']['start_time'], 4);
-            ToolsPanel__LogList->items->add (text ('VoidStudio запущен за '. ($time > 0.5 ? $time : '[мало]') .' секунд'));
+            ToolsPanel__LogList->items->add ('VoidStudio запущен за '. ($time > 0.5 ? $time : '[мало]') .' секунд');
 
             if (!VoidStudioProjectManager::createProject ())
                 $APPLICATION->close ();
 
             Project_AutoSave->enabled = true;
-            Footer__Status->caption = text ('Готово');
+            Footer__Status->caption = 'Готово';
         }
 
     FormClosingEvent:^ function ($self) use (DiagnosticToolkit $diagnostic)

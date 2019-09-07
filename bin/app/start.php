@@ -2,52 +2,31 @@
 
 namespace VoidEngine;
 
-const APP_DIR = __DIR__;
-chdir (APP_DIR);
+# Объявление констант
+const APP_DIR  = __DIR__;
 
-/*
+$package = json_decode (@file_get_contents (dirname (__DIR__) .'/qero-packages/packages.json'), true);
 
-Оп! Нельзя начинать использовать пока не появится возможности делать несколько потоков
+define ('VoidEngine\CORE_DIR', isset ($package['github:winforms-php/VoidFramework']['basefolder']) ?
+	dirname (__DIR__) .'/qero-packages/winforms-php/VoidFramework/'. $package['github:winforms-php/VoidFramework']['basefolder'] .'/core' : __DIR__);
 
-$form = new Form;
-$form->backColor = clWhite;
-$form->formBorderStyle = fbsNone;
-$form->startPosition = fspCenterScreen;
-$form->topMost = true;
-$form->doubleBuffered = true;
-$form->size = [512, 256];
+# Подгружаем PHP расширения
+foreach (glob (CORE_DIR .'/ext/php_*.dll') as $ext)
+	if (!extension_loaded (substr (basename ($ext), 4, -4)))
+		load_extension ($ext);
 
-$logo = new PictureBox ($form);
-$logo->imageLocation = text (APP_DIR .'/system/icons/Icon.png');
-$logo->sizeMode = smStretchImage;
-$logo->bounds = [32, 32, 142, 128];
+# Подгружаем Qero-пакеты
+require __DIR__ .'/../qero-packages/autoload.php';
 
-$caption = new Label ($form);
-$caption->location = [208, 32];
-$caption->font = ['Segoe UI Light', 26];
-$caption->caption = 'VoidStudio';
-$caption->autoSize = true;
+chdir (APP_DIR); // Меняем стандартную директорию на директорию приложения
 
-$version = new Label ($form);
-$version->location = [208, 78];
-$version->font = ['Segoe UI Light', 12];
-$version->caption = ENGINE_VERSION;
-$version->autoSize = true;
-
-$status = new Label ($form);
-$status->location = [28, 212];
-$status->font = ['Segoe UI Light', 10];
-$status->caption = text ('Запуск среды...');
-$status->autoSize = true;
-
-$form->show ();
-
-*/
-
+# Подгружаем скрипты VoidStudio
 require 'VoidStudio API.php';
 require 'forms/main.php'; // Главная форма среды
 require 'forms/editor.php'; // Редактор событий компонентов
 require 'forms/modules.php'; // Менеджер модулей проекта
+require 'forms/addPackage.php'; // Диалог добавления Qero-пакета в модули
+require 'forms/viewPackage.php'; // Диалог обзора Qero-пакета
 require 'forms/build.php'; // Билдер проектов
 require 'forms/diagnostic.php'; // Средство диагностики
 require 'forms/about.php'; // О программе

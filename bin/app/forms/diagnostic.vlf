@@ -3,27 +3,27 @@ Form MainForm
     startPosition: fspCenterScreen
     backgroundColor: clLight
 
-    caption: text ('Обозреватель объектов')
+    caption: 'Обозреватель объектов'
 
     ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
-    ColumnHeader ComponentsNamesColumn (text ('Название объекта'))
+    ColumnHeader ComponentsNamesColumn ('Название объекта')
         width: 164
     
-    ColumnHeader ComponentsSelectorsColumn (text ('Указатель объекта'))
+    ColumnHeader ComponentsSelectorsColumn ('Указатель объекта')
         width: 128
 
-    ColumnHeader ComponentsDescriptionColumn (text ('Описание объекта'))
+    ColumnHeader ComponentsDescriptionColumn ('Описание объекта')
         width: 252
 
-    ColumnHeader ComponentsInfoColumn (text ('Информация об объекте'))
+    ColumnHeader ComponentsInfoColumn ('Информация об объекте')
         width: 188
 
-    ColumnHeader ComponentsStatusColumn (text ('Статус'))
+    ColumnHeader ComponentsStatusColumn ('Статус')
         width: 96
 
-    ToolStripMenuItem Components__Colorize (text ('Зажечь'))
-        image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Bulb_16x.png'))
+    ToolStripMenuItem Components__Colorize ('Зажечь')
+        image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Bulb_16x.png')
 
         ClickEvent:^ function ($self)
             {
@@ -41,8 +41,8 @@ Form MainForm
                 // (new WinAPI)->SetForegroundWindow (c('DiagnosticToolkit')->helpStorage->handle);
             }
 
-    ToolStripMenuItem Components__UnColorize (text ('Потушить'))
-        image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/BulbOff_16x.png'))
+    ToolStripMenuItem Components__UnColorize ('Потушить')
+        image: (new Image)->loadFromFile (APP_DIR .'/system/icons/BulbOff_16x.png')
 
         ClickEvent:^ function ($self)
             {
@@ -58,8 +58,8 @@ Form MainForm
                 ]);
             }
 
-    ToolStripMenuItem Components__Dispose (text ('Удалить'))
-        image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Delete_16x.png'))
+    ToolStripMenuItem Components__Dispose ('Удалить')
+        image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Delete_16x.png')
 
         ClickEvent:^ function ($self)
             {
@@ -104,17 +104,17 @@ Form MainForm
             if (is_array ($objects = $debugger->readDebugAnswer (true)))
                 foreach ($objects as $info)
                 {
-                    $item = new ListViewItem ($info['name'] !== null ? text ($info['name']) : '[undefined]');
+                    $item = new ListViewItem ($info['name'] ?: '[undefined]');
                     $item->useItemStyleForSubItems = true;
 
                     $item->subItems->addRange ([
                         (string) $info['selector'],
-                        text ((string) $info['description']),
-                        text ((string) $info['objectInfo']),
-                        text ($info['status'] == 1 ? 'Доступен' : (
+                        (string) $info['description'],
+                        (string) $info['objectInfo'],
+                        $info['status'] == 1 ? 'Доступен' : (
                             $info['status'] == 0 ?
                                 'Недоступен' : 'Не визуальный'
-                        ))
+                        )
                     ]);
 
                     if ($info['status'] != 1)

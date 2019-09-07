@@ -1,26 +1,28 @@
 public class VoidControlsParser
 {
-    public static void parseControls (string group, Control control)
+    public static void ParseControls (string Group, Control Control)
     {
-        WinForms_PHP.ZendProgram.eval ("$GLOBALS['__underConstruction']['" + group + "']['" + control.Name + "'] = " + WinForms_PHP.ZendProgram.HashByObject (control) + ";");
+        WinForms_PHP.ZendProgram.eval ("$GLOBALS['__underConstruction']['" + Group + "']['" + Control.Name + "'] = " + WinForms_PHP.ZendProgram.HashByObject (Control) + ";");
 
-        var cs = control.GetType ().GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where (f => typeof (Component).IsAssignableFrom (f.FieldType));
+        var Cs = Control.GetType ().GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Where (F => typeof (Component).IsAssignableFrom (F.FieldType));
 
-        foreach (var c in cs)
-            WinForms_PHP.ZendProgram.eval ("$GLOBALS['__underConstruction']['" + group + "']['" + c.Name + "'] = " + WinForms_PHP.ZendProgram.HashByObject (c.GetValue (control)) + ";");
+        foreach (var C in Cs)
+            WinForms_PHP.ZendProgram.eval ("$GLOBALS['__underConstruction']['" + Group + "']['" + C.Name + "'] = " + WinForms_PHP.ZendProgram.HashByObject (C.GetValue (Control)) + ";");
     }
 	
-	public static void parseControlsForOpening (string group, Control control)
+	public static void ParseControlsForOpening (string Group, Control Control)
     {
-        WinForms_PHP.ZendProgram.eval ("$GLOBALS['__underConstruction']['" + group + "']['" + control.Name + "'] = " + WinForms_PHP.ZendProgram.HashByObject (control) + ";");
+        WinForms_PHP.ZendProgram.eval ("$GLOBALS['__underConstruction']['" + Group + "']['" + Control.Name + "'] = " + WinForms_PHP.ZendProgram.HashByObject (Control) + ";");
 
-        var cs = control.GetType ().GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where (f => typeof (Component).IsAssignableFrom (f.FieldType));
+        var Cs = Control.GetType ().GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Where (F => typeof (Component).IsAssignableFrom (F.FieldType));
 
-        foreach (var c in cs)
+        foreach (var C in Cs)
 		{
-            WinForms_PHP.ZendProgram.eval ("$GLOBALS['__underConstruction']['" + group + "']['" + c.Name + "'] = " + WinForms_PHP.ZendProgram.HashByObject (c.GetValue (control)) + ";");
+            WinForms_PHP.ZendProgram.eval ("$GLOBALS['__underConstruction']['" + Group + "']['" + C.Name + "'] = " + WinForms_PHP.ZendProgram.HashByObject (C.GetValue (Control)) + ";");
 
-			c.SetValue (control, null);
+			C.SetValue (Control, null);
 		}
     }
 }

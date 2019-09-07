@@ -1,0 +1,81 @@
+Form MainForm
+    clientSize: [336, 160]
+    startPosition: fspCenterScreen
+    backgroundColor: clWhite
+    formBorderStyle: fbsToolWindow
+
+    caption: 'Добавить пакет'
+
+    ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
+
+    ComboBox Package__Source
+        bounds: [16, 16, 128, 21]
+        font: ['Segoe UI', 8]
+        dropDownStyle: ddDropDownList
+        flatStyle: flPopup
+        backgroundColor: clLight
+
+        ->items->addRange (['github', 'gitlab', 'bitbucket'])
+        selectedItem: 'github'
+
+        SelectedIndexChangedEvent: function () { packages__update (); }
+
+    TextBox Package__Author
+        bounds: [152, 16, 160, 21]
+        font: ['Segoe UI', 8]
+
+        TextChangedEvent: function () { packages__update (); }
+
+    TextBox Package__Name
+        bounds: [16, 48, 216, 21]
+        font: ['Segoe UI', 8]
+
+        TextChangedEvent: function () { packages__update (); }
+
+    TextBox Package__Version
+        bounds: [240, 48, 72, 21]
+        font: ['Segoe UI', 8]
+
+        TextChangedEvent: function () { packages__update (); }
+
+    Label Package__Path
+        bounds: [16, 80, 296, 24]
+        font: ['Segoe UI', 8]
+
+    Button Package__Add
+        bounds: [16, 112, 144, 32]
+        font: ['Segoe UI', 8]
+
+        flatStyle: flFlat
+        flatAppearance->borderColor: clDodgerBlue
+        flatAppearance->mouseOverBackColor: clLight
+        flatAppearance->mouseDownBackColor: clLight + 10
+
+        text: 'Добавить'
+
+        ClickEvent:^ function () use (Package__Path $packagePath)
+            {
+                global $controller;
+
+                $controller->manager->installPackage ($packagePath->caption);
+
+                packages__update ();
+
+                Package__Source->selectedItem = 'github';
+                $packagePath->caption  = '';
+                Package__Author->text  = '';
+                Package__Name->text    = '';
+                Package__Version->text = '';
+
+                $self->close ();
+            }
+
+Form MainForm
+    ShownEvent:^ function ()
+        {
+            Package__Author->text  = 'Автор';
+            Package__Name->text    = 'Название пакета';
+            Package__Version->text = 'latest';
+            
+            packages__update ();
+        }

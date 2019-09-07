@@ -3,7 +3,7 @@ Form MainForm
     startPosition: fspCenterScreen
     backgroundColor: clLight
 
-    caption: text ('Редактор событий')
+    caption: 'Редактор событий'
 
     ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
@@ -19,7 +19,7 @@ Form MainForm
     Button SaveButton
         bounds: [MainForm->w - 186, MainForm->h - 80, 144, 34]
         anchor: acRight | acBottom
-        caption: text ('Сохранить')
+        caption: 'Сохранить'
 
         flatStyle: flFlat
         flatAppearance->borderColor: clDodgerBlue
@@ -28,10 +28,10 @@ Form MainForm
 
         ClickEvent:^ function ($self) use (Editor $editor, MainForm $form)
             {
-                VoidEngine::setObjectEvent ($editor->helpStorage[0], $editor->helpStorage[1], $editor->text);
+                VoidStudioAPI::$events[$editor->helpStorage[0]][$editor->helpStorage[1]] = $editor->text;
 
                 if (strlen (trim ($editor->text)) > 0 && is_array ($error = php_errors_check ($editor->text)))
-                    messageBox (text ('Обнаружена ошибка на строке '. $error['line'] .". Текст ошибки:\n\n". $error['text']), text ('Ошибка кода события'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));
+                    messageBox ('Обнаружена ошибка на строке '. $error['line'] .". Текст ошибки:\n\n". $error['text'], 'Ошибка кода события', enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));
 
                 $form->hide ();
             }

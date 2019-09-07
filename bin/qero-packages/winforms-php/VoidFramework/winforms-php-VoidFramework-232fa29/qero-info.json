@@ -1,0 +1,8 @@
+{
+    "version": "3.4.1",
+    "entry_point": "engine/VoidEngine.php",
+    "after_install": "after_install.php",
+    "scripts": {
+        "start": "core/VoidCore.exe"
+    }
+}

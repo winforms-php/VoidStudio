@@ -1,107 +1,191 @@
 Form MainForm
-    size: [400, 300]
+    clientSize: [480, 352]
     startPosition: fspCenterScreen
-    formBorderStyle: fbsToolWindow
+    # formBorderStyle: fbsToolWindow
     backgroundColor: clWhite
-
-    caption: text ('Модули')
+    minimizeBox: false
 
     ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
-    ToolStripMenuItem ModulesList__ToolStrip__RemoveModule (text ('Удалить'))
-        image: (new Image)->loadFromFile (text (APP_DIR .'/system/icons/Delete_16x.png'))
+    ToolStripMenuItem ModulesList__ToolStrip__RemoveModule ('Удалить')
+        image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Delete_16x.png')
 
         ClickEvent:^ function ($self)
             {
                 if (($index = c('ModulesList__List')->selectedIndex) >= 0)
-                {
                     unlink (VoidStudioProjectManager::$projectPath .'/modules/'. c('ModulesList__List')->items[$index] .'.php');
-
-                    c('ModulesList__List')->items->remove ($index);
-                }
             }
 
     ContextMenuStrip ModulesList__ToolStrip ()
         ->items->addRange ([ModulesList__ToolStrip__RemoveModule])
 
-    TabPage ModulesList__Scripts (text ('Модули'))
-        backgroundColor: clWhite
+    ListViewGroup ModulesListGroup__PHPScript ('PHP скрипты')
+    ListViewGroup ModulesListGroup__QeroPackage ('Qero пакеты')
+    ListViewGroup ModulesListGroup__DLL ('DLL библиотеки')
 
-        ListBox ModulesList__List
-            dock: dsFill
-            horizontalScrollbar: true
+    ColumnHeader ModulesListColumn__Name ('Название модуля')
+        width: 256
 
-            font: ['Microsoft Sans Serif', 10]
+    ColumnHeader ModulesListColumn__Type ('Тип модуля')
+        width: 212
 
-            ContextMenuStrip: ModulesList__ToolStrip
-
-        Panel ModulesList__ToolsPanel
-            dock: dsBottom
-            height: 48
-
-            Button ModulesList__Add
-                caption: text ('Добавить')
-                bounds: [8, 8, 128, 32]
-
-                flatStyle: flFlat
-                flatAppearance->borderColor: clDodgerBlue
-                flatAppearance->mouseOverBackColor: clLight
-                flatAppearance->mouseDownBackColor: clLight + 10
-
-                ClickEvent:^ function ($self) use (ModulesList__List $modulesList)
-                    {
-                        $open = new OpenFileDialog;
-                        $open->filter = 'PHP file (*.php)|*.php';
-
-                        if ($open->execute () && is_readable ($file = $open->fileName))
-                        {
-                            copy ($file, VoidStudioProjectManager::$projectPath .'/modules/'. basename ($file));
-
-                            $modulesList->items->add (basenameNoExt ($file));
-                        }
-                    }
-
-    TabPage ModulesList__Qero (text ('Qero пакеты'))
-        backgroundColor: clWhite
-
-        ListBox ModulesList__QeroPackages
-            dock: dsFill
-            horizontalScrollbar: true
-
-            font: ['Microsoft Sans Serif', 10]
-
-            # ContextMenuStrip: ModulesList__QeroToolStrip
-
-        Panel ModulesList__QeroToolsPanel
-            dock: dsBottom
-            height: 48
-
-            Button ModulesList__QeroPackageAdd
-                caption: text ('Добавить')
-                bounds: [8, 8, 128, 32]
-
-                flatStyle: flFlat
-                flatAppearance->borderColor: clDodgerBlue
-                flatAppearance->mouseOverBackColor: clLight
-                flatAppearance->mouseDownBackColor: clLight + 10
-
-                ClickEvent:^ function ($self)
-                    {
-                        messageBox (text ('В процессе разработки'), text ('Уведомление'), enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Warning'));
-                    }
-
-    TabControl ModulesList
+    ListView ModulesList
         dock: dsFill
 
-        ->items->addRange ([ModulesList__Scripts, ModulesList__Qero])
+        fullRowSelect: true
+        multiselect: false
+        headerStyle: 1
+        view: vwDetails
+        gridLines: true
+
+        ->groups->addRange ([ModulesListGroup__PHPScript, ModulesListGroup__QeroPackage])
+        ->columns->addRange ([ModulesListColumn__Name, ModulesListColumn__Type])
+
+    Panel ModulesList__ToolsPanel
+        dock: dsBottom
+        height: 44
+
+        ToolStripMenuItem ModulesList__ContextMenu__AddPHPScript ('PHP скрипт')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/ClassFile_16x.png')
+
+            ClickEvent:^ function ($self)
+                {
+                    $open = new OpenFileDialog;
+                    $open->filter = 'PHP script (*.php)|*.php';
+
+                    if ($open->execute () && is_readable ($file = $open->fileName))
+                        copy ($file, VoidStudioProjectManager::$projectPath .'/modules/'. basename ($file));
+                }
+
+        ToolStripMenuItem ModulesList__ContextMenu__AddQeroPackage ('Qero пакет')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Reference_16x.png')
+
+            ClickEvent:^ function ($self)
+                {
+                    messageBox ('В процессе разработки', 'Упс', enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Warning'));
+                }
+
+        ToolStripMenuItem ModulesList__ContextMenu__AddDLL ('DLL библиотека')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Library_16x.png')
+
+            ClickEvent:^ function ($self)
+                {
+                    messageBox ('В процессе разработки', 'Упс', enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Warning'));
+                }
+
+        ContextMenuStrip ModulesList__ContextMenu ()
+            ->items->addRange ([ModulesList__ContextMenu__AddPHPScript, ModulesList__ContextMenu__AddQeroPackage, ModulesList__ContextMenu__AddDLL])
+
+        Button ModulesList__PackageAdd
+            caption: ' Добавить'
+            bounds: [16, 8, 96, 32]
+
+            flatStyle: flFlat
+            flatAppearance->borderColor: clWhite
+            flatAppearance->mouseOverBackColor: clLight
+            flatAppearance->mouseDownBackColor: clLight + 10
+
+            imageAlign: alMiddleLeft
+            textAlign: alMiddleRight
+
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Add_16x.png')
+
+            ClickEvent:^ function ($self, $args) use (MainForm $form, ModulesList__ContextMenu $menu)
+                {
+                    // VoidStudioAPI::getObjects ('addPackage')['MainForm']->showDialog ();
+
+                    $menu->show ($self, VoidEngine::createObject ('System.Drawing.Point', 'System.Drawing', $args->x, $args->y));
+                }
+
+        Button ModulesList__PackageRemove
+            caption: ' Удалить'
+            bounds: [120, 8, 88, 32]
+
+            flatStyle: flFlat
+            flatAppearance->borderColor: clWhite
+            flatAppearance->mouseOverBackColor: clLight
+            flatAppearance->mouseDownBackColor: clLight + 10
+
+            imageAlign: alMiddleLeft
+            textAlign: alMiddleRight
+
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Remove_16x.png')
+
+            ClickEvent:^ function ($self)
+                {
+                    messageBox ('В процессе разработки', 'Уведомление', enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Warning'));
+                }
+
+    #^
+        TabPage ModulesList__Scripts ('Модули')
+            backgroundColor: clWhite
+
+            ListBox ModulesList__List
+                dock: dsFill
+                horizontalScrollbar: true
+
+                font: ['Microsoft Sans Serif', 10]
+
+                ContextMenuStrip: ModulesList__ToolStrip
+
+            Panel ModulesList__ToolsPanel
+                dock: dsBottom
+                height: 48
+
+                Button ModulesList__Add
+                    caption: 'Добавить'
+                    bounds: [8, 8, 128, 32]
+
+                    flatStyle: flFlat
+                    flatAppearance->borderColor: clDodgerBlue
+                    flatAppearance->mouseOverBackColor: clLight
+                    flatAppearance->mouseDownBackColor: clLight + 10
+
+                    ClickEvent:^ function ($self) use (ModulesList__List $modulesList)
+                        {
+                            $open = new OpenFileDialog;
+                            $open->filter = 'PHP file (*.php)|*.php';
+
+                            if ($open->execute () && is_readable ($file = $open->fileName))
+                            {
+                                copy ($file, VoidStudioProjectManager::$projectPath .'/modules/'. basename ($file));
+
+                                $modulesList->items->add (basenameNoExt ($file));
+                            }
+                        }
+
+        TabPage ModulesList__Qero ('Qero пакеты')
+            backgroundColor: clWhite
+
+            ListBox ModulesList__QeroPackages
+                dock: dsFill
+                horizontalScrollbar: true
+                font: ['Segoe UI', 10]
+
+                # ContextMenuStrip: ModulesList__QeroToolStrip
+
+        TabControl ModulesList
+            dock: dsFill
+            hotTrack: true
+
+            ->items->addRange ([ModulesList__Scripts, ModulesList__Qero])
 
 Form MainForm
-    ShownEvent:^ function ($self) use (ModulesList__List $modulesList, ModulesList__QeroPackages $qeroPackages)
+    ShownEvent:^ function ($self) use (ModulesList $modulesList)
         {
-            $modulesList->items->addRange (array_map ('VoidEngine\basenameNoExt', glob (VoidStudioProjectManager::$projectPath .'/modules/*.php')));
+            $imageList = new ImageList;
 
-            if (!file_exists ($file = VoidStudioProjectManager::$projectPath .'/modules/Qero.json'))
-                file_put_contents ($file, '[]');
+            $modulesList->items->clear ();
+            $imageList->images->addRange ([
+                (new Image)->loadFromFile (APP_DIR .'/system/icons/ClassFile_16x.png')
+            ]);
 
-            $qeroPackages->items->addRange (json_decode (file_get_contents ($file)));
+            foreach (array_map ('VoidEngine\basenameNoExt', glob (VoidStudioProjectManager::$projectPath .'/modules/*.php')) as $file)
+            {
+                $item = new ListViewItem ($file);
+                $item->group      = ModulesListGroup__PHPScript;
+                $item->imageIndex = 0;
+
+                $modulesList->items->add ($item);
+            }
         }

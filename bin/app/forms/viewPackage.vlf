@@ -1,0 +1,68 @@
+Form MainForm
+    clientSize: [336, 208]
+    startPosition: fspCenterScreen
+    backgroundColor: clWhite
+    formBorderStyle: fbsToolWindow
+
+    caption: 'Просмотр пакета'
+
+    ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
+
+    Label Package__Path
+        bounds: [16, 16, 296, 24]
+        font: ['Segoe UI', 10]
+
+    Label Package__SourceLabel
+        bounds: [16, 48, 104, 22]
+        caption: 'Источник'
+        textAlign: alMiddleRight
+        font: ['Segoe UI', 8]
+
+    Label Package__AuthorLabel
+        bounds: [16, 72, 104, 22]
+        caption: 'Автор'
+        textAlign: alMiddleRight
+        font: ['Segoe UI', 8]
+
+    Label Package__NameLabel
+        bounds: [16, 96, 104, 22]
+        caption: 'Название пакета'
+        textAlign: alMiddleRight
+        font: ['Segoe UI', 8]
+
+    Label Package__VersionLabel
+        bounds: [16, 120, 104, 22]
+        caption: 'Версия'
+        textAlign: alMiddleRight
+        font: ['Segoe UI', 8]
+
+    TextBox Package__Source
+        bounds: [136, 48, 176, 21]
+        font: ['Segoe UI', 8]
+        readOnly: true
+
+    TextBox Package__Author
+        bounds: [136, 72, 176, 21]
+        font: ['Segoe UI', 8]
+        readOnly: true
+
+    TextBox Package__Name
+        bounds: [136, 96, 176, 21]
+        font: ['Segoe UI', 8]
+        readOnly: true
+
+    TextBox Package__Version
+        bounds: [136, 120, 176, 21]
+        font: ['Segoe UI', 8]
+        readOnly: true
+
+    Button Package__Explore
+        bounds: [16, 160, 184, 32]
+        font: ['Segoe UI', 8]
+
+        flatStyle: flFlat
+        flatAppearance->borderColor: clDodgerBlue
+        flatAppearance->mouseOverBackColor: clLight
+        flatAppearance->mouseDownBackColor: clLight + 10
+
+        text: 'Отобразить в проводнике'

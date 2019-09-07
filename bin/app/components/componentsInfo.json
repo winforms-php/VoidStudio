@@ -1,0 +1,16 @@
+{
+    "FastColoredTextBox": {
+        "class": "FastColoredTextBoxNS.FastColoredTextBox",
+        "namespace": "FastColoredTextBox"
+    },
+
+    "Scintilla": {
+        "class": "ScintillaNET.Scintilla",
+        "namespace": "ScintillaNET"
+    },
+
+    "Chromium": {
+        "class": "CefSharp.WinForms.ChromiumWebBrowser",
+        "namespace": "CefSharp.WinForms"
+    }
+}

@@ -10,12 +10,12 @@ namespace VoidEngine;
 
 $debugger = new class
 {
-    static function debugOutput ($data, $delay = false): void
+    static function debugOutput ($data): void
     {
-        file_put_contents ('__debug_answer', json_encode ([
+        file_put_contents ('__debug_answer', serialize ([
             'timestamp' => time (),
             'data'      => $data
-        ], JSON_PRETTY_PRINT));
+        ]));
 
         while (file_exists ('__debug_answer'))
             usleep (100);
@@ -47,7 +47,7 @@ set_error_handler (function (...$args) use ($debugger)
     $debugger::debugOutput ([
         'type' => 'errorCatched',
         'info' => $args
-    ], true);
+    ]);
 });
 
 set_exception_handler (function (...$args) use ($debugger)
@@ -55,24 +55,27 @@ set_exception_handler (function (...$args) use ($debugger)
     $debugger::debugOutput ([
         'type' => 'exceptionCatched',
         'info' => $args
-    ], true);
+    ]);
 });
 
 setTimer (500, function () use ($debugger)
 {
     $debug = &$GLOBALS['__DEBUG'];
 
-    $components = crc32 (serialize ([Components::$events, Components::$components]));
+    if (!isset ($debug['last_timestamp']))
+        $debug['last_timestamp'] = 0;
+
+    $components = crc32 (serialize (Components::$components));
     Components::cleanJunk ();
 
-    if (crc32 (serialize ([Components::$events, Components::$components])) != $components)
+    if (crc32 (serialize (Components::$components)) != $components)
         $debugger::debugOutput ([
             'type' => 'beginJunkCatching'
         ], true);
 
     elseif (file_exists ('__debug_request'))
     {
-        $request = json_decode (file_get_contents ('__debug_request'), true);
+        $request = unserialize (file_get_contents ('__debug_request'));
         unlink ('__debug_request');
 
         if ($request['timestamp'] > $debug['last_timestamp'])
@@ -122,8 +125,6 @@ setTimer (500, function () use ($debugger)
                         try
                         {
                             VoidEngine::setProperty ($selector, 'BackColor', [$debug['colors'][$selector], 'color']);
-
-                            unset ($debug['colors'][$selector]);
                         }
 
                         catch (\Throwable $e)

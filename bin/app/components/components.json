@@ -6,7 +6,9 @@
         "LinkLabel",
         "TextBox",
         "MaskedTextBox",
-        "RichTextBox"
+        "RichTextBox",
+        "FastColoredTextBox",
+        "Scintilla"
     ],
 
     "Элементы управления": [

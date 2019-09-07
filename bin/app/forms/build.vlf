@@ -4,7 +4,7 @@ Form MainForm
     backgroundColor: clWhite
     formBorderStyle: fbsToolWindow
 
-    caption: text ('Компиляция проекта')
+    caption: 'Компиляция проекта'
 
     ->icon->loadFromFile (APP_DIR .'/system/icons/Icon.ico')
 
@@ -18,12 +18,12 @@ Form MainForm
             $forms->selectedItem = current (VoidStudioAPI::getObjects ('main')['Designer__FormsList']->items->names);
         }
 
-    TreeNode VoidEngineNode (text ('VoidEngine'))
+    TreeNode VoidEngineNode ('VoidEngine')
         checked: true
 
-        ->nodes->addRange (array_map (function ($path) {$item = new TreeNode (text (str_replace (ENGINE_DIR, '', $path))); $item->checked = true; return $item;}, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php')))
+        ->nodes->addRange (array_map (function ($path) {$item = new TreeNode (str_replace (ENGINE_DIR, '', $path)); $item->checked = true; return $item;}, VoidStudioBuilder::getReferences (ENGINE_DIR .'/VoidEngine.php')))
 
-    TabPage BuildConfigs__Dependency (text ('Зависимости'))
+    TabPage BuildConfigs__Dependency ('Зависимости')
         backgroundColor: clWhite
 
         TreeView EngineDependencies
@@ -34,14 +34,14 @@ Form MainForm
 
             ->nodes->add (VoidEngineNode)
 
-    TabPage BuildConfigs__Settings (text ('Настройки'))
+    TabPage BuildConfigs__Settings ('Настройки')
         backgroundColor: clWhite
 
         Label ProductName__caption
             location: [16, 16]
             autoSize: true
 
-            caption: text ('Название проекта')
+            caption: 'Название проекта'
 
         TextBox ProductName
             bounds: [16, 32, 220, 16]
@@ -50,7 +50,7 @@ Form MainForm
             location: [16, 64]
             autoSize: true
 
-            caption: text ('Описание')
+            caption: 'Описание'
 
         TextBox ProductDescription
             bounds: [16, 80, 220, 16]
@@ -59,7 +59,7 @@ Form MainForm
             location: [16, 112]
             autoSize: true
 
-            caption: text ('Производитель')
+            caption: 'Производитель'
 
         TextBox ProductAuthor
             bounds: [16, 128, 220, 16]
@@ -68,7 +68,7 @@ Form MainForm
             location: [16, 160]
             autoSize: true
 
-            caption: text ('Версия')
+            caption: 'Версия'
 
         TextBox ProductVersion
             bounds: [16, 176, 220, 16]
@@ -77,19 +77,19 @@ Form MainForm
             location: [16, 208]
             autoSize: true
 
-            caption: text ('Копирайт')
+            caption: 'Копирайт'
 
         TextBox ProductCopyright
             bounds: [16, 224, 220, 16]
 
-    TabPage BuildConfigs__Main (text ('Главное'))
+    TabPage BuildConfigs__Main ('Главное')
         backgroundColor: clWhite
 
         Label EntryPoint
             location: [16, 16]
             font: ['Segoe UI', 12]
 
-            caption: text ('Точка входа')
+            caption: 'Точка входа'
 
         ComboBox FormSelection
             bounds: [16, 48, 220, 16]
@@ -106,7 +106,7 @@ Form MainForm
             flatAppearance->mouseOverBackColor: clLight
             flatAppearance->mouseDownBackColor: clLight + 10
 
-            caption: text ('Компилировать')
+            caption: 'Компилировать'
 
             ClickEvent:^ function ($self) use (EngineDependencies $dependencies)
                 {
@@ -134,7 +134,7 @@ Form MainForm
                         MainForm->hide ();
                     }
 
-                    // else pre (text ('Выбран неверный путь сохранения проекта'));
+                    // else pre ('Выбран неверный путь сохранения проекта');
                 }
 
     TabControl BuildConfigs__ConfigsTabs

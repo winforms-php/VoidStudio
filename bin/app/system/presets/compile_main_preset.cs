@@ -1,4 +1,4 @@
-string[] forms = new string[] {"%forms%"};
+string[] Forms = new string[] {"%forms%"};
 
-foreach (string form in forms)
-    VoidControlsParser.parseControls (form, (Control) Activator.CreateInstance (Type.GetType (form)));
+foreach (string Form in Forms)
+    VoidControlsParser.ParseControls (Form, (Control) Activator.CreateInstance (Type.GetType (Form)));
