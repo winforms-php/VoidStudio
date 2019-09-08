@@ -1,4 +1,4 @@
-<h1 align="center"><a href="https://vk.com/winforms"><img align="center" src="bin/app/system/icons/Icon.png" height="200px"></a>VoidStudio</h1>
+<h1 align="center"><a href="https://vk.com/winforms"><img align="center" src="bin/app/system/icons/Icon.png" height="300px"></a>VoidStudio</h1>
 
 <p align="center">Среда разработки графических программ на <b>PHP</b> и <b>.NET Framework</b></p>
 
@@ -18,7 +18,7 @@
 
 ## Установка
 
-Для работы с проектом вы должны иметь **.NET Framework** версии не менее **4.5.2**. Скачать **.NET Framework** версии **4.7.2** можно на [официальном сайте](https://dotnet.microsoft.com/download/dotnet-framework-runtime/net472).
+Для работы с проектом вы должны иметь **.NET Framework** версии не менее **4.5.2**. Скачать **.NET Framework** версии **4.8** можно на [официальном сайте](https://dotnet.microsoft.com/download/dotnet-framework-runtime/net48).
 
 Для установки скачайте репозиторий и распакуйте папку **bin**. Запуск среды происходит через файл **start.bat** *(стандартный запуск VoidFramework-приложений)*
 
