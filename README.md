@@ -1,4 +1,4 @@
-<h1 align="center"><a href="https://vk.com/winforms"><img align="center" src="bin/app/system/icons/Icon.png" height="300px"></a>VoidStudio</h1>
+<h1 align="center"><a href="https://vk.com/winforms"><img align="center" src="bin/app/system/icons/Icon.png" height="200px"></a>VoidStudio</h1>
 
 <p align="center">Среда разработки графических программ на <b>PHP</b> и <b>.NET Framework</b></p>
 
