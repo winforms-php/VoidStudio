@@ -531,7 +531,7 @@ class EngineAdditions
 
 class WFObject implements \ArrayAccess
 {
-    protected $selector;
+    protected int $selector = 0;
     protected $name;
 
     public function __construct ($object, ?string $classGroup = 'auto', ...$args)
@@ -806,8 +806,6 @@ class WFObject implements \ArrayAccess
 
 class WFClass extends WFObject
 {
-    protected $selector;
-
     public function __construct ($class, ?string $classGroup = 'auto')
     {
         if (is_string ($class))

@@ -15,7 +15,7 @@ namespace VoidEngine;
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.0.0 (major.minor.patch)
+ * @version     2.0.1 (major.minor.patch)
  * 
  * Contacts:
  *
@@ -31,7 +31,7 @@ namespace VoidEngine;
  * 
  */
 
-const STUDIO_VERSION = '2.0.0';
+const STUDIO_VERSION = '2.0.1';
 
 require 'php/EventGrid.php';
 require 'php/Designer.php';

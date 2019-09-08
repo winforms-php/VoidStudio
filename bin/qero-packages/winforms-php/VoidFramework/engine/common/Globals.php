@@ -4,8 +4,8 @@ namespace VoidEngine;
 
 $APPLICATION = new class
 {
-    public $application;
-    public $executablePath;
+    public WFClass $application;
+    public string $executablePath;
     
     public function __construct ()
     {
@@ -51,7 +51,7 @@ $APPLICATION = new class
 
 $SCREEN = new class
 {
-    public $screen;
+    public WFObject $screen;
     
     public function __construct ()
     {

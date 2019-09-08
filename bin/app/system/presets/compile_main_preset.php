@@ -40,7 +40,7 @@ if (isset ($GLOBALS['__underConstruction']))
             Components::addComponent ($selector, $object);
         }
 
-    %events%
+%events%
 
     $enteringPoint = $GLOBALS['__underConstruction']['%entering_point%']['%entering_point%'];
     unset ($GLOBALS['__underConstruction']);

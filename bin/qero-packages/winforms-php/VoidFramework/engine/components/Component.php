@@ -4,7 +4,7 @@ namespace VoidEngine;
 
 class Component extends WFObject
 {
-    public $helpStorage = '';
+    public $helpStorage;
 
     public $class     = 'System.Windows.Forms.Component';
     public $namespace = 'System.Windows.Forms';

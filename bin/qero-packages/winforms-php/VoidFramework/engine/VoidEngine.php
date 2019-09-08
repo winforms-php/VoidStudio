@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     3.4.1 build-2019/09/07 (major.minor.patch state-y/m/d)
+ * @version     3.5.2 build-2019/09/08 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -33,21 +33,15 @@
 
 namespace VoidEngine;
 
-const ENGINE_VERSION = '3.4.1 build-2019/09/07';
+const ENGINE_VERSION = '3.5.2 build-2019/09/08';
 const ENGINE_DIR = __DIR__;
 
 chdir (ENGINE_DIR);
 
-$GLOBALS['error_status'] = true;
-
 $GLOBALS['__debug'] = [
-    'start_time' => microtime (true)
+    'start_time'   => microtime (true),
+    'error_status' => true
 ];
-
-$GLOBALS['__ub_write_handler'] = function (...$args)
-{
-    pre (...$args);
-};
 
 require 'common/EngineInterfaces.php';
 require 'common/Globals.php';

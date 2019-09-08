@@ -4,10 +4,10 @@ namespace VoidEngine;
 
 function err_status (bool $status = null): bool
 {
-    $oldStatus = $GLOBALS['error_status'];
+    $oldStatus = $GLOBALS['__debug']['error_status'];
 
     if ($status !== null)
-        $GLOBALS['error_status'] = $status;
+        $GLOBALS['__debug']['error_status'] = $status;
 
     return $oldStatus;
 }
@@ -185,7 +185,7 @@ function messageBox (string $message, string $caption = '', ...$args)
 
 class Components
 {
-    static $components = [];
+    static array $components = [];
 
     public static function addComponent (int $selector, object $object): void
     {
@@ -444,7 +444,7 @@ set_error_handler (function ($no, $str, $file, $line)
         16384 => 'E_USER_DEPRECATED'
     ];
 
-    if ($GLOBALS['error_status'])
+    if ($GLOBALS['__debug']['error_status'])
         message ([
             'type'      => $errarr[$no],
             'text'      => $str,

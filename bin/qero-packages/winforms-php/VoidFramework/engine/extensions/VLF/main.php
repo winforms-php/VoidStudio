@@ -39,8 +39,8 @@ const VLF_EXT_DIR = __DIR__;
 
 final class VLFLink
 {
-    public $name; // Имя объекта
-    public $link; // АСД-ссылка на объект
+    public string $name; // Имя объекта
+    public int $link; // АСД-ссылка на объект
 
     public function __construct (string $name, int $link)
     {

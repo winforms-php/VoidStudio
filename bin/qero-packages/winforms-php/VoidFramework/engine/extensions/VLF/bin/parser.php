@@ -4,14 +4,14 @@ namespace VoidEngine;
 
 class VLFParser
 {
-    public $divider = "\n"; // Разделитель строк
+    public string $divider = "\n"; // Разделитель строк
 
-    public $strong_line_parser            = true; // Использовать ли строгий парсер слов (только алфавит и цифры)
-    public $ignore_postobject_info        = false; // Игнорировать ли символы после скобок объектов
-    public $ignore_unexpected_method_args = false; // Игнорировать ли отсутствующие перечисления аргументов методов
+    public bool $strong_line_parser            = true; // Использовать ли строгий парсер слов (только алфавит и цифры)
+    public bool $ignore_postobject_info        = false; // Игнорировать ли символы после скобок объектов
+    public bool $ignore_unexpected_method_args = false; // Игнорировать ли отсутствующие перечисления аргументов методов
 
-    public $use_caching = false; // Кэшировать ли деревья
-    public $debug_mode  = false; // Выводить ли дебаг-сообщения парсера
+    public bool $use_caching = false; // Кэшировать ли деревья
+    public bool $debug_mode  = false; // Выводить ли дебаг-сообщения парсера
 
     protected $tree; // АСД (Абстрактное Синтаксическое Дерево)
     protected $links; // Список ссылок объект -> индекс в АСД
@@ -22,22 +22,13 @@ class VLFParser
      * 
      * @param string $content - VLF разметка или путь до файла разметки
      * [@param array $settings = []] - список настроек и их значений (настройка => значение)
-     * 
-     * ААААААААААААААААААААААААААААААААААААААААААААААААААА
-     * ПОЧЕМУ, ПОЧЕМУ ТАК СЛОЖНА
-     * ААААААААААААААААААААААААААААА
-     * Я НИХРЕНА НЕ ПОНИМАЮ КАК, КАК Я ЭТО СДЕЛАЛ
-     * Я ПЫТАЛСЯ ПЕРЕДЕЛАТЬ ВСЁ, НО НИХРЕНА НЕ ПОЛУЧИЛОСЬ
-     * АААААААААААААААААААААААА
      */
-
     public function __construct (string $content, array $settings = [])
     {
         if (file_exists ($content))
             $content = file_get_contents ($content);
 
         // Зачем? Так надо!
-        // ДА БАГ ЭТО, НЕ ПИ%ДИ!!! И Я ПОНЯТИЯ НЕ ИМЕЮ КАК И ПОЧЕМУ!!!
         $content = "# VLF begin\n\n$content\n\n# VLF end";
 
         foreach ($settings as $name => $setting)
@@ -218,7 +209,8 @@ class VLFParser
                         elseif ($begin < $end)
                         {
                             $arguments = [];
-                            $parsed    = explode (',', substr ($line, $begin, $end - $begin));
+                            // $parsed    = explode (',', substr ($line, $begin, $end - $begin));
+                            $parsed    = $this->parseArguments (substr ($line, $begin, $end - $begin));
 
                             foreach ($parsed as $argument_id => $argument)
                             {
@@ -444,7 +436,8 @@ class VLFParser
 
                         elseif ($begin < $end)
                         {
-                            $parsed = explode (',', substr ($line, $begin, $end - $begin));
+                            // $parsed = explode (',', substr ($line, $begin, $end - $begin));
+                            $parsed = $this->parseArguments (substr ($line, $begin, $end - $begin));
 
                             foreach ($parsed as $argument_id => $argument)
                             {
@@ -607,5 +600,44 @@ class VLFParser
             
             return strlen (trim ($text)) > 0;
         });
+    }
+
+    protected function parseArguments (string $arguments): array
+    {
+        $args = [];
+
+        $split1   = false;
+        $split2   = false;
+        $canSplit = -1;
+
+        $len = strlen ($arguments);
+        $t   = '';
+
+        for ($i = 0; $i < $len; ++$i)
+        {
+            $t .= $arguments[$i];
+
+            if ($arguments[$i] == '\\')
+                $canSplit = $i + 1;
+
+            elseif ($canSplit < $i)
+            {
+                if ($arguments[$i] == '\'' && !$split2)
+                    $split1 = !$split1;
+
+                elseif ($arguments[$i] == '"' && !$split1)
+                    $split2 = !$split2;
+
+                elseif (!$split1 && !$split2 && $arguments[$i] == ',')
+                {
+                    $args[] = substr ($t, 0, -1);
+                    $t = '';
+                }
+            }
+        }
+
+        $args[] = $t;
+
+        return $args;
     }
 }

@@ -29,7 +29,7 @@ class VoidStudioBuilder
             foreach ($designer->objects as $name => $objectType)
                 if (isset (VoidStudioAPI::$events[$designer->getComponentByName ($name)]) && sizeof ($events = VoidStudioAPI::$events[$designer->getComponentByName ($name)]) > 0)
                     foreach ($events as $eventName => $event)
-                        $eventsCode .= 'Events::setObjectEvent ($GLOBALS[\'__underConstruction\'][\''. $item .'\'][\''. $name .'\'], \''. $eventName .'\', function ($self, ...$args) { '. $event .' });'. "\n\t";
+                        $eventsCode .= 'Events::setObjectEvent ($GLOBALS[\'__underConstruction\'][\''. $item .'\'][\''. $name .'\'], \''. $eventName .'\', function ($self, ...$args)'. "\n" .'{'. "\n". $event ."\n" .'});';
         }
 
         dir_clean ($savePath);

@@ -4,10 +4,10 @@ namespace VoidEngine;
 
 class VLFInterpreter
 {
-    static $objects = []; // Массив созданных объектов (название => объект)
+    static array $objects = []; // Массив созданных объектов (название => объект)
 
-    static $throw_errors = true; // Выводить ли ошибки интерпретации
-    static $allow_multimethods_calls = true; // Можно ли использовать многоуровневые вызовы методов (->method1->method2)
+    static bool $throw_errors = true; // Выводить ли ошибки интерпретации
+    static bool $allow_multimethods_calls = true; // Можно ли использовать многоуровневые вызовы методов (->method1->method2)
 
     /**
      * * Интерпретирование синтаксического дерева
@@ -156,7 +156,10 @@ class VLFInterpreter
                                 if (strpos ($methodName, '->') !== false && self::$allow_multimethods_calls)
                                     eval ('namespace VoidEngine; _c('. self::$objects[$name]->selector .')->'. $methodName .' ('. implode (', ', $methodArgs) .');');
 
-                                else self::$objects[$name]->$methodName (...$methodArgs);
+                                elseif (sizeof ($methodArgs) > 0)
+                                    self::$objects[$name]->$methodName (...eval ('namespace VoidEngine; return ['. implode (', ', $methodArgs) .'];'));
+
+                                else self::$objects[$name]->$methodName ();
                             }
 
                             catch (\Throwable $e)

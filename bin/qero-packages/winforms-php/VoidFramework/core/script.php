@@ -23,3 +23,5 @@ $app = '../../app/start.php';
 
 if (file_exists ($app))
 	require $app;
+
+else \VoidCore::callMethod (\VoidCore::createObject ('WinForms_PHP.DebugForm', null), 'ShowDialog');

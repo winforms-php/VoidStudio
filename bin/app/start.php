@@ -5,10 +5,7 @@ namespace VoidEngine;
 # Объявление констант
 const APP_DIR  = __DIR__;
 
-$package = json_decode (@file_get_contents (dirname (__DIR__) .'/qero-packages/packages.json'), true);
-
-define ('VoidEngine\CORE_DIR', isset ($package['github:winforms-php/VoidFramework']['basefolder']) ?
-	dirname (__DIR__) .'/qero-packages/winforms-php/VoidFramework/'. $package['github:winforms-php/VoidFramework']['basefolder'] .'/core' : __DIR__);
+define ('VoidEngine\CORE_DIR', dirname (__DIR__) .'/qero-packages/winforms-php/VoidFramework/core');
 
 # Подгружаем PHP расширения
 foreach (glob (CORE_DIR .'/ext/php_*.dll') as $ext)
