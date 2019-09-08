@@ -18,7 +18,7 @@
 
 ## Установка
 
-Для работы с проектом вы должны иметь **.NET Framework** версии не менее **4.5.2**. Скачать **.NET Framework** версии **4.8** можно на [официальном сайте](https://dotnet.microsoft.com/download/dotnet-framework-runtime/net472).
+Для работы с проектом вы должны иметь **.NET Framework** версии не менее **4.5.2**. Скачать **.NET Framework** версии **4.8** можно на [официальном сайте](https://dotnet.microsoft.com/download/dotnet-framework-runtime/net48).
 
 Для установки скачайте репозиторий и распакуйте папку **bin**. Запуск среды происходит через файл **start.bat** *(стандартный запуск VoidFramework-приложений)*
 
