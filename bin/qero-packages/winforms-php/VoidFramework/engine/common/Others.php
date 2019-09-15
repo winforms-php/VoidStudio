@@ -449,7 +449,6 @@ set_error_handler (function ($no, $str, $file, $line)
             'type'      => $errarr[$no],
             'text'      => $str,
             'file'      => $file,
-            'line'      => $line,
-            'backtrace' => debug_backtrace ()
+            'line'      => $line
         ], 'PHP Script Error');
 });

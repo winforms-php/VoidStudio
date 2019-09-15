@@ -2,13 +2,13 @@
     "github:winforms-php\/VoidFramework": {
         "name": "winforms-php\/VoidFramework",
         "full_name": "github:winforms-php\/VoidFramework",
-        "version": "3.5.2",
+        "version": "3.5.4",
         "entry_point": "engine\/VoidEngine.php",
         "after_install": "after_install.php",
         "scripts": {
             "start": "core\/VoidCore.exe"
         },
-        "watermark": "554640d34bb00ce4033cd9e54fcdaf2437e4dcdd"
+        "watermark": "0323c2b8a1f0fa9087c6bc62421df3ced4ff2fa9"
     },
     "github:winforms-php\/VoidBuilder": {
         "name": "winforms-php\/VoidBuilder",

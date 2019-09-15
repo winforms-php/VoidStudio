@@ -19,22 +19,26 @@ class VoidStudioAPI
 
     public static function getObjects (string $group)
     {
-        return isset (self::$objects[$group]) ?
-            self::$objects[$group] : false;
+        return self::$objects[$group] ?? false;
     }
 
-    public static function openEventEditor (int $component, string $event, VoidDesigner $designer = null)
+    public static function openEventEditor (int $component, string $method, string $form, VoidDesigner $designer = null)
     {
         $objects = self::getObjects ('editor');
-        $form    = $objects['MainForm'];
         $editor  = $objects['Editor'];
 
-        $editor->helpStorage = [$component, $event];
-        $editor->text = self::$events[$component][$event] ?? '';
+        if (!isset (self::$events[$form]))
+            self::$events[$form] = "class $form\n{\n\tpublic static function $method (WFObject \$self, \$args)\n\t{\n\t\t\n\t}\n}\n";
 
-        $form->caption = 'Событие "'. $event .'", объект "'. ($designer === null ? VoidEngine::getProperty ($component, 'Name') : $designer->getComponentName ($component)) .'"';
+        elseif (!preg_match ('/function(\s)*'. $method .'(\s)*\(/i', self::$events[$form]))
+            self::$events[$form] = ClassWorker::applyClass (self::$events[$form], $form, "\n\tpublic static function $method (WFObject \$self, \$args)\n\t{\n\t\t\n\t}\n");
 
-        $form->showDialog ();
+        $editor->text = self::$events[$form];
+        $editor->helpStorage = $form;
+
+        // $form->caption = 'Событие "'. $event .'", объект "'. ($designer === null ? VoidEngine::getProperty ($component, 'Name') : $designer->getComponentName ($component)) .'"';
+
+        $objects['MainForm']->showDialog ();
     }
 
     public static function stopProject ()

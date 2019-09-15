@@ -15,7 +15,7 @@ namespace VoidEngine;
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     2.0.1 (major.minor.patch)
+ * @version     2.1.0 (major.minor.patch)
  * 
  * Contacts:
  *
@@ -31,14 +31,16 @@ namespace VoidEngine;
  * 
  */
 
-const STUDIO_VERSION = '2.0.1';
+const STUDIO_VERSION = '2.1.0';
 
+require 'php/PropertyGrid.php';
 require 'php/EventGrid.php';
 require 'php/Designer.php';
 require 'php/VoidStudio API.php';
 require 'php/ProjectManager.php';
 require 'php/Debugger.php';
 require 'php/Builder.php';
+require 'php/ClassWorker.php';
 
 /*if (!file_exists (dirname (APP_DIR, 2) .'/VoidStudio.lnk'))
 {

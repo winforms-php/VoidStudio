@@ -1,1 +1,1 @@
-MessageBox.Show ("123");
+MessageBox.Show (((int)(Keys.Control | Keys.F)).ToString ());

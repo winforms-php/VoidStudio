@@ -28,7 +28,7 @@ Form MainForm
 
         ClickEvent:^ function ($self) use (Editor $editor, MainForm $form)
             {
-                VoidStudioAPI::$events[$editor->helpStorage[0]][$editor->helpStorage[1]] = $editor->text;
+                VoidStudioAPI::$events[$editor->helpStorage] = $editor->text;
 
                 if (strlen (trim ($editor->text)) > 0 && is_array ($error = php_errors_check ($editor->text)))
                     messageBox ('Обнаружена ошибка на строке '. $error['line'] .". Текст ошибки:\n\n". $error['text'], 'Ошибка кода события', enum ('System.Windows.Forms.MessageBoxButtons.OK'), enum ('System.Windows.Forms.MessageBoxIcon.Error'));

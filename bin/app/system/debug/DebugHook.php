@@ -65,14 +65,6 @@ setTimer (500, function () use ($debugger)
     if (!isset ($debug['last_timestamp']))
         $debug['last_timestamp'] = 0;
 
-    $components = crc32 (serialize (Components::$components));
-    Components::cleanJunk ();
-
-    if (crc32 (serialize (Components::$components)) != $components)
-        $debugger::debugOutput ([
-            'type' => 'beginJunkCatching'
-        ], true);
-
     elseif (file_exists ('__debug_request'))
     {
         $request = unserialize (file_get_contents ('__debug_request'));

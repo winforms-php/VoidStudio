@@ -26,10 +26,14 @@ class VoidStudioBuilder
 
             $forms[] = $item;
 
-            foreach ($designer->objects as $name => $objectType)
-                if (isset (VoidStudioAPI::$events[$designer->getComponentByName ($name)]) && sizeof ($events = VoidStudioAPI::$events[$designer->getComponentByName ($name)]) > 0)
-                    foreach ($events as $eventName => $event)
-                        $eventsCode .= 'Events::setObjectEvent ($GLOBALS[\'__underConstruction\'][\''. $item .'\'][\''. $name .'\'], \''. $eventName .'\', function ($self, ...$args)'. "\n" .'{'. "\n". $event ."\n" .'});';
+            if (isset (VoidStudioAPI::$events[$item]))
+            {
+                $eventsCode .= VoidStudioAPI::$events[$item] ."\n\n";
+
+                foreach ($designer->objects as $name => $objectType)
+                    foreach ($designer->getComponentEvents ($designer->getComponentByName ($name))->list as $event)
+                        $eventsCode .= 'Events::setObjectEvent ($GLOBALS[\'__underConstruction\'][\''. $item .'\'][\''. $name .'\'], \''. $event->eventDescriptor->Name .'\', \'VoidEngine\\'. $item .'::'. $event->methodName .'\');';
+            }
         }
 
         dir_clean ($savePath);

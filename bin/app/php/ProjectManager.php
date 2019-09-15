@@ -47,12 +47,9 @@ class VoidStudioProjectManager
         {
             $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $item .'Designer'];
 
-            $info['forms'][$item] = (string) VoidStudioBuilder::appendDesignerData ($designer->getSharpCode ($item, true), $designer);
+            $info['forms'][$item]   = VoidStudioBuilder::appendDesignerData ($designer->getSharpCode ($item), $designer);
             $info['objects'][$item] = array_keys ($designer->objects);
-
-            foreach ($designer->objects as $name => $objectType)
-                if (isset (Components::$events[$designer->getComponentByName ($name)]) && sizeof (Components::$events[$designer->getComponentByName ($name)]) > 0)
-                    $info['events'][$item][$name] = Components::$events[$designer->getComponentByName ($name)];
+            $info['events'][$item]  = VoidStudioAPI::$events[$item] ?? null;
         }
 
         file_put_contents ($file, gzdeflate (serialize ($info), 9));
@@ -72,27 +69,22 @@ class VoidStudioProjectManager
         $info    = unserialize (gzinflate (file_get_contents ($file)));
         $objects = VoidStudioAPI::getObjects ('main');
 
-        $objects['PropertiesList__List']->selectedObject = null;
-        $objects['Designer__FormsList']->items->foreach (function ($value)
+        foreach ($objects['Designer__FormsList']->items->names as $form)
         {
-            try
-            {
-                $designer = VoidStudioAPI::$objects['main']['Designer__'. $value->text .'Designer'];
+            $designer = VoidStudioAPI::$objects['main']['Designer__'. $form .'Designer'];
 
-                $designer->form->dispose ();
-                $designer->control->dispose ();
+            $designer->form->dispose ();
+            $designer->control->dispose ();
 
-                unset ($designer, VoidStudioAPI::$objects['main']['Designer__'. $value->text .'Designer']);
-            }
+            unset (VoidStudioAPI::$objects['main']['Designer__'. $form .'Designer'], $designer);
+        }
 
-            catch (\Throwable $e) {}
-        });
-
+        $objects['PropertiesList__List']->selectedObject = null;
         $objects['Designer__FormsList']->items->clear ();
 
         foreach ($info['forms'] as $formName => $form)
         {
-            $sourceForm = (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ("using System;\nusing System.Windows.Forms;\nusing System.Reflection;\nusing System.Linq;\nusing System.ComponentModel;\n\npublic class CodeEvaler\n{\n\tpublic object EvalCode ()\n\t{\n\t\tForm form = new $formName ();\n\n\t\tVoidControlsParser.parseControlsForOpening (\"$formName\", (Control) form);\n\n\t\treturn form;\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". (string)($form), true);
+            $sourceForm = (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ("using System;\nusing System.Windows.Forms;\nusing System.Reflection;\nusing System.Linq;\nusing System.ComponentModel;\n\npublic class CodeEvaler\n{\n\tpublic object EvalCode ()\n\t{\n\t\tForm form = new $formName ();\n\n\t\tVoidControlsParser.ParseControlsForOpening (\"$formName\", (Control) form);\n\n\t\treturn form;\n\t}\n}\n\n". file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n". (string)($form), true);
 
             $form = $GLOBALS['__underConstruction'][$formName];
             unset ($GLOBALS['__underConstruction'], $form[$formName]);
@@ -106,29 +98,16 @@ class VoidStudioProjectManager
             $page = new TabPage ($formName);
             $page->backgroundColor = clWhite;
 
-            $designer = new VoidDesigner ($page, $formName, $objects['PropertiesList__List'], $objects['EventsList__ActiveEvents'], $objects['PropertiesPanel__SelectedComponent'], $objects['Designer__FormsList'], $sourceForm);
+            $objects['Designer__FormsList']->items->add ($page);
+
+            $designer = new VoidDesigner ($page, $formName, $objects['PropertiesList__List'], $objects['PropertiesPanel__SelectedComponent'], $objects['Designer__FormsList'], $sourceForm);
             $designer->initDesigner ();
 
+            // VoidStudioAPI::$objects['main']['Designer__'. $formName .'Designer'] = $designer;
+            VoidStudioAPI::$events[$formName] = $info['events'][$formName] ?? null;
+
             foreach ($form as $name => $selector)
-            {
                 $designer->addComponent ($selector, $name);
-
-                if (isset ($info['events'][$formName][$name]))
-                    foreach ($info['events'][$formName][$name] as $eventName => $event)
-                    {
-                        Events::reserveObjectEvent ($selector, $eventName);
-                        VoidEngine::setObjectEvent ($selector, $eventName, $event);
-                    }
-            }
-
-            if (isset ($info['events'][$formName][$formName]))
-                foreach ($info['events'][$formName][$formName] as $eventName => $event)
-                {
-                    Events::reserveObjectEvent ($designer->form->selector, $eventName);
-                    VoidEngine::setObjectEvent ($designer->form->selector, $eventName, $event);
-                }
-
-            $objects['Designer__FormsList']->items->add ($page);
         }
 
         // Components::cleanJunk ();

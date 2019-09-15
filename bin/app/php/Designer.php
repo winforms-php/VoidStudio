@@ -9,11 +9,10 @@ class VoidDesigner extends Component
     protected $objects;
 
     protected $propertyGrid;
-    protected $eventsList;
     protected $currentSelectedItem;
     protected $formsList;
 
-    public function __construct (Component $parent, string $formName = 'form', PropertyGrid $propertyGrid, EventGrid $eventsList, ComboBox $currentSelectedItem, TabControl $formsList, $form = null)
+    public function __construct (Component $parent, string $formName = 'form', PropertyGrid $propertyGrid, ComboBox $currentSelectedItem, TabControl $formsList, $form = null)
     {
         $this->form = $form === null ? new Form :
             EngineAdditions::coupleSelector ($form);
@@ -22,11 +21,10 @@ class VoidDesigner extends Component
             throw new \Exception ('$form param in "VoidEngine\VoidDesigner" constructor must be instance of "VoidEngine\WFObject" ("VoidEngine\Form") or be object selector');
 
         $this->propertyGrid        = $propertyGrid;
-        $this->eventsList          = $eventsList;
         $this->currentSelectedItem = $currentSelectedItem;
         $this->formsList           = $formsList;
 
-        $this->selector = VoidEngine::createObject ('WinForms_PHP.FormDesigner4', null, $this->form->selector, $formName);
+        $this->selector = VoidEngine::createObject ('WinForms_PHP.FormDesigner5', null, $this->form->selector, $formName);
         Components::addComponent ($this->selector, $this);
 
         $this->form->name = $formName;
@@ -42,25 +40,37 @@ class VoidDesigner extends Component
 
         VoidEngine::setProperty ($this->control, 'Parent', $parent->selector);
 
-        Events::setObjectEvent ($this->control, 'KeyDown', function ($self, $args)
-        {
-            if ($args->keycode == 46)
-                $this->removeSelected ();
-        });
-
         $this->selectionChangedEvent = function ()
         {
-            $object = $this->getSelectedComponents ()[0]->selector;
+            $object = $this->getPrimarySelection ()->selector;
             
             $this->propertyGrid->selectedObject = $object;
-            $this->eventsList->selectedObject   = $object;
             $this->currentSelectedItem->selectedItem = $this->getComponentName ($object);
+        };
 
-			if (isset (VoidStudioAPI::$events[$object]))
-				foreach (VoidStudioAPI::$events[$object] as $eventName => $code)
-					$this->eventsList->getEventByName ($eventName)->value = '(добавлено)';
+        $this->createUniqueMethodNameEvent = function ($self, $args)
+        {
+            return $this->getComponentName ($args->component->selector) . '_' . $args->eventDescriptor->Name;
+        };
+        
+        $this->getCompatibleMethodsEvent = function ()
+        {
+            $form = $this->formsList->selectedTab->text;
+            
+            return getNetArray ('System.String', ClassWorker::getAvailableClassMethods (VoidStudioAPI::$events[$form] ?? '', $form))->selector;
+        };
+        
+        $this->showCodeEvent = function ($self, $args)
+        {
+            VoidStudioAPI::openEventEditor ($this->propertyGrid->selectedObject->selector, $args->methodName, $form = c('Designer__FormsList')->selectedTab->text, VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer']);
+        };
 
-            $this->eventsList->refresh ();
+        $this->freeMethodEvent = function ($self, $args)
+        {
+            $object = $this->propertyGrid->selectedObject->selector;
+
+            Events::removeObjectEvent ($object, $method = $args->eventDescriptor->Name);
+            unset (VoidStudioAPI::$events[$object][$method]);
         };
     }
 
@@ -68,25 +78,49 @@ class VoidDesigner extends Component
     {
         $this->componentAddedEvent = function ($self, $args)
         {
-			if (isset ($GLOBALS['new_component']))
-            {
-                $this->setComponentToHistory ($GLOBALS['new_component'][1], $GLOBALS['new_component'][0]);
-                $components = VoidStudioAPI::getObjects ('main')['PropertiesPanel__SelectedComponent'];
+			if (!isset ($GLOBALS['new_component']))
+			{
+                $name = $args->component->getType ()->toString ();
 
-                $components->items->clear ();
-                $components->items->addRange (array_keys ($this->objects));
+                // pre (VoidEngine::getProperty ($args->component->selector, 'Name'));
+                
+				$GLOBALS['new_component'] = [$this->getComponentName ($args->component->selector), [$name, substr ($name, 0, strrpos ($name, '.'))]];
+			}
+			
+			$this->setComponentToHistory ($GLOBALS['new_component'][1], $GLOBALS['new_component'][0]);
+			$components = VoidStudioAPI::getObjects ('main')['PropertiesPanel__SelectedComponent'];
 
-                $components->selectedItem = $GLOBALS['new_component'][0];
-                $this->setSelectedComponents ($args->component);
+			$components->items->clear ();
+			$components->items->addRange (array_keys ($this->objects));
 
-                unset ($GLOBALS['new_component']);
-            }
+			$components->selectedItem = $GLOBALS['new_component'][0];
+			$this->setSelectedComponents ($args->component);
+
+			unset ($GLOBALS['new_component']);
         };
+		
+		$this->componentRemovedEvent = function ($self, $args)
+		{
+			$name = $this->getComponentName ($args->component->selector);
+			unset ($this->objects[$name]);
+
+			foreach ($this->objects as $objectName => $object)
+				if (!is_int ($this->getComponentByName ($objectName)))
+					unset ($this->objects[$objectName]);
+
+			$this->currentSelectedItem->items->clear ();
+			$this->currentSelectedItem->items->addRange (array_keys ($this->objects));
+			$this->currentSelectedItem->selectedItem = $this->getComponentName ($this->getPrimarySelection ()->selector);
+		};
+
+        // ! Отредактировал что-то здесь?
+        // ! Не забудь отредактировать и в main.vlf
 
         $this->rightClickEvent = function ($self, $args)
         {
             $delItem = new ToolStripMenuItem ('Удалить');
             $delItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Delete_16x.png');
+            $delItem->shortcutKeys = 46;
             $delItem->clickEvent = function () use ($self)
             {
                 $this->removeSelected ();
@@ -94,16 +128,80 @@ class VoidDesigner extends Component
 
             $toFrontItem = new ToolStripMenuItem ('На передний план');
             $toFrontItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Front_16x.png');
+            // $toFrontItem->shortcutKeys = 131142;
             $toFrontItem->clickEvent = function () use ($self)
             {
-                $self->bringToFrontSelected ();
+                $self->doAction ('bringToFront');
             };
 
             $toBackItem = new ToolStripMenuItem ('На задний план');
             $toBackItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Back_16x.png');
+            // $toBackItem->shortcutKeys = 131138;
             $toBackItem->clickEvent = function () use ($self)
             {
-                $self->sendToBackSelected ();
+                $self->doAction ('sendToBack');
+            };
+
+            $locked = ($locker = (new WFClass ('System.ComponentModel.TypeDescriptor', 'System'))
+                ->getProperties ($object = $this->propertyGrid->selectedObject->selector)['Locked'])
+                ->getValue ($object);
+			
+            $desItem = new ToolStripMenuItem ($locked ? 'Разблокировать' : 'Заблокировать');
+            $desItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/'. ($locked ? 'Unlock' : 'Lock') .'_16x.png');
+            // $desItem->shortcutKeys = 131148;
+            $desItem->clickEvent = function () use ($object, $locker, $locked)
+            {
+				$locker->setValue ($object, !$locked);
+
+				$this->propertyGrid->refresh ();
+            };
+
+            $selectAllItem = new ToolStripMenuItem ('Выделить всё');
+            $selectAllItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/SelectAll_16x.png');
+            $selectAllItem->shortcutKeys = 131137;
+            $selectAllItem->clickEvent = function () use ($self)
+            {
+				$self->doAction ('selectAll');
+            };
+			
+            $cutItem = new ToolStripMenuItem ('Вырезать');
+            $cutItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Cut_16x.png');
+            $cutItem->shortcutKeys = 131160;
+            $cutItem->clickEvent = function () use ($self)
+            {
+				$self->doAction ('cut');
+            };
+			
+            $copyItem = new ToolStripMenuItem ('Копировать');
+            $copyItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Copy_16x.png');
+            $copyItem->shortcutKeys = 131139;
+            $copyItem->clickEvent = function () use ($self)
+            {
+				$self->doAction ('copy');
+            };
+			
+            $pasteItem = new ToolStripMenuItem ('Вставить');
+            $pasteItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Paste_16x.png');
+            $pasteItem->shortcutKeys = 131158;
+            $pasteItem->clickEvent = function () use ($self)
+            {
+				$self->doAction('paste');
+            };
+			
+            $undoItem = new ToolStripMenuItem ('Отменить');
+            $undoItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Undo_16x.png');
+            $undoItem->shortcutKeys = 131162;
+            $undoItem->clickEvent = function () use ($self)
+            {
+				$self->undoEngine->undo ();
+            };
+			
+            $redoItem = new ToolStripMenuItem ('Повторить');
+            $redoItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Redo_16x.png');
+            $redoItem->shortcutKeys = 131161;
+            $redoItem->clickEvent = function () use ($self)
+            {
+				$self->undoEngine->redo ();
             };
 
             $infoItem = new ToolStripMenuItem ('Отладочная информация');
@@ -114,16 +212,16 @@ class VoidDesigner extends Component
                 {
                     pre ($value instanceof Component ? $value : $value->toString () ."\nSelector: ". $value->selector);
 
-                    // if ($value->getType ()->toString () == 'System.Windows.Forms.Form')
-                    // if ($value->getType ()->isSubclassOf (VoidEngine::objectType ('System.Windows.Forms.Form', 'System.Windows.Forms')))
+					if ((new WFObject(VoidEngine::objectType ('System.Windows.Forms.Form', 'System.Windows.Forms')))->isAssignableFrom ($value->getType ()))
                         pre ($self->getSharpCode ($self->form->name));
                 });
             };
 
             $menu = new ContextMenuStrip;
             $menu->items->addRange ([
-                $delItem, '-',
-                $toFrontItem, $toBackItem, '-',
+                $selectAllItem, $copyItem, $pasteItem, $cutItem, $delItem, '-',
+                $toFrontItem, $toBackItem, $desItem, '-',
+				$undoItem, $redoItem, '-',
                 $infoItem
             ]);
 
@@ -229,7 +327,7 @@ class VoidDesigner extends Component
         foreach ($toUnset as $name)
             unset ($this->objects[$name]);
 
-        $this->callMethod ('DeleteSelected');
+        $this->doAction ('delete');
 
         foreach ($this->objects as $objectName => $object)
             if (!is_int ($this->getComponentByName ($objectName)))
@@ -237,7 +335,7 @@ class VoidDesigner extends Component
 
         $this->currentSelectedItem->items->clear ();
         $this->currentSelectedItem->items->addRange (array_keys ($this->objects));
-        $this->currentSelectedItem->selectedItem = $this->form->name;
+        $this->currentSelectedItem->selectedItem = $this->getComponentName ($this->getPrimarySelection ()->selector);
     }
 
     public function renameComponent (int $component, string $name, string $fromName = null): void

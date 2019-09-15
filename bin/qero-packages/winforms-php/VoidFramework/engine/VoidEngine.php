@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     3.5.2 build-2019/09/08 (major.minor.patch state-y/m/d)
+ * @version     3.5.4 build-2019/09/15 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -33,7 +33,7 @@
 
 namespace VoidEngine;
 
-const ENGINE_VERSION = '3.5.2 build-2019/09/08';
+const ENGINE_VERSION = '3.5.4 build-2019/09/15';
 const ENGINE_DIR = __DIR__;
 
 chdir (ENGINE_DIR);
@@ -77,7 +77,6 @@ require 'components/RadioButton.php';
 require 'components/NumericUpDown.php';
 require 'components/TextBox.php';
 require 'components/ProgressBar.php';
-require 'components/PropertyGrid.php';
 require 'components/Panel.php';
 require 'components/FlowLayoutPanel.php';
 require 'components/TableLayoutPanel.php';

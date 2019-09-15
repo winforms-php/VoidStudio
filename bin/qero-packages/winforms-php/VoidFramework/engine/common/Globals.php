@@ -2,6 +2,8 @@
 
 namespace VoidEngine;
 
+register_superglobals ('APPLICATION', 'SCREEN');
+
 $APPLICATION = new class
 {
     public WFClass $application;

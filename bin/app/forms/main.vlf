@@ -31,61 +31,32 @@ Form MainForm
             ContextMenuStrip PropertiesList__ListMenu ()
                 ->items->add (PropertiesList__ListMenuItem)
 
-            TabPage PropertiesList__Page ('Свойства')
+            PropertyGrid PropertiesList__List (PropertiesPanel)
+                dock: dsFill
                 backgroundColor: clWhite
+                helpBackColor: clWhite
+                helpBorderColor: clWhite
+                # tabcontrolVisible: false
 
-                PropertyGrid PropertiesList__List
-                    dock: dsFill
-                    backgroundColor: clWhite
-                    helpBackColor: clWhite
-                    helpBorderColor: clWhite
-                    # tabcontrolVisible: false
+                controls[2]->contextMenuStrip: c('PropertiesList__ListMenu')
 
-                    controls[2]->contextMenuStrip: c('PropertiesList__ListMenu')
+                PropertyValueChangedEvent:^ function ($self, $args)
+                    {
+                        $designer    = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+                        $objectClass = $self->selectedObject->getType ()->toString ();
+                        $newValue    = $args->changedItem->value;
 
-                    PropertyValueChangedEvent:^ function ($self, $args)
+                        if ($args->changedItem->label == '(Name)')
                         {
-                            $designer    = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
-                            $objectClass = $self->selectedObject->getType ()->toString ();
-                            $newValue    = $args->changedItem->value;
-
-                            if ($args->changedItem->label == '(Name)')
+                            if ($objectClass == 'System.Windows.Forms.Form')
                             {
-                                if ($objectClass == 'System.Windows.Forms.Form')
-                                {
-                                    $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
-                                    $self->selectedObject->name = $args->oldValue;
+                                $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
+                                $self->selectedObject->name = $args->oldValue;
 
-                                    pre ('Нельзя переименовывать формы проекта');
-                                }
-                                
-                                elseif (substr ($newValue, 0, 4) == 'Form')
-                                    {
-                                        $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
-
-                                        try
-                                        {
-                                            $self->selectedObject->name = $args->oldValue;
-                                        }
-
-                                        catch (\Throwable $e) {}
-
-                                        pre ('Объекту нельзя задать название, начинающееся на "Form"');
-                                    }
-
-                                else try
-                                {
-                                    $designer->renameComponent ($self->selectedObject->selector, $newValue, $args->oldValue);
-
-                                    try
-                                    {
-                                        $self->selectedObject->name = $newValue;
-                                    }
-
-                                    catch (\Throwable $e) {}
-                                }
-
-                                catch (\Throwable $e)
+                                pre ('Нельзя переименовывать формы проекта');
+                            }
+                            
+                            elseif (substr ($newValue, 0, 4) == 'Form')
                                 {
                                     $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
 
@@ -96,62 +67,43 @@ Form MainForm
 
                                     catch (\Throwable $e) {}
 
-                                    pre ('Произошла ошибка при попытке переименования объекта');
+                                    pre ('Объекту нельзя задать название, начинающееся на "Form"');
                                 }
 
-                                $components = c('PropertiesPanel__SelectedComponent');
+                            else try
+                            {
+                                $designer->renameComponent ($self->selectedObject->selector, $newValue, $args->oldValue);
 
-                                $components->items->clear ();
-                                $components->items->addRange (array_keys ($designer->objects));
+                                try
+                                {
+                                    $self->selectedObject->name = $newValue;
+                                }
 
-                                $components->selectedItem = $designer->getComponentName ($self->selectedObject->selector);
+                                catch (\Throwable $e) {}
                             }
+
+                            catch (\Throwable $e)
+                            {
+                                $designer->renameComponent ($self->selectedObject->selector, $args->oldValue, $args->oldValue);
+
+                                try
+                                {
+                                    $self->selectedObject->name = $args->oldValue;
+                                }
+
+                                catch (\Throwable $e) {}
+
+                                pre ('Произошла ошибка при попытке переименования объекта');
+                            }
+
+                            $components = c('PropertiesPanel__SelectedComponent');
+
+                            $components->items->clear ();
+                            $components->items->addRange (array_keys ($designer->objects));
+
+                            $components->selectedItem = $designer->getComponentName ($self->selectedObject->selector);
                         }
-            
-            ToolStripMenuItem EventsList__ListMenuItem ('Удалить')
-                image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Delete_16x.png')
-
-                ClickEvent:^ function ($self)
-                    {
-                        $eventsList = c('EventsList__ActiveEvents');
-
-                        Events::removeObjectEvent ($eventsList->selectedObject->selector, $eventsList->selectedGridItem->propertyDescriptor->customProperty->name);
-                        $eventsList->selectedGridItem->propertyDescriptor->customProperty->value = '';
-
-                        unset (VoidStudioAPI::$events[$eventsList->selectedObject->selector][$eventsList->selectedGridItem->propertyDescriptor->customProperty->name]);
-
-                        $eventsList->refresh ();
                     }
-
-            ContextMenuStrip EventsList__ListMenu ()
-                ->items->add (EventsList__ListMenuItem)
-
-            TabPage EventsList__Page ('События')
-                backgroundColor: clWhite
-
-                EventGrid EventsList__ActiveEvents
-                    dock: dsFill
-                    toolbarVisible: false
-                    backgroundColor: clWhite
-                    helpBackColor: clWhite
-                    helpBorderColor: clWhite
-
-                    controls[2]->contextMenuStrip: c('EventsList__ListMenu')
-
-                    EventClickEvent:^ function ($self, $args)
-                        {
-                            VoidStudioAPI::openEventEditor ($self->selectedObject->selector, $args->customProp->name, VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer']);
-                            
-                            $args->retVal = '(добавлено)';
-                        }
-
-            # BUG: неверно подгружаются родители компонентов, приходится их отдельно указывать
-
-            TabControl Properties__Items (PropertiesPanel)
-                dock: dsFill
-                hotTrack: true
-
-                ->items->addRange ([PropertiesList__Page, EventsList__Page])
 
             ComboBox PropertiesPanel__SelectedComponent (PropertiesPanel)
                 dock: dsTop
@@ -239,7 +191,7 @@ Form MainForm
 
                     ->items->add (Designer__Form1)
 
-                    SelectedIndexChangedEvent:^ function ($self) use (PropertiesPanel__SelectedComponent $components, EventsList__ActiveEvents $eventsList)
+                    SelectedIndexChangedEvent:^ function ($self) use (PropertiesPanel__SelectedComponent $components)
                         {
                             if ($self->items->count > 0)
                             {
@@ -254,7 +206,7 @@ Form MainForm
                             }
                         }
 
-                VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, Designer__FormsList)
+                VoidDesigner Designer__Form1Designer (Designer__Form1, 'Form1', PropertiesList__List, PropertiesPanel__SelectedComponent, Designer__FormsList)
                     ->initDesigner ()
 
                 TabPage ToolsPanel__Log ('Лог')
@@ -309,7 +261,7 @@ Form MainForm
                             {
                                 file_put_contents ('system/settings/last_eval.cs', $editor->text);
 
-                                (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ($editor->text, false);
+                                (new WFClass ('WinForms_PHP.WFCompiler', ''))->evalCS ($editor->text);
                             }
 
                 TabControl ToolsPanel__ToolsList (ToolsPanel__Container->panel2)
@@ -385,7 +337,7 @@ Form MainForm
                             $page = new TabPage ($form);
                             $page->backgroundColor = clWhite;
 
-                            $designer = new VoidDesigner ($page, $form, PropertiesList__List, EventsList__ActiveEvents, PropertiesPanel__SelectedComponent, $formsList);
+                            $designer = new VoidDesigner ($page, $form, PropertiesList__List, PropertiesPanel__SelectedComponent, $formsList);
 
                             $designer->initDesigner ();
 
@@ -593,7 +545,10 @@ Form MainForm
                                     $memoryPeak->caption = 'Пик использования памяти: '. max (substr ($memoryPeak->caption, 26, strrpos ($memoryPeak->caption, ' ') - 26), $memoryUsage) .' МБ';
                                 }
 
-                                catch (\Throwable $e) {}
+                                catch (\Throwable $e)
+                                {
+                                    return;
+                                }
 
                                 $series = $graph->series[0];
                                 
@@ -618,12 +573,6 @@ Form MainForm
                                         $series->points->addY ($points[$i + 1]);
                                         $series->points[$i]->XValue = $elapsed - (10 - $i);
                                     }
-
-                                    /*foreach ($graph->helpStorage as $timestamp => $color)
-                                        if ($timestamp < $elapsed - 10)
-                                            unset ($graph->helpStorage[$timestamp]);
-                                        
-                                        else $series->points[$timestamp]->color = $color;*/
                                 }
 
                                 $data = c('ToolsList__ProjectRunner')->helpStorage[1]->readDebugAnswer ();
@@ -631,10 +580,6 @@ Form MainForm
                                 if (is_array ($data))
                                     switch ($data['type'])
                                     {
-                                        case 'beginJunkCatching':
-                                            // $graph->helpStorage[$elapsed] = clYellow;
-                                        break;
-
                                         case 'errorCatched':
                                         case 'exceptionCatched':
                                             $log->items->add ('['. $time .'ы] Поймана ошибка: '. $data['info'][1]);
@@ -887,6 +832,94 @@ Form MainForm
     ToolStripMenuItem Menu__studio
         ->items->addRange ([Menu__studio_restart, '-', Menu__studio_about, Menu__studio_vk])
 
+    ToolStripMenuItem Menu__editor ('Правка')
+        ToolStripMenuItem Menu__editor_selectAll ('Выделить всё')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/SelectAll_16x.png')
+            shortcutKeys: 131137
+
+            ClickEvent:^ function ()
+                {
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+					
+                    if ($designer->control->focused)
+                        $designer->doAction ('selectAll');
+                }
+
+        ToolStripMenuItem Menu__editor_copy ('Копировать')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Copy_16x.png')
+            shortcutKeys: 131139
+
+            ClickEvent:^ function ()
+                {
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+					
+                    if ($designer->control->focused)
+                        $designer->doAction ('copy');
+                }
+        
+        ToolStripMenuItem Menu__editor_paste ('Вставить')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Paste_16x.png')
+            shortcutKeys: 131158
+
+            ClickEvent:^ function ()
+                {
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+
+                    if ($designer->control->focused)
+                        $designer->doAction ('paste');
+                }
+
+        ToolStripMenuItem Menu__editor_cut ('Вырезать')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Cut_16x.png')
+            shortcutKeys: 131160
+
+            ClickEvent:^ function ()
+                {
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+
+                    if ($designer->control->focused)
+                        $designer->doAction ('cut');
+                }
+
+        ToolStripMenuItem Menu__editor_delete ('Удалить')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Delete_16x.png')
+            shortcutKeys: 46
+
+            ClickEvent:^ function ()
+                {
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+
+                    if ($designer->control->focused)
+                        $designer->removeSelected ();
+                }
+
+        ToolStripMenuItem Menu__editor_undo ('Отменить')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Undo_16x.png')
+            shortcutKeys: 131162
+
+            ClickEvent:^ function ()
+                {
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+
+                    if ($designer->control->focused)
+                        $designer->undoEngine->undo ();
+                }
+
+        ToolStripMenuItem Menu__editor_redo ('Повторить')
+            image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Redo_16x.png')
+            shortcutKeys: 131161
+            
+            ClickEvent:^ function ()
+                {
+                    $designer = VoidStudioAPI::getObjects ('main')['Designer__'. c('Designer__FormsList')->selectedTab->text .'Designer'];
+
+                    if ($designer->control->focused)
+                        $designer->undoEngine->redo ();
+                }
+
+    ToolStripMenuItem Menu__editor
+        ->items->addRange ([Menu__editor_selectAll, Menu__editor_copy, Menu__editor_paste, Menu__editor_cut, Menu__editor_delete, '-', Menu__editor_undo, Menu__editor_redo])
+
     ToolStripMenuItem Menu__project ('Проект')
         ToolStripMenuItem Menu__project_modules ('Модули')
             image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Reference_16x.png')
@@ -938,7 +971,7 @@ Form MainForm
     MenuStrip Menu
         backColor: clLight
 
-        ->items->addRange ([Menu__studio, Menu__project])
+        ->items->addRange ([Menu__studio, Menu__editor, Menu__project])
 
     Timer Project_AutoSave ()
         interval: 5 * 60 * 1000
@@ -966,7 +999,6 @@ Form MainForm
                 ToolsPanel__EvalCSEditor->text = file_get_contents ('system/settings/last_eval.cs');
 
             PropertiesList__List->selectedObject = Designer__Form1Designer->form;
-            EventsList__ActiveEvents->selectedObject = Designer__Form1Designer->form;
 
             $time = round (microtime (true) - $GLOBALS['__debug']['start_time'], 4);
             ToolsPanel__LogList->items->add ('VoidStudio запущен за '. ($time > 0.5 ? $time : '[мало]') .' секунд');
