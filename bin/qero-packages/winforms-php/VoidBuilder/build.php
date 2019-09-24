@@ -13,9 +13,11 @@ require 'VoidBuilder.php';
 
 if (!isset ($argv))
 {
-    $argv   = [__FILE__];
-    $params = json_decode (file_get_contents ('params.json'), true);
-
+	$params = json_decode (file_get_contents (__DIR__ .'/params.json'), true);
+	$oargv = [__FILE__];
+	
+	unlink (__DIR__ .'/params.json');
+	
     foreach ($params as $name => $param)
     {
         if (!is_array ($param))
@@ -24,75 +26,90 @@ if (!isset ($argv))
         foreach ($param as $arg)
             if (strlen ($arg) > 0)
             {
-                $argv[] = $name;
-                $argv[] = $arg;
+                $oargv[] = $name;
+                $oargv[] = $arg;
             }
     }
-
-    unlink ('params.json');
     
-    define ('VoidEngine\ENGINE_DIR', $params['--engine-dir']);
-    define ('VoidEngine\CORE_DIR', dirname (ENGINE_DIR) .'/core');
+    if (!defined ('VoidBuilder\ENGINE_DIR'))
+        define ('VoidBuilder\ENGINE_DIR', $params['--engine-dir']);
+
+    if (!defined ('VoidBuilder\CORE_DIR'))
+        define ('VoidBuilder\CORE_DIR', dirname (ENGINE_DIR) .'/core');
+    
+	define ('VoidEngine\CORE_DIR', dirname (ENGINE_DIR) .'/core');
     
     require $params['--engine-dir'] .'/VoidEngine.php';
+	
+	$argv = $oargv;
 }
 
-(new Manager ([], (new DefaultCommand (function ($args, $params)
+try
 {
-    foreach (['--app-dir', '--output-dir', '--icon-path'] as $param)
-        if (is_array ($params[$param]))
-            $params[$param] = end ($params[$param]);
-
-    if (class_exists ('VoidEngine\VoidEngine'))
+    (new Manager ([], (new DefaultCommand (function ($args, $params)
     {
-        $errors = (new Builder ($params['--app-dir']))->build ($params['--output-dir'], $params['--icon-path'], !$params['--no-compress']);
+        foreach (['--app-dir', '--output-dir', '--icon-path'] as $param)
+            if (is_array ($params[$param]))
+                $params[$param] = end ($params[$param]);
 
-        if (sizeof ($errors) > 0)
-            print_r ($errors);
-    }
+        if (!file_exists (dirname ($params['--app-dir']) .'/qero-packages/winforms-php/VoidFramework/core/VoidCore.exe'))
+            die ("\n Incorrect VoidFramework app path\n");
 
-    else
-    {
-        echo PHP_EOL;
-        echo ' Building ['. dirname (str_replace (dirname ($params['--app-dir'], 2) .'\\', '', $params['--app-dir'])) .']...'. PHP_EOL . PHP_EOL;
-
-        $begin = microtime (true);
-
-        $package = json_decode (file_get_contents (dirname ($params['--app-dir']) .'/qero-packages/packages.json'), true)['github:KRypt0nn/VoidFramework']['basefolder'];
-
-        $params['--engine-dir'] = dirname ($params['--app-dir']) .'/qero-packages/KRypt0nn/VoidFramework/'. $package .'/engine';
-        file_put_contents ('params.json', json_encode ($params, JSON_PRETTY_PRINT));
-
-        shell_exec ('"'. dirname ($params['--app-dir']) .'/qero-packages/KRypt0nn/VoidFramework/'. $package .'/core/VoidCore.exe" "'. __FILE__ .'"');
-
-        echo ' Building completed after '. round (microtime (true) - $begin, 6) .' seconds'. PHP_EOL;
-        echo '   Saved at '. $params['--output-dir'] .'/build'. PHP_EOL . PHP_EOL;
-
-        if (isset ($params['--join']))
+        if (class_exists ('VoidEngine\WFObject'))
         {
-            if (!is_array ($params['--join']))
-                $params['--join'] = [$params['--join']];
+            $errors = (new Builder ($params['--app-dir']))
+                ->build ($params['--output-dir'], $params['--icon-path'], !$params['--no-compress']);
 
-            if (($size = sizeof ($params['--join'])) > 0)
+            if (sizeof ($errors) > 0)
+                print_r ($errors);
+        }
+
+        else
+        {
+            echo PHP_EOL;
+            echo ' Building ['. dirname (str_replace (dirname ($params['--app-dir'], 2) .'\\', '', $params['--app-dir'])) .']...'. PHP_EOL . PHP_EOL;
+
+            $begin = microtime (true);
+
+            $params['--engine-dir'] = dirname ($params['--app-dir']) .'/qero-packages/winforms-php/VoidFramework/engine';
+            file_put_contents ('params.json', json_encode ($params, JSON_PRETTY_PRINT));
+
+            shell_exec ('"'. dirname ($params['--app-dir']) .'/qero-packages/winforms-php/VoidFramework/core/VoidCore.exe" "'. __FILE__ .'"');
+
+            echo ' Building completed after '. round (microtime (true) - $begin, 6) .' seconds'. PHP_EOL;
+            echo '   Saved at '. $params['--output-dir'] .'/build'. PHP_EOL . PHP_EOL;
+
+            if (isset ($params['--join']))
             {
-                echo ' Union '. $size .' files...'. PHP_EOL;
+                if (!is_array ($params['--join']))
+                    $params['--join'] = [$params['--join']];
 
-                $begin = microtime (true);
-                $joiner = new Joiner ($params['--output-dir'] .'/build/app.exe', $params['--output-dir'] .'/app.exe');
-                
-                foreach ($params['--join'] as $file)
-                    $joiner->add (file_exists ($file) ? $file : $params['--output-dir'] .'/build/'. $file);
+                if (($size = sizeof ($params['--join'])) > 0)
+                {
+                    echo ' Union '. $size .' files...'. PHP_EOL;
 
-                echo str_replace ("\n", "\n ", $joiner->join ()) . PHP_EOL;
-                echo ' Union completed after '. round (microtime (true) - $begin, 6) .' seconds'. PHP_EOL;
-                echo '   Saved at '. $params['--output-dir'] . PHP_EOL;
+                    $begin  = microtime (true);
+                    $joiner = new Joiner ($params['--output-dir'] .'/build/app.exe', $params['--output-dir'] .'/app.exe');
+                    
+                    foreach ($params['--join'] as $file)
+                        $joiner->add (file_exists ($file) ? $file : $params['--output-dir'] .'/build/'. $file);
+
+                    echo str_replace ("\n", "\n ", $joiner->join ()) . PHP_EOL;
+                    echo ' Union completed after '. round (microtime (true) - $begin, 6) .' seconds'. PHP_EOL;
+                    echo '   Saved at '. $params['--output-dir'] . PHP_EOL;
+                }
             }
         }
-    }
-}))->addParams ([
-    (new Param ('--app-dir', null, true))->addAliase ('-d'),
-    (new Param ('--output-dir', __DIR__ .'/build'))->addAliase ('-o'),
-    (new Param ('--icon-path', __DIR__ .'/system/Icon.ico'))->addAliase ('-i'),
-    (new Param ('--join'))->addAliase ('-j'),
-    (new Flag ('--no-compress'))->addAliase ('-nc')
-])))->execute ($argv);
+    }))->addParams ([
+        (new Param ('--app-dir', null, true))->addAliase ('-d'),
+        (new Param ('--output-dir', __DIR__ .'/build'))->addAliase ('-o'),
+        (new Param ('--icon-path', __DIR__ .'/system/Icon.ico'))->addAliase ('-i'),
+        (new Param ('--join'))->addAliase ('-j'),
+        (new Flag ('--no-compress'))->addAliase ('-nc')
+    ])))->execute ($argv);
+}
+
+catch (\Exception $e)
+{
+    die ("\n ". $e->getMessage () ."\n");
+}

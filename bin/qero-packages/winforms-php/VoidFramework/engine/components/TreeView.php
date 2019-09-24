@@ -13,7 +13,7 @@ class TreeView extends Control
             $node = $this->selectedNode;
         }
 
-        catch (\Throwable $e)
+        catch (\WinFormsException $e)
         {
             return false;
         }

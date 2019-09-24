@@ -20,7 +20,7 @@ $APPLICATION = new class
         if ($form instanceof WFObject)
             $this->application->run ($form->selector);
         
-        elseif (is_int ($form) && VoidEngine::objectExists ($form))
+        elseif (is_int ($form) && \VoidCore::objectExists ($form))
             $this->application->run ($form);
         
         elseif ($form === null)

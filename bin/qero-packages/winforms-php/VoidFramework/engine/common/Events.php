@@ -6,7 +6,7 @@ class Events
 {
     public static function setObjectEvent (int $object, string $eventName, callable $function)
     {
-        VoidEngine::setObjectEvent ($object, $eventName, function ($sender, ...$args) use ($function)
+        \VoidCore::setEvent ($object, $eventName, function ($sender, ...$args) use ($function)
 		{
             try
 			{
@@ -33,6 +33,6 @@ class Events
 
     public static function removeObjectEvent (int $object, string $eventName)
     {
-        VoidEngine::removeObjectEvent ($object, $eventName);
+        \VoidCore::removeEvent ($object, $eventName);
     }
 }

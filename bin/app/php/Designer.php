@@ -24,7 +24,7 @@ class VoidDesigner extends Component
         $this->currentSelectedItem = $currentSelectedItem;
         $this->formsList           = $formsList;
 
-        $this->selector = VoidEngine::createObject ('WinForms_PHP.FormDesigner5', null, $this->form->selector, $formName);
+        $this->selector = \VoidCore::createObject ('WinForms_PHP.FormDesigner5', null, $this->form->selector, $formName);
         Components::addComponent ($this->selector, $this);
 
         $this->form->name = $formName;
@@ -38,7 +38,7 @@ class VoidDesigner extends Component
         $this->control = $this->callMethod ('GetControl');
         $this->objects[$formName] = ['System.Windows.Forms.Form', 'System.Windows.Forms'];
 
-        VoidEngine::setProperty ($this->control, 'Parent', $parent->selector);
+        \VoidCore::setProperty ($this->control, 'Parent', $parent->selector);
 
         $this->selectionChangedEvent = function ()
         {
@@ -62,7 +62,7 @@ class VoidDesigner extends Component
         
         $this->showCodeEvent = function ($self, $args)
         {
-            VoidStudioAPI::openEventEditor ($this->propertyGrid->selectedObject->selector, $args->methodName, $form = c('Designer__FormsList')->selectedTab->text, VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer']);
+            VoidStudioAPI::openEventEditor ($this->propertyGrid->selectedObject->selector, $args->methodName, $args->eventDescriptor, $form = c('Designer__FormsList')->selectedTab->text, VoidStudioAPI::getObjects ('main')['Designer__'. $form .'Designer']);
         };
 
         $this->freeMethodEvent = function ($self, $args)
@@ -82,7 +82,7 @@ class VoidDesigner extends Component
 			{
                 $name = $args->component->getType ()->toString ();
 
-                // pre (VoidEngine::getProperty ($args->component->selector, 'Name'));
+                // pre (\VoidCore::getProperty ($args->component->selector, 'Name'));
                 
 				$GLOBALS['new_component'] = [$this->getComponentName ($args->component->selector), [$name, substr ($name, 0, strrpos ($name, '.'))]];
 			}
@@ -121,88 +121,64 @@ class VoidDesigner extends Component
             $delItem = new ToolStripMenuItem ('Удалить');
             $delItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Delete_16x.png');
             $delItem->shortcutKeys = 46;
-            $delItem->clickEvent = function () use ($self)
-            {
-                $this->removeSelected ();
-            };
+            $delItem->clickEvent   = fn () => $this->removeSelected ();
 
             $toFrontItem = new ToolStripMenuItem ('На передний план');
             $toFrontItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Front_16x.png');
             // $toFrontItem->shortcutKeys = 131142;
-            $toFrontItem->clickEvent = function () use ($self)
-            {
-                $self->doAction ('bringToFront');
-            };
+            $toFrontItem->clickEvent = fn () => $self->doAction ('bringToFront');
 
             $toBackItem = new ToolStripMenuItem ('На задний план');
             $toBackItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Back_16x.png');
             // $toBackItem->shortcutKeys = 131138;
-            $toBackItem->clickEvent = function () use ($self)
-            {
-                $self->doAction ('sendToBack');
-            };
+            $toBackItem->clickEvent = fn () => $self->doAction ('sendToBack');
 
-            $locked = ($locker = (new WFClass ('System.ComponentModel.TypeDescriptor', 'System'))
-                ->getProperties ($object = $this->propertyGrid->selectedObject->selector)['Locked'])
-                ->getValue ($object);
-			
-            $desItem = new ToolStripMenuItem ($locked ? 'Разблокировать' : 'Заблокировать');
-            $desItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/'. ($locked ? 'Unlock' : 'Lock') .'_16x.png');
-            // $desItem->shortcutKeys = 131148;
-            $desItem->clickEvent = function () use ($object, $locker, $locked)
+            if ((new WFObject (\VoidCore::typeof ('System.Windows.Forms.Control')))->isAssignableFrom ($this->propertyGrid->selectedObject->getType ()))
             {
-				$locker->setValue ($object, !$locked);
+                $locked = ($locker = (new WFClass ('System.ComponentModel.TypeDescriptor', 'System'))
+                    ->getProperties ($object = $this->propertyGrid->selectedObject->selector)['Locked'])
+                    ->getValue ($object);
+                
+                $desItem = new ToolStripMenuItem ($locked ? 'Разблокировать' : 'Заблокировать');
+                $desItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/'. ($locked ? 'Unlock' : 'Lock') .'_16x.png');
+                // $desItem->shortcutKeys = 131148;
+                $desItem->clickEvent = function () use ($object, $locker, $locked)
+                {
+                    $locker->setValue ($object, !$locked);
 
-				$this->propertyGrid->refresh ();
-            };
+                    $this->propertyGrid->refresh ();
+                };
+            }
 
             $selectAllItem = new ToolStripMenuItem ('Выделить всё');
             $selectAllItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/SelectAll_16x.png');
             $selectAllItem->shortcutKeys = 131137;
-            $selectAllItem->clickEvent = function () use ($self)
-            {
-				$self->doAction ('selectAll');
-            };
+            $selectAllItem->clickEvent = fn () => $self->doAction ('selectAll');
 			
             $cutItem = new ToolStripMenuItem ('Вырезать');
             $cutItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Cut_16x.png');
             $cutItem->shortcutKeys = 131160;
-            $cutItem->clickEvent = function () use ($self)
-            {
-				$self->doAction ('cut');
-            };
+            $cutItem->clickEvent   = fn () => $self->doAction ('cut');
 			
             $copyItem = new ToolStripMenuItem ('Копировать');
             $copyItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Copy_16x.png');
             $copyItem->shortcutKeys = 131139;
-            $copyItem->clickEvent = function () use ($self)
-            {
-				$self->doAction ('copy');
-            };
+            $copyItem->clickEvent   = fn () => $self->doAction ('copy');
 			
             $pasteItem = new ToolStripMenuItem ('Вставить');
             $pasteItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Paste_16x.png');
             $pasteItem->shortcutKeys = 131158;
-            $pasteItem->clickEvent = function () use ($self)
-            {
-				$self->doAction('paste');
-            };
+            $pasteItem->clickEvent   = fn () => $self->doAction('paste');
 			
             $undoItem = new ToolStripMenuItem ('Отменить');
             $undoItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Undo_16x.png');
             $undoItem->shortcutKeys = 131162;
-            $undoItem->clickEvent = function () use ($self)
-            {
-				$self->undoEngine->undo ();
-            };
+            $undoItem->clickEvent   = fn () => $self->undoEngine->undo ();
 			
             $redoItem = new ToolStripMenuItem ('Повторить');
             $redoItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Redo_16x.png');
             $redoItem->shortcutKeys = 131161;
-            $redoItem->clickEvent = function () use ($self)
-            {
-				$self->undoEngine->redo ();
-            };
+            $redoItem->clickEvent   = fn () => $self->undoEngine->redo ();
 
             $infoItem = new ToolStripMenuItem ('Отладочная информация');
             $infoItem->image = (new Image)->loadFromFile (APP_DIR .'/system/icons/Debug_16x.png');
@@ -212,20 +188,31 @@ class VoidDesigner extends Component
                 {
                     pre ($value instanceof Component ? $value : $value->toString () ."\nSelector: ". $value->selector);
 
-					if ((new WFObject(VoidEngine::objectType ('System.Windows.Forms.Form', 'System.Windows.Forms')))->isAssignableFrom ($value->getType ()))
+                    if ((new WFObject (\VoidCore::typeof ('System.Windows.Forms.Form')))->isAssignableFrom ($value->getType ()))
+                    {
+                        $code = $self->getVoidCode ($self->form->name, false);
+
                         pre ($self->getSharpCode ($self->form->name));
+                        pre ('namespace VoidEngine;'. "\n\n" .'return new class' . substr ($code, 38) . ';');
+                    }
                 });
             };
 
             $menu = new ContextMenuStrip;
-            $menu->items->addRange ([
+
+            $menu->items->addRange (isset ($desItem) ? [
                 $selectAllItem, $copyItem, $pasteItem, $cutItem, $delItem, '-',
                 $toFrontItem, $toBackItem, $desItem, '-',
 				$undoItem, $redoItem, '-',
                 $infoItem
+            ] : [
+                $selectAllItem, $copyItem, $pasteItem, $cutItem, $delItem, '-',
+                $toFrontItem, $toBackItem, '-',
+				$undoItem, $redoItem, '-',
+                $infoItem
             ]);
 
-            $menu->show ($self->form, $self->form->pointToClient (VoidEngine::createObject ('System.Drawing.Point', 'System.Drawing', $args->x, $args->y)));
+            $menu->show ($self->form, $self->form->pointToClient (\VoidCore::createObject ('System.Drawing.Point', false, $args->x, $args->y)));
         };
 
         VoidStudioAPI::addObjects ('main', ['Designer__'. $this->form->name .'Designer' => $this]);
@@ -240,16 +227,16 @@ class VoidDesigner extends Component
     {
         $code = $this->callMethod (['GetSharpCode', 'object'], $formName);
 
-        $code = VoidEngine::callMethod ($code, ['Replace', 'object'], 'public class '. $this->form->name .' : '. $this->form->name, 'public class '. $this->form->name .' : System.Windows.Forms.Form');
-        $code = VoidEngine::callMethod ($code, ['Replace', 'object'], '    private ', '    public ');
+        $code = \VoidCore::callMethod ($code, ['Replace', 'object'], 'public class '. $this->form->name .' : '. $this->form->name, 'public class '. $this->form->name .' : System.Windows.Forms.Form');
+        $code = \VoidCore::callMethod ($code, ['Replace', 'object'], '    private ', '    public ');
 
-        return VoidEngine::callMethod ($code, 'ToString');
+        return \VoidCore::callMethod ($code, 'ToString');
     }
 
     public function createComponent (array $component, string $componentName): int
     {
         $this->objects[$componentName] = $component;
-        $selector = VoidEngine::createObject (...$component);
+        $selector = \VoidCore::createObject (...$component);
 
         $this->callMethod ('AddComponent', $selector, $componentName);
 
@@ -263,7 +250,7 @@ class VoidDesigner extends Component
 
     public function addComponent (int $selector, string $componentName): void
     {
-        $this->objects[$componentName] = [VoidEngine::callMethod (VoidEngine::callMethod ($selector, 'GetType'), 'ToString'), 'auto'];
+        $this->objects[$componentName] = [\VoidCore::callMethod (\VoidCore::callMethod ($selector, 'GetType'), 'ToString'), false];
 
         $this->callMethod ('AddComponent', $selector, $componentName);
     }
@@ -301,7 +288,7 @@ class VoidDesigner extends Component
                         unset ($this->formsList->items[array_flip ($this->formsList->items->names)[$form = $this->getComponentName ($object->selector)]]);
 
                         /*$this->form->dispose ();
-                        VoidEngine::callMethod ($this->control, 'Dispose');*/
+                        \VoidCore::callMethod ($this->control, 'Dispose');*/
                         $this->callMethod ('DeleteSelected');
 
                         $designer = VoidStudioAPI::getObjects ('main')['Designer__'. $this->formsList->selectedTab->text .'Designer'];

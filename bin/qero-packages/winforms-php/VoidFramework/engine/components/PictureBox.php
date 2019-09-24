@@ -25,27 +25,27 @@ class PictureBoxImage
 	public function __construct (int $pictureBoxSelector)
 	{
 		$this->pictureBoxSelector = $pictureBoxSelector;
-		$this->selector			  = VoidEngine::getProperty ($pictureBoxSelector, 'Image');
+		$this->selector			  = \VoidCore::getProperty ($pictureBoxSelector, 'Image');
 		$this->clipboard		  = new WFClass ('System.Windows.Forms.Clipboard');
 	}
 	
 	public function loadFromFile (string $file)
 	{
-        VoidEngine::setProperty ($this->pictureBoxSelector, 'Image', (new Image ())->loadFromFile ($file)->selector);
+        \VoidCore::setProperty ($this->pictureBoxSelector, 'Image', (new Image ())->loadFromFile ($file)->selector);
 	}
 	
 	public function saveToFile (string $file)
 	{
-		VoidEngine::callMethod ($this->selector, 'Save', $file);
+		\VoidCore::callMethod ($this->selector, 'Save', $file);
 	}
 	
 	public function loadFromClipboard ()
 	{
-		VoidEngine::setProperty ($this->pictureBoxSelector, 'Image', $this->clipboard->getImage ());
+		\VoidCore::setProperty ($this->pictureBoxSelector, 'Image', $this->clipboard->getImage ());
 	}
 	
 	public function saveToClipboard ()
 	{
-		$this->clipboard->setImage (VoidEngine::getProperty ($this->pictureBoxSelector, 'Image'));
+		$this->clipboard->setImage (\VoidCore::getProperty ($this->pictureBoxSelector, 'Image'));
 	}
 }

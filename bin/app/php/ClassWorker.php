@@ -108,11 +108,16 @@ class ClassWorker
 
                 elseif ($class_predefined == true)
                 {
-                    if ($code[$i] == 's' && substr ($code, $i, 6) == 'static')
+                    if ($code[$i] == 'p' && substr ($code, $i, 6) == 'public')
                     {
                         for ($j = $i + 6; $j < $len; ++$j)
                             if (!in_array ($code[$j], ["\n", "\r", "\t", ' ']))
                                 break;
+
+                        if ($code[$j] == 's' && substr ($code, $j, 6) == 'static')
+                            for ($j = $j + 6; $j < $len; ++$j)
+                                if (!in_array ($code[$j], ["\n", "\r", "\t", ' ']))
+                                    break;
 
                         if ($code[$j] == 'f' && substr ($code, $j, 8) == 'function')
                         {

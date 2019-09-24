@@ -137,7 +137,7 @@ a2VrLCBsb2wsIGFyYmlkb2w=
 namespace ConsoleArgs;
 
 (new Manager ([
-    new Command ('test', function ($args)
+    (new Command ('test', function ($args)
     {
         (new Manager ([
             new Command ('1', function ()
@@ -155,7 +155,7 @@ namespace ConsoleArgs;
                 echo 'Every Software'. PHP_EOL;
             })
         ]))->execute ($args);
-    })
+    }))->addAliase ('aliase_test')
 ]))->execute (array_slice ($argv, 1));
 ```
 
@@ -168,6 +168,17 @@ php index.php test 1
 Вывод:
 ```
 Enfesto Studio
+```
+
+---
+
+```cmd
+php index.php aliase_test 2
+```
+
+Вывод:
+```
+WinForms PHP
 ```
 
 ### Локализации

@@ -13,7 +13,7 @@
  * @see         license.txt for details
  * @author      Podvirnyy Nikita (KRypt0n_) & Andrey Kusov
  * 
- * @version     3.5.4 build-2019/09/15 (major.minor.patch state-y/m/d)
+ * @version     3.5.8 build-2019/09/22 (major.minor.patch state-y/m/d)
  * 
  * Contacts:
  *
@@ -33,7 +33,7 @@
 
 namespace VoidEngine;
 
-const ENGINE_VERSION = '3.5.4 build-2019/09/15';
+const ENGINE_VERSION = '3.5.8 build-2019/09/22';
 const ENGINE_DIR = __DIR__;
 
 chdir (ENGINE_DIR);
@@ -54,7 +54,6 @@ define ('VoidEngine\CORE_VERSION', $APPLICATION->productVersion);
 require 'components/Component.php';
 require 'components/Control.php';
 require 'components/CommonDialog.php';
-require 'components/FileDialog.php';
 require 'components/ColorDialog.php';
 require 'components/FontDialog.php';
 require 'components/PrintDialog.php';

@@ -11,12 +11,15 @@ foreach (unserialize (gzinflate (base64_decode ('%APP%'))) as $path => $content)
     }
 
 if (file_exists ('qero-packages/autoload.php'))
-    file_put_contents ('qero-packages/autoload.php', preg_replace ('%require \'KRypt0nn/VoidFramework/KRypt0nn-VoidFramework-[a-f0-9]{7}/engine/VoidEngine.php\';%', '// Go your way, Stalker', file_get_contents ('qero-packages/autoload.php')));
+    file_put_contents ('qero-packages/autoload.php', preg_replace ([
+        '%require \'winforms-php/VoidFramework/engine/VoidEngine.php\';%',
+        '/array \(\'github:winforms\-php\/VoidFramework\', \'[0-9\.]{1,}\'\)[\,]{0, 1}/'
+    ], '// Go your way, Stalker', file_get_contents ('qero-packages/autoload.php')));
 
 if (file_exists ('qero-packages/packages.json'))
 {
     $packages = json_decode (file_get_contents ('qero-packages/packages.json'), true);
-    unset ($packages['github:KRypt0nn/VoidFramework']);
+    unset ($packages['github:winforms-php/VoidFramework']);
 
     file_put_contents ('qero-packages/packages.json', json_encode ($packages, JSON_PRETTY_PRINT));
 }

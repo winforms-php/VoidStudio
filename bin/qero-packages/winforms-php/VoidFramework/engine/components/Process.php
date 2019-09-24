@@ -9,12 +9,12 @@ class Process extends Component
 
 	public function __construct (int $pid = null)
 	{
-        $this->selector = VoidEngine::createClass ($this->class, $this->namespace);
+        $this->selector = \VoidCore::getClass ($this->class, $this->namespace);
 
 		if ($pid !== null)
             $this->selector = $pid == getmypid () ?
-                VoidEngine::callMethod ($this->selector, 'GetCurrentProcess') :
-                VoidEngine::callMethod ($this->selector, 'GetProcessById', $pid);
+                \VoidCore::callMethod ($this->selector, 'GetCurrentProcess') :
+                \VoidCore::callMethod ($this->selector, 'GetProcessById', $pid);
 
 		Components::addComponent ($this->selector, $this);
 	}

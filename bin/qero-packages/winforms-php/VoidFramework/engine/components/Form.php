@@ -13,26 +13,27 @@ class Form extends Control
 	
 	public function get_clientSize ()
 	{
-		$obj = $this->getProperty ('ClientSize');
-
-		$w = VoidEngine::getProperty ($obj, 'Width');
-		$h = VoidEngine::getProperty ($obj, 'Height');
+		$size = $this->getProperty ('ClientSize');
 		
-		VoidEngine::removeObjects ($obj);
-		
-		return [$w, $h];
+		return [
+			\VoidCore::getProperty ($size, 'Width'),
+			\VoidCore::getProperty ($size, 'Height')
+		];
 	}
 	
-	public function set_clientSize (array $size)
+	public function set_clientSize ($size)
 	{
-		$obj = $this->getProperty ('ClientSize');
+		if (is_array ($size))
+		{
+			$clientSize = $this->getProperty ('ClientSize');
 
-		VoidEngine::setProperty ($obj, 'Width', array_shift ($size));
-		VoidEngine::setProperty ($obj, 'Height', array_shift ($size));
+			\VoidCore::setProperty ($clientSize, 'Width', array_shift ($size));
+			\VoidCore::setProperty ($clientSize, 'Height', array_shift ($size));
 
-		$this->setProperty ('ClientSize', $obj);
+			$this->setProperty ('ClientSize', $clientSize);
+		}
 
-		VoidEngine::removeObjects ($obj);
+		else $this->setProperty ('ClientSize', EngineAdditions::uncoupleSelector ($size));
 	}
 }
 
@@ -47,9 +48,9 @@ class FormIcon extends Icon
 
     public function loadFromFile (string $file)
 	{
-        $icon = VoidEngine::createObject ('System.Drawing.Icon', 'System.Drawing', $file);
+        $icon = \VoidCore::createObject ('System.Drawing.Icon', 'System.Drawing', $file);
         
-        VoidEngine::setProperty ($this->formSelector, 'Icon', $icon);
+        \VoidCore::setProperty ($this->formSelector, 'Icon', $icon);
 
 		if (!isset ($this->selector))
 		    $this->selector = $icon;

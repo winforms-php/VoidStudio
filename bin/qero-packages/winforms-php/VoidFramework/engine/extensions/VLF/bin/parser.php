@@ -606,17 +606,15 @@ class VLFParser
     {
         $args = [];
 
-        $split1   = false;
-        $split2   = false;
+        $split1   = $split2 = false;
         $canSplit = -1;
 
-        $len = strlen ($arguments);
-        $t   = '';
+        $t = '';
 
-        for ($i = 0; $i < $len; ++$i)
+        for ($i = 0, $len = strlen ($arguments); $i < $len; ++$i)
         {
             $t .= $arguments[$i];
-
+            
             if ($arguments[$i] == '\\')
                 $canSplit = $i + 1;
 

@@ -194,12 +194,12 @@ class VLFInterpreter
                 {
                     if (isset ($info[2]))
                     {
-                        $collection = VoidEngine::getProperty (self::$objects[$info[0]]->selector, $info[1]);
+                        $collection = \VoidCore::getProperty (self::$objects[$info[0]]->selector, $info[1]);
                         
-                        VoidEngine::callMethod ($collection, 'Add', [VoidEngine::importObject (base64_encode (file_get_contents ($dir))), 'object']);
+                        \VoidCore::callMethod ($collection, 'Add', [\VoidCore::importObject (base64_encode (file_get_contents ($dir))), 'object']);
                     }
                     
-                    else VoidEngine::setProperty (self::$objects[$info[0]]->selector, $info[1], VoidEngine::importObject (base64_encode (file_get_contents ($dir))));
+                    else \VoidCore::setProperty (self::$objects[$info[0]]->selector, $info[1], \VoidCore::importObject (base64_encode (file_get_contents ($dir))));
                 }
             }
 

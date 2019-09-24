@@ -18,6 +18,6 @@ class ColorDialog extends CommonDialog
 	
     public function set_color (int $color)
     {
-        $this->setProperty ('Color', [$color, 'color']);
+        $this->setProperty ('Color', $color);
     }
 }

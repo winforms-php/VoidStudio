@@ -59,13 +59,13 @@ class Scintilla extends NoVisual
             foreach ($syntax['references'] as $name => $value)
                 if (isset ($syntax['syntax'][$name]))
                 {
-                    $element = VoidEngine::getArrayValue ($this->styles, $value);
+                    $element = \VoidCore::getArrayValue ($this->styles, $value);
                     $color   = $syntax['syntax'][$name];
 
                     if (defined ($color))
                         $color = constant ($color);
                     
-                    VoidEngine::setProperty ($element, 'ForeColor', [$color, 'color']);
+                    \VoidCore::setProperty ($element, 'ForeColor', [$color, 'color']);
                 }
 
             $this->lexer = $syntax['lexer'];

@@ -23,26 +23,21 @@ class Control extends Component
     {
         $this->text = $caption;
     }
-
-    public function get_font (): array
-	{
-        $font = $this->getProperty ('Font');
-        
-		return [
-            VoidEngine::getProperty ($font, 'Name'),
-            VoidEngine::getProperty ($font, 'Size')
-        ];
-	}
 	
-	public function set_font (array $font): void
+	public function set_font ($font): void
 	{
-        $font = array_values ($font);
+        if (is_array ($font))
+        {
+            $font = array_values ($font);
 
-        $obj = isset ($font[2]) ?
-            VoidEngine::createObject ('System.Drawing.Font', 'System.Drawing', $font[0], [$font[1], 'float'], [$font[2], 'System.Drawing.FontStyle, System.Drawing']) :
-            VoidEngine::createObject ('System.Drawing.Font', 'System.Drawing', $font[0], [$font[1], 'float']);
-        
-		$this->setProperty ('Font', $obj);
+            $obj = isset ($font[2]) ?
+                \VoidCore::createObject ('System.Drawing.Font', 'System.Drawing', $font[0], $font[1], [$font[2], 'System.Drawing.FontStyle, System.Drawing']) :
+                \VoidCore::createObject ('System.Drawing.Font', 'System.Drawing', $font[0], $font[1]);
+            
+            $this->setProperty ('Font', $obj);
+        }
+
+        else $this->setProperty ('Font', EngineAdditions::uncoupleSelector ($font));
     }
 	
     public function get_backgroundColor ()
@@ -52,7 +47,7 @@ class Control extends Component
 	
     public function set_backgroundColor ($color)
     {
-        $this->setProperty ('BackColor', [$color, 'color']);
+        $this->setProperty ('BackColor', $color);
     }
 	
     public function get_foregroundColor ()
@@ -62,7 +57,7 @@ class Control extends Component
 	
     public function set_foregroundColor ($color)
     {
-        $this->setProperty ('ForeColor', [$color, 'color']);
+        $this->setProperty ('ForeColor', $color);
     }
 	
     public function get_w (): int
@@ -115,14 +110,19 @@ class Control extends Component
         ];
     }
 	
-    public function set_bounds (array $bounds)
+    public function set_bounds ($bounds)
     {
-        $bounds = array_values ($bounds);
-        
-        $this->left   = (int) $bounds[0];
-        $this->top    = (int) $bounds[1];
-        $this->width  = (int) $bounds[2];
-        $this->height = (int) $bounds[3];
+        if (is_array ($bounds))
+        {
+            $bounds = array_values ($bounds);
+            
+            $this->left   = (int) $bounds[0];
+            $this->top    = (int) $bounds[1];
+            $this->width  = (int) $bounds[2];
+            $this->height = (int) $bounds[3];
+        }
+
+        else $this->setProperty ('Bounds', EngineAdditions::uncoupleSelector ($bounds));
     }
 	
     public function get_location (): array
@@ -133,12 +133,17 @@ class Control extends Component
         ];
     }
 	
-    public function set_location (array $location)
+    public function set_location ($location)
     {
-        $location = array_values ($location);
-        
-        $this->left = $location[0];
-        $this->top  = $location[1];
+        if (is_array ($location))
+        {
+            $location = array_values ($location);
+            
+            $this->left = $location[0];
+            $this->top  = $location[1];
+        }
+
+        else $this->setProperty ('Location', EngineAdditions::uncoupleSelector ($location));
     }
 	
     public function get_size (): array
@@ -149,12 +154,17 @@ class Control extends Component
         ];
     }
 	
-    public function set_size (array $size)
+    public function set_size ($size)
     {
-        $size = array_values ($size);
-        
-        $this->width  = (int) $size[0];
-        $this->height = (int) $size[1];
+        if (is_array ($size))
+        {
+            $size = array_values ($size);
+            
+            $this->width  = (int) $size[0];
+            $this->height = (int) $size[1];
+        }
+
+        else $this->setProperty ('Size', EngineAdditions::uncoupleSelector ($size));
     }
 	
     public function setBounds (int $x, int $y, int $w, int $h)
@@ -171,16 +181,6 @@ class Control extends Component
     {
         $this->set_size ([$w, $h]);
     }
-
-    /*public function set_anchor (array $anchors)
-    {
-        $anchor = 0;
-
-        foreach ($anchors as $anc)
-            $anchor |= $anc;
-
-        return $this->setProperty ('Anchor', $anchor, 'int');
-    }*/
 	
     public function toBack ()
     {

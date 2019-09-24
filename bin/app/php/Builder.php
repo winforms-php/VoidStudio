@@ -8,10 +8,10 @@ class VoidStudioBuilder
 {
     public static function compileProject (string $save, string $enteringPoint, array $references, array $settings = [], bool $printSuccessCompile = false, bool $debug = false): array
     {
-        $savePath   = dirname ($save) .'/'. basenameNoExt ($save);
-        $globalCode = file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n";
-        $eventsCode = '';
-        $forms      = [];
+        $savePath    = dirname ($save) .'/'. basenameNoExt ($save);
+        $globalCode  = file_get_contents (APP_DIR .'/system/presets/compile_parser_preset.cs') ."\n\n";
+        $objectsCode = '';
+        $forms       = [];
 
         for ($i = 0; $i < 5; ++$i)
             if (!isset ($settings[$i]) || !strlen (trim ($settings[$i])))
@@ -26,14 +26,11 @@ class VoidStudioBuilder
 
             $forms[] = $item;
 
-            if (isset (VoidStudioAPI::$events[$item]))
-            {
-                $eventsCode .= VoidStudioAPI::$events[$item] ."\n\n";
+            if (!isset (VoidStudioAPI::$events[$item]))
+                VoidStudioAPI::$events[$item] = "class $item extends Form\n{}\n";
 
-                foreach ($designer->objects as $name => $objectType)
-                    foreach ($designer->getComponentEvents ($designer->getComponentByName ($name))->list as $event)
-                        $eventsCode .= 'Events::setObjectEvent ($GLOBALS[\'__underConstruction\'][\''. $item .'\'][\''. $name .'\'], \''. $event->eventDescriptor->Name .'\', \'VoidEngine\\'. $item .'::'. $event->methodName .'\');';
-            }
+            if (isset (VoidStudioAPI::$events[$item]))
+                $objectsCode .= ClassWorker::applyClass (VoidStudioAPI::$events[$item], $item, substr ($voidCode = $designer->getVoidCode ($item, false), $pos = strpos ($voidCode, '{') + 1, strrpos ($voidCode, '}') - $pos - 1) ."\n") ."\n\n";
         }
 
         dir_clean ($savePath);
@@ -42,8 +39,8 @@ class VoidStudioBuilder
         unlink ($savePath .'/script.php');
         unlink ($savePath .'/VoidCore.exe');
 
-        $errors = VoidEngine::compile ($savePath .'/'. basename ($save), APP_DIR .'/system/icons/Icon.ico', str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.php'), [
-            '%VoidEngine%' => VoidStudioBuilder::generateCode ($references),
+        $errors = EngineAdditions::compile ($savePath .'/'. basename ($save), APP_DIR .'/system/icons/Icon.ico', self::optimizeCode (str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.php'), [
+            '%VoidEngine%' => self::generateCode ($references),
 
             '%modules%' => (file_exists ($modulesFile = VoidStudioProjectManager::$projectPath .'/modules/Qero.json') && sizeof ($modules = json_decode (file_get_contents ($modulesFile))) ? "require 'qero-packages/autoload.php';\n\n" : "\n\n") . implode ("\n", array_map (function ($module)
             {
@@ -58,15 +55,16 @@ class VoidStudioBuilder
                 if (substr ($module, -2) == '?>')
                     $module = substr ($module, 0, -2);
     
-                return "\$module = <<<'__MODULE'\n\n$module\n\n__MODULE;\n\neval (\$module);";
+                return "\$module = <<<'__MODULE'\n". self::optimizeCode ($module) ."\n__MODULE;\n\neval (\$module);";
             }, array_merge (glob (VoidStudioProjectManager::$projectPath .'/modules/*.php'), $debug ? [APP_DIR .'/system/debug/DebugHook.php'] : []))),
 
-            '%events%'         => $eventsCode,
+            '%objects%'        => trim ($objectsCode),
+            '%forms%'          => join ('\', \'', $forms),
             '%entering_point%' => $enteringPoint,
             '%author_id%'      => sha1 (shell_exec ('wmic csproduct'))
-        ]), $settings[0], $settings[1], $settings[2], $settings[3], $settings[4], str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
+        ])), $settings[0], $settings[1], $settings[2], $settings[3], $settings[4], /*str_replace_assoc (file_get_contents (APP_DIR .'/system/presets/compile_main_preset.cs'), [
             '%forms%' => join ('", "', $forms)
-        ]), $globalCode);
+        ])*/'', $globalCode);
 
         if (isset ($modules) && sizeof ($modules) > 0)
         {
@@ -117,9 +115,9 @@ class VoidStudioBuilder
                 $designer->getComponentByName ($property[0]);
 
             foreach (array_slice ($property, 1) as $path)
-                $object = VoidEngine::getProperty ($object, $path);
+                $object = \VoidCore::getProperty ($object, $path);
 
-            $code = str_replace (substr ($code, $pos + 2, $end - $pos), 'WinForms_PHP.ZendProgram.getResource ("'. VoidEngine::exportObject ($object) .'")', $code);
+            $code = str_replace (substr ($code, $pos + 2, $end - $pos), 'WinForms_PHP.ZendProgram.getResource ("'. \VoidCore::exportObject ($object) .'")', $code);
         }
 
         return $code;
@@ -134,4 +132,9 @@ class VoidStudioBuilder
     {
         return Builder::getReferences ($file, $parseExtensions);
     }
+	
+	public static function optimizeCode (string $code): string
+	{
+		return Builder::optimizeCode ($code);
+	}
 }

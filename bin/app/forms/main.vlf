@@ -23,10 +23,7 @@ Form MainForm
             ToolStripMenuItem PropertiesList__ListMenuItem ('Сбросить')
                 image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Undo_16x.png')
 
-                ClickEvent:^ function ($self)
-                    {
-                        c('PropertiesList__List')->resetSelectedProperty ();
-                    }
+                ClickEvent: fn () => c('PropertiesList__List')->resetSelectedProperty ();
 
             ContextMenuStrip PropertiesList__ListMenu ()
                 ->items->add (PropertiesList__ListMenuItem)
@@ -306,7 +303,7 @@ Form MainForm
                                     'System.Windows.Forms'
                                 ];
 
-                            $designer->setTypeForCreationOnClick (VoidEngine::objectType (...$info));
+                            $designer->setTypeForCreationOnClick (\VoidCore::typeof (...$info));
 
                             $i = 1;
                             while (isset ($designer->objects[$name = $component . $i]))
@@ -368,7 +365,7 @@ Form MainForm
 
                             try
                             {
-                                VoidEngine::setProperty ($selector, 'Text', $name);
+                                \VoidCore::setProperty ($selector, 'Text', $name);
                             }
 
                             catch (\Throwable $e) {}
@@ -500,10 +497,7 @@ Form MainForm
 
                         image: (new Image)->loadFromFile (APP_DIR .'/system/icons/StackTrace_16x.png')
 
-                        ClickEvent:^ function ($self)
-                            {
-                                VoidStudioAPI::getObjects ('diagnostic')['MainForm']->showDialog ();
-                            }
+                        ClickEvent: fn () => VoidStudioAPI::getObjects ('diagnostic')['MainForm']->showDialog ();
 
                     ListBox DebugPanel__ProjectLog
                         dock: dsBottom
@@ -540,7 +534,7 @@ Form MainForm
 
                                 try
                                 {
-                                    $memory->caption = 'Использование памяти: '. ($memoryUsage = round ($counter->rawValue->toString () / 1024 / 1024, 2)) .' МБ';
+                                    $memory->caption = 'Использование памяти: '. ($memoryUsage = round ($counter->rawValue / 1024 / 1024, 2)) .' МБ';
 
                                     $memoryPeak->caption = 'Пик использования памяти: '. max (substr ($memoryPeak->caption, 26, strrpos ($memoryPeak->caption, ' ') - 26), $memoryUsage) .' МБ';
                                 }
@@ -805,26 +799,17 @@ Form MainForm
         ToolStripMenuItem Menu__studio_restart ('Перезапустить')
             image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Restart_16x.png')
 
-            ClickEvent:^ function ($self)
-                {
-                    $APPLICATION->restart ();
-                }
+            ClickEvent: fn () => $APPLICATION->restart ();
 
         ToolStripMenuItem Menu__studio_about ('О программе')
             image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Icon.png')
 
-            ClickEvent:^ function ($self)
-                {
-                    VoidStudioAPI::getObjects ('about')['MainForm']->showDialog ();
-                }
+            ClickEvent: fn () => VoidStudioAPI::getObjects ('about')['MainForm']->showDialog ();
 
         ToolStripMenuItem Menu__studio_vk ('Группа вк')
             image: (new Image)->loadFromFile (APP_DIR .'/system/icons/vk-logo-transparent.png')
 
-            ClickEvent:^ function ($self)
-                {
-                    run ('https://vk.com/winforms');
-                }
+            ClickEvent: fn () => run ('https://vk.com/winforms');
 
     #^ Здесь тупая ошибка: я не могу обратиться к ->items->addRange... т.к. этот метод вызывается от имени
         Menu__studio_vk. Типо, опять фиксить и всё такое, но мне влом пока что
@@ -924,18 +909,12 @@ Form MainForm
         ToolStripMenuItem Menu__project_modules ('Модули')
             image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Reference_16x.png')
 
-            ClickEvent:^ function ($self)
-                {
-                    VoidStudioAPI::getObjects ('modules')['MainForm']->showDialog ();
-                }
+            ClickEvent: fn () => VoidStudioAPI::getObjects ('modules')['MainForm']->showDialog ();
 
         ToolStripMenuItem Menu__project_compile ('Компилировать')
             image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Build_16x.png')
 
-            ClickEvent:^ function ($self)
-                {
-                    VoidStudioAPI::getObjects ('build')['MainForm']->showDialog ();
-                }
+            ClickEvent: fn () => VoidStudioAPI::getObjects ('build')['MainForm']->showDialog ();
         
         ToolStripMenuItem Menu__project_open ('Открыть')
             image: (new Image)->loadFromFile (APP_DIR .'/system/icons/Open_16x.png')

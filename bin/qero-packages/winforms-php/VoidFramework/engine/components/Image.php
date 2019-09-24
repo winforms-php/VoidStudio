@@ -32,12 +32,12 @@ class Icon extends WFObject
 
     public function applyToObject (int $selector): void
 	{
-		VoidEngine::setProperty ($selector, 'Icon', $this->selector);
+		\VoidCore::setProperty ($selector, 'Icon', $this->selector);
 	}
 	
 	public function saveToFile (string $file): void
 	{
-		VoidEngine::callMethod ($this->selector, 'Save', $file);
+		\VoidCore::callMethod ($this->selector, 'Save', $file);
 	}
 }
 

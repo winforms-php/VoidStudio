@@ -13,7 +13,8 @@ class Component extends WFObject
     {
         parent::__construct (
             $className === null ? $this->class : $className,
-            $this->namespace, ...$args
+            $this->namespace ?? false,
+            ...$args
         );
         
         Components::addComponent ($this->selector, $this);
@@ -37,8 +38,8 @@ class Component extends WFObject
             {
                 Components::removeComponent ($this->$name);
 
-                if (VoidEngine::objectExists ($this->$name))
-                    VoidEngine::removeObjects ($this->$name);
+                if (\VoidCore::objectExists ($this->$name))
+                    \VoidCore::removeObjects ($this->$name);
             }
 
             elseif ($this->$name instanceof Component)
@@ -56,8 +57,8 @@ class Component extends WFObject
             {
                 Components::removeComponent ($value);
 
-                if (VoidEngine::objectExists ($value))
-                    VoidEngine::removeObjects ($value);
+                if (\VoidCore::objectExists ($value))
+                    \VoidCore::removeObjects ($value);
             }
 
             elseif ($value instanceof Component)
@@ -68,8 +69,8 @@ class Component extends WFObject
 
         if (isset ($this->selector))
         {
-            if (VoidEngine::objectExists ($this->selector))
-                VoidEngine::removeObjects ($this->selector);
+            if (\VoidCore::objectExists ($this->selector))
+                \VoidCore::removeObjects ($this->selector);
             
             Components::removeComponent ($this->selector);
         }
@@ -79,12 +80,10 @@ class Component extends WFObject
 
     public function __destruct ()
     {
-        if (isset ($this->selector) && VoidEngine::destructObject ($this->selector))
+        if (isset ($this->selector) && \VoidCore::destructObject ($this->selector))
         {
-            VoidEngine::removeObjects ($this->selector);
+            \VoidCore::removeObjects ($this->selector);
             Components::removeComponent ($this->selector);
-
-            gc_collect_cycles ();
         }
     }
 }

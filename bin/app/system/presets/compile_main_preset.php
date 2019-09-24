@@ -21,31 +21,28 @@ foreach (glob (__DIR__ .'/ext/php_*.dll') as $ext)
 
 %VoidEngine%
 
-%modules%
+%objects%
 
-if (isset ($GLOBALS['__underConstruction']))
+foreach (['%forms%'] as $formName)
 {
-    foreach ($GLOBALS['__underConstruction'] as $group => $objects)
-        foreach ($objects as $name => $selector)
+    $class = '\\VoidEngine\\'. $formName;
+
+    $form = new $class;
+    $form->name = $formName;
+
+    foreach (get_object_vars ($form) as $name => $value)
+        if (is_object ($value) && $value instanceof WFObject)
         {
-            $object = new Control (null, $selector);
+            // FIXME: это костыль, так делать нельзя
 
-            try
-            {
-                $object->name = $name;
-            }
+            $value->name = strtoupper ($name[0]) . substr ($name, 1);
 
-            catch (\Throwable $e) {}
-
-            Components::addComponent ($selector, $object);
+            Components::addComponent ($value->selector, $value);
         }
 
-%events%
-
-    $enteringPoint = $GLOBALS['__underConstruction']['%entering_point%']['%entering_point%'];
-    unset ($GLOBALS['__underConstruction']);
-
-    $APPLICATION->run ($enteringPoint);
+    Components::addComponent ($form->selector, $form);
 }
 
-else throw new \Exception ('Objects not initialized');
+%modules%
+
+$APPLICATION->run (c('%entering_point%'));

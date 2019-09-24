@@ -22,21 +22,44 @@ class VoidStudioAPI
         return self::$objects[$group] ?? false;
     }
 
-    public static function openEventEditor (int $component, string $method, string $form, VoidDesigner $designer = null)
+    public static function openEventEditor (int $component, string $method, WFObject $eventDescriptor, string $form, VoidDesigner $designer = null)
     {
         $objects = self::getObjects ('editor');
         $editor  = $objects['Editor'];
 
-        if (!isset (self::$events[$form]))
-            self::$events[$form] = "class $form\n{\n\tpublic static function $method (WFObject \$self, \$args)\n\t{\n\t\t\n\t}\n}\n";
+        $args = [];
 
-        elseif (!preg_match ('/function(\s)*'. $method .'(\s)*\(/i', self::$events[$form]))
-            self::$events[$form] = ClassWorker::applyClass (self::$events[$form], $form, "\n\tpublic static function $method (WFObject \$self, \$args)\n\t{\n\t\t\n\t}\n");
+        $eventDescriptor->eventType
+            ->getMethod ('Invoke')
+            ->getParameters ()
+            ->foreach (function ($param) use (&$args)
+            {
+                $args[] = $param->parameterType->toString ();
+            });
+
+        $args = array_slice ($args, 1);
+        $comments = '';
+
+        foreach ($args as $id => $arg)
+        {
+            $comments .= "\n\t * @param WFObject \$args". ($id > 0 ? $id : '') .' - '. $arg;
+
+            $args[$id] = '$args'. ($id > 0 ? $id : '');
+        }
+
+        $comments = "\t/**\n\t * @method $method\n\n\t * @param WFObject \$self$comments\n\t */";
+
+        if (!isset (self::$events[$form]))
+            self::$events[$form] = "class $form extends Form\n{\n$comments\n\tpublic function $method (WFObject \$self, ". implode (', ', $args) .")\n\t{\n\t\t\n\t}\n}\n";
+
+        // preg_match ('/function(\s)*'. $method .'(\s)*\(/i', self::$events[$form])
+        elseif (!in_array ($method, ClassWorker::getAvailableClassMethods (self::$events[$form], $form)))
+            self::$events[$form] = ClassWorker::applyClass (self::$events[$form], $form, "\n$comments\n\tpublic function $method (WFObject \$self, ". implode (', ', $args) .")\n\t{\n\t\t\n\t}\n");
 
         $editor->text = self::$events[$form];
         $editor->helpStorage = $form;
 
-        // $form->caption = 'Событие "'. $event .'", объект "'. ($designer === null ? VoidEngine::getProperty ($component, 'Name') : $designer->getComponentName ($component)) .'"';
+        // $form->caption = 'Событие "'. $event .'", объект "'. ($designer === null ? \VoidCore::getProperty ($component, 'Name') : $designer->getComponentName ($component)) .'"';
 
         $objects['MainForm']->showDialog ();
     }

@@ -2,7 +2,7 @@
 
 namespace VoidEngine;
 
-class SaveFileDialog extends FileDialog
+class SaveFileDialog extends CommonDialog
 {
     public $class = 'System.Windows.Forms.SaveFileDialog';
 }

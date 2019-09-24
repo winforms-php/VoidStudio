@@ -344,5 +344,5 @@ foreach ($constants as $name => $value)
 $argv = START_PARAMS;
 $argc = sizeof ($argv);
 
-VoidEngine::removeObjects ($converter->selector);
+\VoidCore::removeObjects ($converter->selector);
 unset ($constants, $env, $params, $converter);
